@@ -134,6 +134,14 @@
   flex-direction: column
 }
 
+.tw-items-center {
+  align-items: center
+}
+
+.tw-justify-between {
+  justify-content: space-between
+}
+
 .tw-gap-0 {
   gap: 0px
 }
@@ -5137,4 +5145,16 @@
 
 .tw-pt-2 {
   padding-top: 0.5rem
+}
+
+.tw-pt-4 {
+  padding-top: 1rem
+}
+
+.tw-font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
+}
+
+.tw-font-extrabold {
+  font-weight: 800
 }

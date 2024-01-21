@@ -24,6 +24,11 @@ interface GameProps {
   keydownCallback: (key: string) => void;
 }
 
+interface Scoring {
+  score: number;
+  lines: number;
+}
+
 enum Direction {
   N=0,
   E,
@@ -36,10 +41,10 @@ const rotateMatrix = (matrix: number[][], toDirection: Direction | number): numb
   const nR = matrix.length;
   const nC = matrix[0].length;
 
-  let i=0, iT=0;
-  let j=0;
-
+  let iT=0;
+  
   switch(toDirection) {
+
 
     // forward rows, forward cols
     case Direction.N:
@@ -47,41 +52,47 @@ const rotateMatrix = (matrix: number[][], toDirection: Direction | number): numb
       matrixT = JSON.parse(JSON.stringify(matrix));
       break;
 
+
     // forward cols, reverse rows
     case Direction.E:
     case 1:
 
-      for(i=0; i<nC; i++) {
+      for(let i=0; i<nC; i++) {
         matrixT[iT] = [];
-        for(j=nR-1; j>=0; j--) {
-          matrixT[iT].push(matrix[i][j]);
+        for(let j=nR-1; j>=0; j--) {
+          matrixT[iT].push(matrix[j][i]);
         }
+        console.log(JSON.stringify(matrixT[iT]));
         iT++;
       }
       break;
+
 
     // reverse rows, reverse cols
     case Direction.S:
     case 2:
 
-      for(i=nR-1; i>=0; i--) {
+      for(let i=nR-1; i>=0; i--) {
         matrixT[iT] = [];
-        for(j=nC-1; j>=0; j--) {
-          matrixT[i].push(matrix[i][j]);
+        for(let j=nC-1; j>=0; j--) {
+          matrixT[iT].push(matrix[i][j]);
         }
+        console.log(JSON.stringify(matrixT[iT]));
         iT++;
       }
       break;
 
+
+    // reverse cols, forward rows
     case Direction.W: 
     case 3: 
     
-    // reverse cols, forward rows
-    for(i=nC-1; i>=0; i++) {
+      for(let i=nC-1; i>=0; i--) {
       matrixT[iT] = [];
-      for(j=0; j<nR; j++) {
-          matrixT[iT].push(matrix[i][j])
+      for(let j=0; j<nR; j++) {
+          matrixT[iT].push(matrix[j][i]);
         }
+        console.log(JSON.stringify(matrixT[iT]));
         iT++;
       }
       break;
@@ -147,6 +158,14 @@ class ActivePiece {
     }
 
     return this.shapeByDirection[this.rotation];
+  }
+
+  get height(): number {
+    return this.getPermutation().length;
+  }
+
+  get width(): number {
+    return this.getPermutation()[0].length;
   }
 
   getWidthProjection(): number {
@@ -219,6 +238,11 @@ export default function Game(props: GameProps) {
   const emptyRow = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   const activePiece: Ref<ActivePiece> = useRef(null);
+
+  const stats: Ref<Scoring> = useRef({
+    score: 0,
+    lines: 0
+  });
 
   const board: Ref<number[][]> = useRef([
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -293,7 +317,10 @@ export default function Game(props: GameProps) {
 
       // erase old location
       let j_i = p.xPrev;
-      let i_i = p.yPrev - h;
+       
+      let i_i = (p.xPrev != p.x) ? 
+        (p.y - h) :
+        (p.yPrev - h);
 
       let i_se = h-1;
       for(let i=i_i; i > (i_i - h); i--) {
@@ -301,7 +328,7 @@ export default function Game(props: GameProps) {
         for(let j=j_i; j < (j_i + w); j++) {
           if(perm[i_se][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0) {
             board.current[i][j] = 0;
-            console.log(`[${i_se},${j_s}]`);
+            // console.log(`[${i_se},${j_s}]`);
           }
         
           j_s++;
@@ -353,7 +380,7 @@ export default function Game(props: GameProps) {
 
     if(piece) {
 
-      if(piece.y === piece.yPrev) {
+      if(piece.y === piece.yPrev && piece.x === piece.xPrev) {
         for(let i=0;  i<board.current.length; i++) {
           for(let j=0;  j<board.current[0].length; j++) {
             if(board.current[i][j] > 10) {
@@ -378,7 +405,15 @@ export default function Game(props: GameProps) {
     {
       // clear rows
       let nNewRows = newRows.length;
-      for (let i = 0; i < nRows - nNewRows; i++) {
+
+      let numCleared = nRows - nNewRows;
+
+      if(stats.current && numCleared > 0) {
+        stats.current.lines += numCleared;
+        stats.current.score += ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+      }
+
+      for (let i = 0; i < numCleared; i++) {
         newRows.unshift([...emptyRow]);
       }
 
@@ -392,7 +427,7 @@ export default function Game(props: GameProps) {
   const getRandomPiece = () => {
     let index: number = Math.round(Math.random() * (TETRONIMOS.length-1));
     let shape: number[][] = TETRONIMOS[index];
-    return new ActivePiece(shape)
+    return new ActivePiece(shape, Math.round(Math.random() * 3))
   }
 
   const keydownHandler = (e:KeyboardEvent) => {
@@ -403,15 +438,19 @@ export default function Game(props: GameProps) {
     }
     switch(e.key) {
       case "ArrowRight":
-        if(activePiece.current.x < board.current[0].length) {
+        if((activePiece.current.x + activePiece.current.width) < board.current[0].length) {
           activePiece.current.xPrev = activePiece.current.x;
+          activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x += 1; 
+          updatePosition();
         }
         break;
       case "ArrowLeft":
         if(activePiece.current.x > 0) {
           activePiece.current.xPrev = activePiece.current.x;
+          activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x -= 1; 
+          updatePosition();
         }
         break;
     }
@@ -464,12 +503,34 @@ export default function Game(props: GameProps) {
 
   return (
     <>
-    <div>
-      <h1 className="bg-green-100">{tick.value}</h1>
-      <div class="container tw-pt-2">
-        <div className="tw-h-80 tw-w-40 tw-bg-blue-100 tw-flex tw-flex-col tw-gap-0 tw-">
-          {renderBoard()}
+    <div className="tw-flex tw-items-center tw-justify-between">
+      <div className="tw-h-80 tw-w-40">
+        <button onClick={()=>{
+          if(activePiece.current) {
+            activePiece.current = getRandomPiece();
+          }
+          if(!board.current) { return; }
+          for(let i=0;  i<board.current.length; i++) {
+            for(let j=0;  j<board.current[0].length; j++) {
+              board.current[i][j] = 0; 
+            }
+          }
+        }}>Clear</button>
+      </div>
+      <div>
+        <h1 className="bg-green-100">{tick.value}</h1>
+        <div class="container tw-pt-2">
+          <div className="tw-h-80 tw-w-40 tw-bg-blue-100 tw-flex tw-flex-col tw-gap-0 tw-">
+            {renderBoard()}
+          </div>
         </div>
+        <h1>Action</h1>
+      </div>
+      <div className="tw-flex tw-flex-col tw-h-80 tw-w-40">
+          <h3>Score</h3>
+          <h3 className="tw-font-mono tw-font-extrabold">{stats.current?.score}</h3>
+          <h3 className="tw-pt-4">Lines</h3>
+          <h3 className="tw-font-mono tw-font-extrabold">{stats.current?.lines}</h3>
       </div>
     </div>
     </>
