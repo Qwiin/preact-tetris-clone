@@ -1,0 +1,32 @@
+{
+  "name": "preact-tetris",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "module": "es2022",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "css": "npx tailwindcss -i ./src/input.css -o ./public/output.css --watch",
+    "serve": "concurrently \"postcss css/tailwind.css -o public/main.min.css --watch\"  \"npm run dev\"",
+    "development": "postcss css/tailwind.css -o public/main.min.css",
+    "production": "postcss css/tailwind.css -o public/main.min.css",
+    "start": "npm run serve"
+  },
+  "dependencies": {
+    "@preact/signals": "^1.2.2",
+    "preact": "^10.19.3",
+    "tailwindcss": "^3.4.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.7.0",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "live-server": "^1.2.2",
+    "postcss": "^8.4.33",
+    "postcss-cli": "^11.0.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  }
+}
