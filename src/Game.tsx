@@ -31,14 +31,11 @@ import './app.css';
 import { StatsPanel } from './StatsPanel';
 
 const TICK_INTERVAL: number = 40;
+const PIECE_QUE_LENGTH: number = 5;
 
 const tick: Signal<number> = signal(0);
 
 // const actionSignal: Signal<string> = signal("action");
-
-setInterval(() => {
-  tick.value = tick.value + 1;
-}, TICK_INTERVAL);
 
 const colorEnum: string[] = [
   'transparent',
@@ -73,6 +70,11 @@ enum Direction {
 }
 
 const rotateMatrix = (matrix: number[][], toDirection: Direction | number): number[][] => {
+
+  if(toDirection === Direction.N){
+    return JSON.parse(JSON.stringify(matrix));
+  }
+
   let matrixT: number[][] = [];
   const nR = matrix.length;
   const nC = matrix[0].length;
@@ -80,14 +82,6 @@ const rotateMatrix = (matrix: number[][], toDirection: Direction | number): numb
   let iT=0;
   
   switch(toDirection) {
-
-
-    // forward rows, forward cols
-    case Direction.N:
-    case 1:
-      matrixT = JSON.parse(JSON.stringify(matrix));
-      break;
-
 
     // forward cols, reverse rows
     case Direction.E:
@@ -148,7 +142,7 @@ class ActivePiece {
 
   private _coords: number[][] = [];
   public set coords(value: number[][]) {
-    this._coords = JSON.parse(JSON.stringify(value));
+    this._coords = value;
   }
   public get coords(): number[][] {
     return this._coords;
@@ -169,8 +163,8 @@ class ActivePiece {
   constructor(shape?: number[][], rotation?: Direction, coords?: number[][], x?: number, y?: number) {
 
     if(shape) {
-      this.shape = JSON.parse(JSON.stringify(shape));
-      this.shapeByDirection[Direction.N] = JSON.parse(JSON.stringify(this.shape));
+      this.shape = shape;
+      this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {
         this.rotation = rotation;
         this.rotationPrev = rotation;
@@ -395,6 +389,7 @@ export default function Game(props: GameProps) {
   const emptyRow = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   const activePiece: Ref<ActivePiece> = useRef(null);
+  const pieceQue: Ref<number[][][]> = useRef([]);
 
   const stats: Ref<Scoring> = useRef({
     level: 1,
@@ -435,6 +430,11 @@ export default function Game(props: GameProps) {
     // [4, 4, 2, 3, 0, 0, 6, 2, 1, 2],
     // [0, 2, 2, 3, 3, 5, 6, 0, 2, 2],
   ]);
+
+
+  // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
+
+  //const boardCols: Ref<number[][]> = useRef([]);
 
   const getBoardCols = (): number[][] => {
     if(!board.current){
@@ -558,7 +558,7 @@ export default function Game(props: GameProps) {
           updateBoard(null);
         });
         setTimeout(()=>{
-          activePiece.current = getRandomPiece();          
+          activePiece.current = getPieceFromQue();          
         }, TICK_INTERVAL);
         return;
       }
@@ -594,7 +594,7 @@ export default function Game(props: GameProps) {
 
       // updateRef
       for (let i = 0; i < nRows; i++) {
-        board.current[i] = [...newRows[i]];
+        board.current[i] = newRows[i];
       }
 
       if(numCleared > 0) {
@@ -619,9 +619,15 @@ export default function Game(props: GameProps) {
   };
 
   const getRandomPiece = () => {
-    let index: number = Math.round(Math.random() * (TETRONIMOS.length-1));
+    let index: number = Math.round(Math.random() * (TETRONIMOS.length-0.5));
     let shape: number[][] = TETRONIMOS[index];
-    return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
+    return JSON.parse(JSON.stringify(shape));
+    // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
+  }
+
+  const getPieceFromQue = () => {
+    pieceQue.current?.push(getRandomPiece());    
+    return new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
   }
 
   const keydownHandler = (e:KeyboardEvent) => {
@@ -697,7 +703,7 @@ export default function Game(props: GameProps) {
           }
         }
 
-        console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
+        // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
 
         p.xPrev = p.x;
         activePiece.current.y += minDistance;
@@ -706,23 +712,39 @@ export default function Game(props: GameProps) {
         break;
 
       case "Alt":
+      case "Control":
           activePiece.current.rotateLeft();
           updatePosition();
         break;
       case "Shift":
-          activePiece.current.rotateRight();
+      case "Meta":
+        activePiece.current.rotateRight();
           updatePosition();
         break;
     }
   }
 
   useEffect(()=>{
+
+    const ticker = setInterval(() => {
+      tick.value = tick.value + 1;
+    }, TICK_INTERVAL);
+    
+
+    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
+      pieceQue.current?.push(
+        getRandomPiece()
+      );
+    }
+
     setTimeout(()=> {
-      activePiece.current = getRandomPiece();
+      // activePiece.current = getRandomPiece();
+      activePiece.current = getPieceFromQue();
     },TICK_INTERVAL * (10 / (stats.current?.level || 1)) );
   
     document.addEventListener("keydown", keydownHandler);
     return () => {
+      clearInterval(ticker);
       document.removeEventListener("keydown", keydownHandler);
     }
   },[]);
@@ -731,7 +753,7 @@ export default function Game(props: GameProps) {
   // Controls the game speed by level
   useEffect(() => {
 
-    if(tick.value % (10 - (stats.current?.level || 0)) === 0) {
+    if(tick.value % (5 - (stats.current?.level || 0)) === 0) {
       updateBoard(activePiece.current);
     }
     
@@ -780,7 +802,8 @@ export default function Game(props: GameProps) {
             level: 0,
           };
           if(activePiece.current) {
-            activePiece.current = getRandomPiece();
+            // activePiece.current = getRandomPiece();
+            activePiece.current = getPieceFromQue();
           }
           if(!board.current) { return; }
           for(let i=0;  i<board.current.length; i++) {
@@ -801,7 +824,7 @@ export default function Game(props: GameProps) {
             </div>
           </div>
         </div>
-        <PieceQue queLength={5}/>
+        <PieceQue queLength={PIECE_QUE_LENGTH} pieces={pieceQue.current || []}/>
       </div>
       <StatsPanel fields={[
         {
@@ -858,7 +881,7 @@ export const PieceQue: preact.FunctionComponent<PieceQueProps> = (props: PieceQu
                   piece.map((row: number[]) => {
                     return (
                       <>
-                      <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length}`}>
+                      <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length * 4}`}>
                         {
                           row.map((cellValue: number)=>{
                             let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
