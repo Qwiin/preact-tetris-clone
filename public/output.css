@@ -138,6 +138,18 @@
   margin-top: 9rem
 }
 
+.tw-mt-8 {
+  margin-top: 2rem
+}
+
+.tw-mt-12 {
+  margin-top: 3rem
+}
+
+.tw-mt-2 {
+  margin-top: 0.5rem
+}
+
 .tw-box-border {
   box-sizing: border-box
 }
@@ -162,6 +174,14 @@
   height: 24rem
 }
 
+.tw-h-16 {
+  height: 4rem
+}
+
+.tw-h-full {
+  height: 100%
+}
+
 .tw-w-4 {
   width: 1rem
 }
@@ -172,6 +192,18 @@
 
 .tw-w-60 {
   width: 15rem
+}
+
+.tw-w-32 {
+  width: 8rem
+}
+
+.tw-w-20 {
+  width: 5rem
+}
+
+.tw-w-16 {
+  width: 4rem
 }
 
 .tw-scale-150 {
@@ -200,6 +232,10 @@
   justify-content: flex-start
 }
 
+.tw-justify-center {
+  justify-content: center
+}
+
 .tw-justify-between {
   justify-content: space-between
 }
@@ -216,12 +252,40 @@
   gap: 2rem
 }
 
+.tw-gap-4 {
+  gap: 1rem
+}
+
+.tw-gap-2 {
+  gap: 0.5rem
+}
+
 .tw-overflow-hidden {
   overflow: hidden
 }
 
+.tw-rounded-3xl {
+  border-radius: 1.5rem
+}
+
+.tw-rounded-2xl {
+  border-radius: 1rem
+}
+
+.tw-rounded-xl {
+  border-radius: 0.75rem
+}
+
 .tw-border {
   border-width: 1px
+}
+
+.tw-border-4 {
+  border-width: 4px
+}
+
+.tw-border-8 {
+  border-width: 8px
 }
 
 .tw-border-blue-300 {
@@ -4608,6 +4672,16 @@
 .tw-border-slate-200 {
   --tw-border-opacity: 1;
   border-color: rgb(226 232 240 / var(--tw-border-opacity))
+}
+
+.tw-border-slate-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(100 116 139 / var(--tw-border-opacity))
+}
+
+.tw-border-blue-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(191 219 254 / var(--tw-border-opacity))
 }
 
 .tw-bg-blue-100 {
@@ -9000,8 +9074,31 @@
   background-color: rgb(51 65 85 / var(--tw-bg-opacity))
 }
 
+.tw-bg-gray-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(107 114 128 / var(--tw-bg-opacity))
+}
+
+.tw-bg-gray-700 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(55 65 81 / var(--tw-bg-opacity))
+}
+
+.tw-bg-slate-900 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(15 23 42 / var(--tw-bg-opacity))
+}
+
 .tw-bg-opacity-40 {
   --tw-bg-opacity: 0.4
+}
+
+.tw-bg-opacity-50 {
+  --tw-bg-opacity: 0.5
+}
+
+.tw-bg-opacity-30 {
+  --tw-bg-opacity: 0.3
 }
 
 .tw-p-1 {
@@ -9011,6 +9108,16 @@
 .tw-py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem
+}
+
+.tw-px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem
+}
+
+.tw-px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem
 }
 
 .tw-pt-2 {
@@ -9039,6 +9146,22 @@
 
 .tw-pt-16 {
   padding-top: 4rem
+}
+
+.tw-pb-1 {
+  padding-bottom: 0.25rem
+}
+
+.tw-pt-1 {
+  padding-top: 0.25rem
+}
+
+.tw-pb-8 {
+  padding-bottom: 2rem
+}
+
+.tw-pb-4 {
+  padding-bottom: 1rem
 }
 
 .tw-font-mono {
@@ -9085,4 +9208,39 @@
 
 .tw-opacity-0 {
   opacity: 0
+}
+
+.tw-shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.tw-shadow-md {
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.tw-shadow-inner {
+  --tw-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: inset 0 2px 4px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.tw-shadow {
+  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.tw-shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+}
+
+.tw-shadow-black {
+  --tw-shadow-color: #000;
+  --tw-shadow: var(--tw-shadow-colored)
 }

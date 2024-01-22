@@ -38,9 +38,9 @@ body {
 
 .game-clock {
   margin: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   font-family: 'SF Digital Heavy';
-  font-size: 60px;
+  font-size: 48px;
   padding: 0;
 }
 
@@ -48,6 +48,10 @@ body {
   font-family: 'SF Digital Heavy';
   font-size: 48px;
   padding: 0;
+}
+
+.stats-field {
+  line-height: 40px;
 }
 
 #app {
@@ -76,7 +80,12 @@ body {
   color: #888;
 }
 
-
+.game-header {
+  padding-top: 24px;
+  line-height: 40px;
+  letter-spacing: 0.3em;
+  font-family: 'SF Digital Heavy';
+}
 
 @keyframes fadeOut {
   0% { opacity: 1; }

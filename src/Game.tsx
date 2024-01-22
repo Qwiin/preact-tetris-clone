@@ -16,12 +16,19 @@ UI/UX:
   2. Add Sound
   3. Break this out into multiple components
 
+Performance:
+
+  1. Use 1D array for gameboard
+  2. Move Model into it's own class to decouple game logic from view
+  3. 
+
 **/
 
 import { Ref } from 'preact';
 import { useRef, useEffect } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import './app.css';
+import { StatsPanel } from './StatsPanel';
 
 const TICK_INTERVAL: number = 40;
 
@@ -390,7 +397,7 @@ export default function Game(props: GameProps) {
   const activePiece: Ref<ActivePiece> = useRef(null);
 
   const stats: Ref<Scoring> = useRef({
-    level: 0,
+    level: 1,
     lines: 0,
     score: 0,
   });
@@ -577,7 +584,7 @@ export default function Game(props: GameProps) {
 
       if(stats.current && numCleared > 0) {
         stats.current.lines += numCleared;
-        stats.current.level = Math.floor(stats.current.lines / 10);
+        stats.current.level = Math.floor(stats.current.lines / 10) + 1;
         stats.current.score += ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
       }
 
@@ -761,7 +768,9 @@ export default function Game(props: GameProps) {
 
   return (
     <>
-    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100">
+
+    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-4">
+      
       <div className="tw-h-80 tw-w-60 tw-mt-36">
         <button onClick={()=>{
           tick.value = 0;
@@ -781,25 +790,104 @@ export default function Game(props: GameProps) {
           }
         }} className="tw-border-slate-200">Restart</button>
       </div>
-      <div>
-        <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 25) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
-        <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content">
-          <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
-            {renderBoard()}
+      <div style={{border: "2px inset rgba(0,0,0,0.5)"}}
+      className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-px-4 tw-pb-4">
+        <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
+        <div>
+          <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 25) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
+          <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content">
+            <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
+              {renderBoard()}
+            </div>
           </div>
         </div>
+        <PieceQue queLength={5}/>
       </div>
-      <div className="tw-flex tw-flex-col tw-h-80 tw-w-60 stats-board tw-gap-8 tw-mt-24">
-          <div className="tw-flex tw-flex-col tw-justify-start tw-items-start tw-ml-6" style={{"lineHeight":"40px"}}>
-            <h3 className="tw-p-1 tw-m-0 tw-text-5xl">Score</h3>
-            <h3 className="tw-font-extrabold timer-font tw-p-1 tw-m-0  tw-text-yellow-400">{stats.current?.score}</h3>
-          </div>
-          <div className="tw-flex tw-flex-col tw-justify-start tw-items-start tw-pl-6" style={{"lineHeight":"40px"}}>
-            <h3 className="tw-p-1 tw-m-0 tw-text-5xl">Lines</h3>
-            <h3 className="tw-font-extrabold timer-font tw-p-1 tw-m-0  tw-text-yellow-400">{stats.current?.lines}</h3>
-          </div>
-      </div>
+      <StatsPanel fields={[
+        {
+          name: "Score",
+          value: stats.current?.score || 0
+        },
+        {
+          name: "Lines",
+          value: stats.current?.lines || 0
+        },
+        {
+          name: "Level",
+          value: stats.current?.level || 1
+        },
+      ]}></StatsPanel>
     </div>
     </>
   );
 };
+
+
+
+interface PieceQueProps {
+  queLength: number;
+  pieces?: number[][][];
+}
+
+const defaultPropsPieceQue: PieceQueProps = {
+  queLength: 5,
+  pieces: [
+    TETRONIMOS[0],
+    TETRONIMOS[1],
+    TETRONIMOS[2],
+    TETRONIMOS[3],
+    TETRONIMOS[4],
+    TETRONIMOS[5],
+    TETRONIMOS[6],
+  ]
+}
+
+export const PieceQue: preact.FunctionComponent<PieceQueProps> = (props: PieceQueProps) => {
+
+  return (
+    <>
+      <div className="tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24">
+        {
+          props.pieces &&
+          props.pieces.slice(0,5).map((piece: number[][])=>{
+            
+            return (
+              <>
+                <div className="tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16">
+                {
+                  piece.map((row: number[]) => {
+                    return (
+                      <>
+                      <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length}`}>
+                        {
+                          row.map((cellValue: number)=>{
+                            let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
+                            let cellColor: string =
+                              cellValue === 0
+                                ? 'tw-bg-transparent'
+                                : `tw-border tw-bg-${colorEnumVal} tw-border-${colorEnumVal} tw-border-outset`;
+                            return (
+                              <>
+                                <div
+                                  className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
+                                  style={{ borderStyle: (cellValue === 0 ? 'none' : 'outset') }}
+                                ></div>
+                              </>
+                            );
+                          })
+                        }
+                      </div>
+                      </>
+                    );
+                  })
+                }
+                </div>
+              </>
+            );
+          })
+        }
+      </div>
+    </>
+  );
+}
+PieceQue.defaultProps = defaultPropsPieceQue;
