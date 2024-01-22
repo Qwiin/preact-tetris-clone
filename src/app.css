@@ -23,3 +23,16 @@
 .read-the-docs {
   color: #888;
 }
+
+
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.action-fade-out {
+  animation: fadeOut 1.0s;
+  animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation-delay: 1.0s;
+}

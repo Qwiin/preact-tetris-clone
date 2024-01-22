@@ -12,7 +12,7 @@ export default {
       pattern: /tw-box-(content|border)/
     },
     {
-      pattern: /tw-(bg|border)-(blue|green|red|yellow)-(300|400|500|600|700|800|900)/
+      pattern: /tw-(bg|border)-(blue|sky|green|pink|yellow|orange|violet)-(300|400|500|600|700|800|900)/
     }
   ],
   corePlugins: {
