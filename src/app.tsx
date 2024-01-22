@@ -23,7 +23,7 @@ export function App() {
 
   return (
     <>
-    <div className="tw-bg-green-500 tw-scale-150">
+    <div className="tw-bg-slate-700 tw-scale-150 tw-bg-opacity-40">
       <Game init={true} keydownCallback={keyDownCallback} actionCallback={actionCallback}/>
         <div className={`tw-opacity-1 ${ transitioning ? "tw-opacity-1 action-fade-out" : "tw-opacity-0"}`}>
           <h1 className="tw-m-0 tw-py-2 tw-font-thin">{action}</h1>

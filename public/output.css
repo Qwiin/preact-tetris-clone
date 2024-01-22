@@ -102,6 +102,42 @@
   margin: 0px
 }
 
+.tw-ml-2 {
+  margin-left: 0.5rem
+}
+
+.tw-ml-4 {
+  margin-left: 1rem
+}
+
+.tw-ml-6 {
+  margin-left: 1.5rem
+}
+
+.tw-mt-16 {
+  margin-top: 4rem
+}
+
+.tw-mt-24 {
+  margin-top: 6rem
+}
+
+.tw-mt-32 {
+  margin-top: 8rem
+}
+
+.tw-mt-20 {
+  margin-top: 5rem
+}
+
+.tw-mt-40 {
+  margin-top: 10rem
+}
+
+.tw-mt-36 {
+  margin-top: 9rem
+}
+
 .tw-box-border {
   box-sizing: border-box
 }
@@ -122,12 +158,20 @@
   height: 20rem
 }
 
+.tw-h-96 {
+  height: 24rem
+}
+
 .tw-w-4 {
   width: 1rem
 }
 
 .tw-w-40 {
   width: 10rem
+}
+
+.tw-w-60 {
+  width: 15rem
 }
 
 .tw-scale-150 {
@@ -144,8 +188,16 @@
   flex-direction: column
 }
 
+.tw-items-start {
+  align-items: flex-start
+}
+
 .tw-items-center {
   align-items: center
+}
+
+.tw-justify-start {
+  justify-content: flex-start
 }
 
 .tw-justify-between {
@@ -154,6 +206,18 @@
 
 .tw-gap-0 {
   gap: 0px
+}
+
+.tw-gap-1 {
+  gap: 0.25rem
+}
+
+.tw-gap-8 {
+  gap: 2rem
+}
+
+.tw-overflow-hidden {
+  overflow: hidden
 }
 
 .tw-border {
@@ -4536,6 +4600,16 @@
   border-color: rgb(17 24 39 / var(--tw-border-opacity))
 }
 
+.tw-border-gray-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(243 244 246 / var(--tw-border-opacity))
+}
+
+.tw-border-slate-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(226 232 240 / var(--tw-border-opacity))
+}
+
 .tw-bg-blue-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(219 234 254 / var(--tw-bg-opacity))
@@ -8911,6 +8985,29 @@
   background-color: rgb(0 0 0 / var(--tw-bg-opacity))
 }
 
+.tw-bg-slate-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 41 59 / var(--tw-bg-opacity))
+}
+
+.tw-bg-slate-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(71 85 105 / var(--tw-bg-opacity))
+}
+
+.tw-bg-slate-700 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(51 65 85 / var(--tw-bg-opacity))
+}
+
+.tw-bg-opacity-40 {
+  --tw-bg-opacity: 0.4
+}
+
+.tw-p-1 {
+  padding: 0.25rem
+}
+
 .tw-py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem
@@ -8924,8 +9021,48 @@
   padding-top: 1rem
 }
 
+.tw-pl-2 {
+  padding-left: 0.5rem
+}
+
+.tw-pl-4 {
+  padding-left: 1rem
+}
+
+.tw-pl-6 {
+  padding-left: 1.5rem
+}
+
+.tw-pt-8 {
+  padding-top: 2rem
+}
+
+.tw-pt-16 {
+  padding-top: 4rem
+}
+
 .tw-font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
+}
+
+.tw-text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem
+}
+
+.tw-text-6xl {
+  font-size: 3.75rem;
+  line-height: 1
+}
+
+.tw-text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem
+}
+
+.tw-text-5xl {
+  font-size: 3rem;
+  line-height: 1
 }
 
 .tw-font-extrabold {
@@ -8934,6 +9071,16 @@
 
 .tw-font-thin {
   font-weight: 100
+}
+
+.tw-text-yellow-600 {
+  --tw-text-opacity: 1;
+  color: rgb(202 138 4 / var(--tw-text-opacity))
+}
+
+.tw-text-yellow-400 {
+  --tw-text-opacity: 1;
+  color: rgb(250 204 21 / var(--tw-text-opacity))
 }
 
 .tw-opacity-0 {

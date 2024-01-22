@@ -1,7 +1,26 @@
+/**
+
+TODO:
+
+Gameplay:
+
+  1. Implement GameOver State
+  2. Fix Collision Detection with left/right moves and rotation against set blocks
+  3. Implement Que (as a stack)
+  4. Balance the distribution of pieces (native RNG does not feel like Tetris, lol)
+    a. There should be a more normal distribution considering a game to 100 lines is only 250-300 pieces
+
+UI/UX:
+  
+  1. Styleize UI
+  2. Add Sound
+  3. Break this out into multiple components
+
+**/
+
 import { Ref } from 'preact';
 import { useRef, useEffect } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
-import { act } from 'preact/test-utils';
 import './app.css';
 
 const TICK_INTERVAL: number = 40;
@@ -117,7 +136,7 @@ class ActivePiece {
 
   readonly xMax: number = 10;
   readonly xMin: number = 0;
-  readonly yMax: number = 20;
+  readonly yMax: number = 24;
   readonly yMin: number = 0;
 
   private _coords: number[][] = [];
@@ -132,7 +151,7 @@ class ActivePiece {
 
   x: number = 4;
   xPrev: number = 4;
-  y: number = 0;
+  y: number = 4;
   yPrev: number = -1;
   rotation: Direction = Direction.N;
   rotationPrev: Direction = Direction.N;
@@ -188,12 +207,15 @@ class ActivePiece {
   }
 
   private xAdjustAfterRotation() {
-    console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
-    console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
-    console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
+    // console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
+    // console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
+    // console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
     let dWidth = this.width - this.widthPrev;
     if(dWidth !== 0) {
-      // let newX: number = this.x - (dWidth * (Math.sin(Math.PI / 2 * (this.rotation - 1))));
+      
+
+      // TODO: clean up
+
       let newX: number = (this.rotation === Direction.E) 
         ? (this.x + 1) 
         : (this.rotation !== this.rotationPrev && this.rotationPrev === Direction.E) 
@@ -395,6 +417,10 @@ export default function Game(props: GameProps) {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     // [0, 0, 0, 0, 0, 0, 6, 0, 0, 0],
     // [0, 0, 0, 0, 0, 0, 6, 6, 1, 0],
     // [0, 0, 0, 0, 0, 0, 0, 6, 1, 0],
@@ -449,9 +475,10 @@ export default function Game(props: GameProps) {
           if(p.y !== p.yPrev){
             p.y = p.yPrev;
           }
-          // else {
-          //   p.x = p.xPrev;
-          // }
+          else {
+            p.x = p.xPrev;
+            p.yPrev = p.y - 1;
+          }
         }
         j_s++;
       } 
@@ -462,31 +489,9 @@ export default function Game(props: GameProps) {
     if(canMoveDown) { 
 
       // erase old location
-      // let j_i = p.xPrev;
-       
-      // let i_i = (p.xPrev !== p.x || p.rotation !== p.rotationPrev) ? 
-      //   (p.y - h) :
-      //   (p.yPrev - h);
-
-      // let i_se = h-1;
-      // for(let i=i_i; i > (i_i - h); i--) {
-      //   let j_s = 0;
-      //   for(let j=j_i; j < (j_i + w); j++) {
-      //     if(perm[i_se][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0) {
-      //       board.current[i][j] = 0;
-      //       // console.log(`[${i_se},${j_s}]`);
-      //     }
-        
-      //     j_s++;
-      //   }
-      //   i_se--;
-      // }
-
       for(let i=0; i<p.coords.length; i++){
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
       }
-
-      // console.log(`---`);
 
       p.xPrev = p.x;
 
@@ -514,8 +519,6 @@ export default function Game(props: GameProps) {
     }
 
   }
-
-
 
   const updateBoard = (piece?: ActivePiece | null) => {
 
@@ -593,20 +596,15 @@ export default function Game(props: GameProps) {
             action.current = "Single!";
             break;
           case 2:
-            action.current = ("Double!");
+            action.current = "Double!";
           break;
           case 3:
-            action.current = ("Triple!");
+            action.current = "Triple!";
             break;
           case 4:
-            action.current = ("TETRIS!");
+            action.current = "TETRIS!";
             break;
         }
-
-        // transitioning.current = true;
-        // setTimeout(()=>{
-        //   transitioning.current = false;
-        // },1000);
 
         props.actionCallback(action.current);
       }
@@ -643,7 +641,7 @@ export default function Game(props: GameProps) {
         }
         break;
       case "ArrowDown":
-        if(activePiece.current.y < 20) {
+        if(activePiece.current.y < 24) {
           activePiece.current.yPrev = activePiece.current.y;
           activePiece.current.y += 1;
           updatePosition();
@@ -700,7 +698,7 @@ export default function Game(props: GameProps) {
         updatePosition();
         break;
 
-      case "Control":
+      case "Alt":
           activePiece.current.rotateLeft();
           updatePosition();
         break;
@@ -723,6 +721,7 @@ export default function Game(props: GameProps) {
   },[]);
 
 
+  // Controls the game speed by level
   useEffect(() => {
 
     if(tick.value % (10 - (stats.current?.level || 0)) === 0) {
@@ -762,14 +761,15 @@ export default function Game(props: GameProps) {
 
   return (
     <>
-    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-900">
-      <div className="tw-h-80 tw-w-40">
+    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100">
+      <div className="tw-h-80 tw-w-60 tw-mt-36">
         <button onClick={()=>{
+          tick.value = 0;
           stats.current = {
             score: 0,
             lines: 0,
             level: 0,
-          }
+          };
           if(activePiece.current) {
             activePiece.current = getRandomPiece();
           }
@@ -779,29 +779,25 @@ export default function Game(props: GameProps) {
               board.current[i][j] = 0; 
             }
           }
-        }}>Restart</button>
+        }} className="tw-border-slate-200">Restart</button>
       </div>
       <div>
-        <h5 className="bg-green-100">{Math.floor(tick.value / 8)}</h5>
-        <div class="container tw-pt-2">
-          <div className="tw-h-80 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0">
+        <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 25) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
+        <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content">
+          <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
             {renderBoard()}
           </div>
         </div>
-        {/* <div className={ transitioning.current ? "action-fade" : ""}>
-        {transitioning.current && 
-          <h1>{action.current}</h1>
-        }
-        {!transitioning.current &&
-          <h1>Action</h1>
-        }
-        </div> */}
       </div>
-      <div className="tw-flex tw-flex-col tw-h-80 tw-w-40">
-          <h3>Score</h3>
-          <h3 className="tw-font-mono tw-font-extrabold">{stats.current?.score}</h3>
-          <h3 className="tw-pt-4">Lines</h3>
-          <h3 className="tw-font-mono tw-font-extrabold">{stats.current?.lines}</h3>
+      <div className="tw-flex tw-flex-col tw-h-80 tw-w-60 stats-board tw-gap-8 tw-mt-24">
+          <div className="tw-flex tw-flex-col tw-justify-start tw-items-start tw-ml-6" style={{"lineHeight":"40px"}}>
+            <h3 className="tw-p-1 tw-m-0 tw-text-5xl">Score</h3>
+            <h3 className="tw-font-extrabold timer-font tw-p-1 tw-m-0  tw-text-yellow-400">{stats.current?.score}</h3>
+          </div>
+          <div className="tw-flex tw-flex-col tw-justify-start tw-items-start tw-pl-6" style={{"lineHeight":"40px"}}>
+            <h3 className="tw-p-1 tw-m-0 tw-text-5xl">Lines</h3>
+            <h3 className="tw-font-extrabold timer-font tw-p-1 tw-m-0  tw-text-yellow-400">{stats.current?.lines}</h3>
+          </div>
       </div>
     </div>
     </>

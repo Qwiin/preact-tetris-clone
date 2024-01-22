@@ -1,3 +1,55 @@
+body {
+  background: 
+    url(https://static.vecteezy.com/system/resources/previews/009/359/035/original/tetris-shape-illustration-seamless-pattern-design-template-dark-blue-and-white-color-theme-vector.jpg), 
+    url(https://img.freepik.com/free-photo/dark-black-abstract-background-with-wood-chips_24972-208.jpg);
+  /* background-repeat: repeat; */
+  background-size: 30%, 100%;
+  /* background-blend-mode: color-dodge; */
+  background-blend-mode: overlay;
+}
+
+@font-face {
+  font-family: "8DigitPin";   /*Can be any text*/
+  src: local("8DigitPinRegular-d9WRV"),
+    url("./font/8DigitPinRegular-d9WRV.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "TimerUlil";   /*Can be any text*/
+  src: local("CursedTimerUlil-Aznm"),
+    url("./font/CursedTimerUlil-Aznm.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "SF Digital Medium";   /*Can be any text*/
+  src: local("SfDigitalReadoutMedium-q3rq"),
+    url("./font/SfDigitalReadoutMedium-q3rq.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "SF Digital Heavy";   /*Can be any text*/
+  src: local("SfDigitalReadoutHeavy-AwVg"),
+    url("./font/SfDigitalReadoutHeavy-AwVg.ttf") format("truetype");
+}
+
+.timer-font {
+  font-family: "SF Digital Medium";
+}
+
+.game-clock {
+  margin: 8px;
+  margin-bottom: 12px;
+  font-family: 'SF Digital Heavy';
+  font-size: 60px;
+  padding: 0;
+}
+
+.stats-board {
+  font-family: 'SF Digital Heavy';
+  font-size: 48px;
+  padding: 0;
+}
+
 #app {
   max-width: 1280px;
   margin: 0 auto;
