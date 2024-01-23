@@ -30,7 +30,7 @@ import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
 
-const TICK_INTERVAL: number = 40;
+const TICK_INTERVAL: number = 100;
 const PIECE_QUE_LENGTH: number = 5;
 
 const tick: Signal<number> = signal(0);
@@ -536,13 +536,6 @@ export default function Game(props: GameProps) {
     const rows = board.current;
     const nRows = rows.length;
 
-    const newRows = rows.filter((row) => {
-      if (row.includes(0)) {
-        return true;
-      }
-      return false;
-    });
-
     if(piece) {
 
       if(piece.y === piece.yPrev && piece.x === piece.xPrev) {
@@ -572,15 +565,56 @@ export default function Game(props: GameProps) {
         piece.lastTick = tick.value;
         updatePosition()
       }
-
-      
     }
     else  
     {
-      // Check for and clear full rows 
-      let nNewRows = newRows.length;
+      // Method 1: clear empty rows
+      // const newRows = rows.filter((row) => {
+      //   if (row.includes(0)) {
+      //     return true;
+      //   }
+      //   return false;
+      // });
 
-      let numCleared = nRows - nNewRows;
+      let numCleared = 0;
+
+      // Method 2: find full rows and recycle them
+      let clearedRowIndexesDesc: number[] = [];
+      for(let i=nRows-1; i>=0; i--){
+        let row = rows[i];
+        if(!row.includes(0) && numCleared < 4){
+          row.fill(0);  // overwrite (erase) the row
+          clearedRowIndexesDesc.push(i);
+          numCleared++;
+          if(numCleared === 4) {  // TODO: cache height of last piece
+            break;
+          }
+        }
+      }
+      
+      // Dear Future Self...
+      // clearedRowIndexesDesc needs to (and should already) be sorted descending
+      // no need to sort this array here, but remember that is required for this splice 
+      // loop to work properly
+
+      // This should be a memory optimized operation
+      let emptyRowCache: number[][] | null = [];
+      if(emptyRowCache !== null) {
+        for(let j=0; j<numCleared; j++) {
+          emptyRowCache.push(
+            rows.splice(clearedRowIndexesDesc[j],1)[0]
+          );
+        }
+        for(let j=0; j<numCleared; j++) {
+          rows.unshift(emptyRowCache.pop() as number[]);
+        }
+        emptyRowCache = null;
+      }
+      
+      // Check for and clear full rows 
+      // let nNewRows = newRows.length;
+
+      //let numCleared = nRows - nNewRows;
 
       if(stats.current && numCleared > 0) {
         stats.current.lines += numCleared;
@@ -588,14 +622,14 @@ export default function Game(props: GameProps) {
         stats.current.score += ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
       }
 
-      for (let i = 0; i < numCleared; i++) {
-        newRows.unshift([...emptyRow]);
-      }
+      // for (let i = 0; i < numCleared; i++) {
+      //   newRows.unshift([...emptyRow]);
+      // }
 
-      // updateRef
-      for (let i = 0; i < nRows; i++) {
-        board.current[i] = newRows[i];
-      }
+      // // updateRef
+      // for (let i = 0; i < nRows; i++) {
+      //   board.current[i] = newRows[i];
+      // }
 
       if(numCleared > 0) {
         switch(numCleared) {
@@ -740,7 +774,7 @@ export default function Game(props: GameProps) {
     setTimeout(()=> {
       // activePiece.current = getRandomPiece();
       activePiece.current = getPieceFromQue();
-    },TICK_INTERVAL * (10 / (stats.current?.level || 1)) );
+    },TICK_INTERVAL * (0.5 / Math.pow((stats.current?.level || 1), 2)) );
   
     document.addEventListener("keydown", keydownHandler);
     return () => {
