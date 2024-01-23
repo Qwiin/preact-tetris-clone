@@ -354,20 +354,20 @@ function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex
   const indexes = [];
 
   for (let i = 0; i < count; i++) {
+    
     const randomIndex = Math.floor(Math.random() * (maxIndex - minIndex + 1));
     indexes.push(randomIndex);
+
+    if(i > 2) {
+      if(indexes[i-1] === randomIndex && indexes[i-2] === randomIndex) {
+        i--;
+        // rerun the loop 
+      }
+    }
   }
 
   return indexes;
 }
-
-// Example: Generate 100 random indexes from 0 to 6
-const numberOfIndexes = 40;
-const range = 6;
-const randomIndexes = evenDistributionRandomIndexes(numberOfIndexes, range);
-console.log(randomIndexes);
-
-
 
 const Game = (props: GameProps) => {
 
@@ -612,10 +612,10 @@ const Game = (props: GameProps) => {
 
     // replenish que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 5) {
-      pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length));
+      pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length-1));
     }
 
-    let index: number = pieceQueIndexes.current?.shift() || -1;
+    let index: number = pieceQueIndexes.current?.shift() ?? -1;
     let shape: number[][] = TETRONIMOS[index];
     return JSON.parse(JSON.stringify(shape));
     // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
@@ -623,6 +623,7 @@ const Game = (props: GameProps) => {
 
   const getPieceFromQue = () => {
     pieceQue.current?.push(getNextPiece());    
+    console.log(pieceQue.current);
     return new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
   }
 
@@ -782,7 +783,7 @@ const Game = (props: GameProps) => {
     
     
     pieceQueIndexes.current?.push(
-      ...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH + PIECE_QUE_LENGTH, TETRONIMOS.length)
+      ...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH + PIECE_QUE_LENGTH, TETRONIMOS.length-1)
       );
 
       console.log(pieceQueIndexes.current);
