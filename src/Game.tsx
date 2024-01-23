@@ -315,27 +315,6 @@ class ActivePiece {
   }
 }
 
-const rotationMatrices = [
-
-  [
-    [ 1, 0 ],
-    [ 0, 1 ]
-  ],
-  [
-    [ 0,-1 ],
-    [ 1, 0 ]
-  ],
-  [
-    [-1, 0 ],
-    [ 0,-1 ]
-  ],
-  [
-    [ 0, 1 ],
-    [-1, 0 ]
-  ],
-
-];
-
 const TETRONIMOS: number[][][] = [
   [
     [11, 11],
@@ -366,16 +345,7 @@ const TETRONIMOS: number[][][] = [
   ]
 ]
 
-interface TetrisSettings {
-  numCols: Number;
-  numRows: Number;
-};
-
-export const GameSettings = {
-
-}
-
-export default function Game(props: GameProps) {
+const Game = (props: GameProps) => {
 
   if(!props.init) {
     return;
@@ -383,10 +353,6 @@ export default function Game(props: GameProps) {
 
   const transitioning = useRef(false);
   const action = useRef("Action");
-
-  // const [count, setCount] = useState(0);
-
-  const emptyRow = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQue: Ref<number[][][]> = useRef([]);
@@ -461,11 +427,11 @@ export default function Game(props: GameProps) {
     // const rows: number[][] = JSON.parse(JSON.stringify(board.current));
     const p: ActivePiece = activePiece.current;
     const perm: number[][] = p.permutation;
-    const permPrev: number[][] = p.permutationPrev;
+    // const permPrev: number[][] = p.permutationPrev;
     const h: number = p.height;
-    const hPrev: number = p.heightPrev;
+    // const hPrev: number = p.heightPrev;
     const w: number = p.width;
-    const wPrev: number = p.widthPrev;
+    // const wPrev: number = p.widthPrev;
 
     let j_i = p.x;
     let i_i = p.y - 1;
@@ -823,8 +789,6 @@ export default function Game(props: GameProps) {
   };
 
   return (
-    <>
-
     <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-4">
       
       <div className="tw-h-80 tw-w-60 tw-mt-36">
@@ -875,11 +839,10 @@ export default function Game(props: GameProps) {
         },
       ]}></StatsPanel>
     </div>
-    </>
   );
 };
 
-
+export default Game;
 
 interface PieceQueProps {
   queLength: number;

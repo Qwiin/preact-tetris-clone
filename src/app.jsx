@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks'
+import { useState } from 'preact/hooks'
 import './app.css'
 import Game from './Game'
 
@@ -8,11 +8,11 @@ export function App() {
 
   const [transitioning, setTransitioning] = useState(false);
 
-  const keyDownCallback = (key:string) => {
+  const keyDownCallback = (key) => {
     console.log(key);
   }
 
-  const actionCallback = (action:string) => {
+  const actionCallback = (action) => {
     setAction(action);
     setTransitioning(true);
     setTimeout(()=>{
@@ -25,7 +25,7 @@ export function App() {
     <>
     <div className="tw-bg-slate-700 tw-scale-150 tw-bg-opacity-40">
       <div className={`tw-opacity-1`}>
-        <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header">TETRIS</h1>
+        <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header tw-text">TETRIS</h1>
       </div>
       <Game init={true} keydownCallback={keyDownCallback} actionCallback={actionCallback}/>
         <div className={`tw-opacity-1 ${ transitioning ? "tw-opacity-1 action-fade-out" : "tw-opacity-0"}`}>
