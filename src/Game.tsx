@@ -343,38 +343,18 @@ const TETRONIMOS: number[][][] = [
   ]
 ]
 
-function sigmoid(x) {
-  return 1 / (1 + Math.exp(-x));
-}
-
-function smoothRandomIndex(numIndexes: number, start: number = 0) {
-  // Adjust the parameter for controlling the smoothness
-  const smoothness = 3;
-
-  // Generate a random number between -3 and 3
-  const randomValue = (Math.random() - 0.5) * 2 * smoothness;
-
-  // Apply sigmoid function to smooth the distribution
-  const smoothedValue = sigmoid(randomValue);
-
-  // Scale the smoothed value to the range 0-6
-  const scaledValue = Math.floor(smoothedValue * numIndexes) + start;
-
-  return scaledValue;
-}
-
-
 /**
  * 
  * @param count - number of indexes to generate
- * @param range - 
+ * @param maxIndex - largest value
+ * @param minIndex - smallest value
  * @returns 
  */
 function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex: number = 0): number[] {
   const indexes = [];
 
   for (let i = 0; i < count; i++) {
-    const randomIndex = Math.floor(Math.random() * (range + 1));
+    const randomIndex = Math.floor(Math.random() * (maxIndex - minIndex + 1));
     indexes.push(randomIndex);
   }
 
@@ -623,7 +603,7 @@ const Game = (props: GameProps) => {
             break;
         }
 
-        props.actionCallback(action.current);
+        props.actionCallback(action.current || "");
       }
     }
   };
@@ -804,6 +784,8 @@ const Game = (props: GameProps) => {
     pieceQueIndexes.current?.push(
       ...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH + PIECE_QUE_LENGTH, TETRONIMOS.length)
       );
+
+      console.log(pieceQueIndexes.current);
 
     let indices = pieceQueIndexes.current || [];
     for(let i=0; i<PIECE_QUE_LENGTH; i++) {
