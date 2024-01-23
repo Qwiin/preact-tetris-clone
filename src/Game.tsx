@@ -32,6 +32,7 @@ import { StatsPanel } from './StatsPanel';
 
 const TICK_INTERVAL: number = 100;
 const PIECE_QUE_LENGTH: number = 5;
+const PIECE_INDEXES_QUE_LENGTH: number = 40;
 
 const tick: Signal<number> = signal(0);
 
@@ -342,56 +343,69 @@ const TETRONIMOS: number[][][] = [
   ]
 ]
 
+function sigmoid(x) {
+  return 1 / (1 + Math.exp(-x));
+}
+
+function smoothRandomIndex(numIndexes: number, start: number = 0) {
+  // Adjust the parameter for controlling the smoothness
+  const smoothness = 3;
+
+  // Generate a random number between -3 and 3
+  const randomValue = (Math.random() - 0.5) * 2 * smoothness;
+
+  // Apply sigmoid function to smooth the distribution
+  const smoothedValue = sigmoid(randomValue);
+
+  // Scale the smoothed value to the range 0-6
+  const scaledValue = Math.floor(smoothedValue * numIndexes) + start;
+
+  return scaledValue;
+}
+
+
+/**
+ * 
+ * @param count - number of indexes to generate
+ * @param range - 
+ * @returns 
+ */
+function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex: number = 0): number[] {
+  const indexes = [];
+
+  for (let i = 0; i < count; i++) {
+    const randomIndex = Math.floor(Math.random() * (range + 1));
+    indexes.push(randomIndex);
+  }
+
+  return indexes;
+}
+
+// Example: Generate 100 random indexes from 0 to 6
+const numberOfIndexes = 40;
+const range = 6;
+const randomIndexes = evenDistributionRandomIndexes(numberOfIndexes, range);
+console.log(randomIndexes);
+
+
+
 const Game = (props: GameProps) => {
 
   if(!props.init) {
     return;
   }
 
-  const action = useRef("Action");
+  const action: Ref<string> = useRef(null);
 
   const activePiece: Ref<ActivePiece> = useRef(null);
-  const pieceQue: Ref<number[][][]> = useRef([]);
 
-  const stats: Ref<Scoring> = useRef({
-    level: 1,
-    lines: 0,
-    score: 0,
-  });
+  const pieceQueIndexes: Ref<number[]> = useRef(null);
+  const pieceQue: Ref<number[][][]> = useRef(null);
+
+  const stats: Ref<Scoring> = useRef(null);
 
   // TODO: flatten array
-  const board: Ref<number[][]> = useRef([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    // [0, 0, 0, 0, 0, 0, 6, 0, 0, 0],
-    // [0, 0, 0, 0, 0, 0, 6, 6, 1, 0],
-    // [0, 0, 0, 0, 0, 0, 0, 6, 1, 0],
-    // [4, 4, 2, 3, 5, 2, 2, 2, 1, 2],
-    // [4, 4, 2, 3, 0, 0, 6, 2, 1, 2],
-    // [0, 2, 2, 3, 3, 5, 6, 0, 2, 2],
-  ]);
+  const board: Ref<number[][]> = useRef(null);
 
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
@@ -614,15 +628,21 @@ const Game = (props: GameProps) => {
     }
   };
 
-  const getRandomPiece = () => {
-    let index: number = Math.round(Math.random() * (TETRONIMOS.length-0.5));
+  const getNextPiece = () => {
+
+    // replenish que
+    if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 5) {
+      pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length));
+    }
+
+    let index: number = pieceQueIndexes.current?.shift() || -1;
     let shape: number[][] = TETRONIMOS[index];
     return JSON.parse(JSON.stringify(shape));
     // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
   }
 
   const getPieceFromQue = () => {
-    pieceQue.current?.push(getRandomPiece());    
+    pieceQue.current?.push(getNextPiece());    
     return new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
   }
 
@@ -651,9 +671,12 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowDown":
         if(activePiece.current.y < 24) {
-          activePiece.current.yPrev = activePiece.current.y;
-          activePiece.current.y += 1;
-          updatePosition();
+
+          tick.value = tick.value + 1; // optimization?
+
+          // activePiece.current.yPrev = activePiece.current.y;
+          // activePiece.current.y += 1;
+          // updatePosition();
         }
         break;
 
@@ -720,26 +743,91 @@ const Game = (props: GameProps) => {
     }
   }
 
+  const initRefs = () => {
+    if(!pieceQue.current){
+      pieceQue.current = [];
+    }
+    if(!pieceQueIndexes.current){
+      pieceQueIndexes.current = [];
+    }
+    if(!board.current) {
+      board.current = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      ];
+    }
+
+    if(!action.current) {
+      action.current = "Action";
+    }
+
+    if(!stats.current) {
+      stats.current = {
+        level: 1,
+        lines: 0,
+        score: 0,
+      }
+    }
+  }
+
   useEffect(()=>{
+
+    initRefs();
 
     const ticker = setInterval(() => {
       tick.value = tick.value + 1;
     }, TICK_INTERVAL);
     
-
-    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
-      pieceQue.current?.push(
-        getRandomPiece()
+    
+    pieceQueIndexes.current?.push(
+      ...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH + PIECE_QUE_LENGTH, TETRONIMOS.length)
       );
+
+    let indices = pieceQueIndexes.current || [];
+    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
+      pieceQue.current?.push(TETRONIMOS[
+        indices[i]
+      ] );
     }
 
     setTimeout(()=> {
-      // activePiece.current = getRandomPiece();
+      // activePiece.current = getNextPiece();
       activePiece.current = getPieceFromQue();
     },TICK_INTERVAL * (0.5 / Math.pow((stats.current?.level || 1), 2)) );
   
     document.addEventListener("keydown", keydownHandler);
+
     return () => {
+      // null out references for GC
+      pieceQue.current = null;
+      pieceQueIndexes.current = null;
+      activePiece.current = null;
+      stats.current = null;
+      board.current = null;
+      action.current = null;
+
       clearInterval(ticker);
       document.removeEventListener("keydown", keydownHandler);
     }
@@ -796,7 +884,7 @@ const Game = (props: GameProps) => {
             level: 0,
           };
           if(activePiece.current) {
-            // activePiece.current = getRandomPiece();
+            // activePiece.current = getNextPiece();
             activePiece.current = getPieceFromQue();
           }
           if(!board.current) { return; }
