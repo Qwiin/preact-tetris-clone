@@ -820,7 +820,7 @@ const Game = (props: GameProps) => {
   // Controls the game speed by level
   useEffect(() => {
 
-    if(tick.value % (5 - (stats.current?.level || 0)) === 0) {
+    if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
       updateBoard(activePiece.current);
     }
     

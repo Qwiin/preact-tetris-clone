@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.7.0",
+    "@types/node": "^20.11.5",
     "autoprefixer": "^10.4.17",
     "concurrently": "^8.2.2",
     "live-server": "^1.2.2",

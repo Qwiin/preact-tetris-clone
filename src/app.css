@@ -11,25 +11,25 @@ body {
 @font-face {
   font-family: "8DigitPin";   /*Can be any text*/
   src: local("8DigitPinRegular-d9WRV"),
-    url("./public/font/8DigitPinRegular-d9WRV.ttf") format("truetype");
+    url("/src/font/8DigitPinRegular-d9WRV.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "TimerUlil";   /*Can be any text*/
   src: local("CursedTimerUlil-Aznm"),
-    url("./public/font/CursedTimerUlil-Aznm.ttf") format("truetype");
+    url("/src/font/CursedTimerUlil-Aznm.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "SF Digital Medium";   /*Can be any text*/
   src: local("SfDigitalReadoutMedium-q3rq"),
-    url("./public/font/SfDigitalReadoutMedium-q3rq.ttf") format("truetype");
+    url("/src/font/SfDigitalReadoutMedium-q3rq.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "SF Digital Heavy";   /*Can be any text*/
   src: local("SfDigitalReadoutHeavy-AwVg"),
-    url("./public/font/SfDigitalReadoutHeavy-AwVg.ttf") format("truetype");
+    url("/src/font/SfDigitalReadoutHeavy-AwVg.ttf") format("truetype");
 }
 
 .timer-font {
