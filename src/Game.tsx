@@ -85,7 +85,6 @@ const rotateMatrix = (matrix: number[][], toDirection: Direction | number): numb
 
     // forward cols, reverse rows
     case Direction.E:
-    case 2:
 
       for(let i=0; i<nC; i++) {
         matrixT[iT] = [];
@@ -100,7 +99,6 @@ const rotateMatrix = (matrix: number[][], toDirection: Direction | number): numb
 
     // reverse rows, reverse cols
     case Direction.S:
-    case 3:
 
       for(let i=nR-1; i>=0; i--) {
         matrixT[iT] = [];
@@ -115,7 +113,6 @@ const rotateMatrix = (matrix: number[][], toDirection: Direction | number): numb
 
     // reverse cols, forward rows
     case Direction.W: 
-    case 4: 
     
       for(let i=nC-1; i>=0; i--) {
       matrixT[iT] = [];
@@ -351,7 +348,6 @@ const Game = (props: GameProps) => {
     return;
   }
 
-  const transitioning = useRef(false);
   const action = useRef("Action");
 
   const activePiece: Ref<ActivePiece> = useRef(null);
