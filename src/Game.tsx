@@ -652,12 +652,10 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowDown":
         if(activePiece.current.y < 24) {
-
+          activePiece.current.yPrev = activePiece.current.y;
+          activePiece.current.y += 1;
           tick.value = tick.value + 1; // optimization?
-
-          // activePiece.current.yPrev = activePiece.current.y;
-          // activePiece.current.y += 1;
-          // updatePosition();
+          updatePosition();
         }
         break;
 
