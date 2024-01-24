@@ -30,7 +30,7 @@ import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
 
-const TICK_INTERVAL: number = 100;
+const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
 
@@ -251,9 +251,9 @@ class ActivePiece {
     }
   }
   private yAdjustAfterRotation() {
-    console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
-    console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
-    console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
+    // console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
+    // console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
+    // console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
     let dHeight = this.height - this.heightPrev;
     if(dHeight !== 0) {
       // let d: number = this.y;// - Math.abs(dHeight * (Math.sin(Math.PI / 2 * (this.rotation - 1))));
@@ -313,6 +313,7 @@ class ActivePiece {
   }
 }
 
+const TETRONIMO_SIZE: number = 4;
 const TETRONIMOS: number[][][] = [
   [
     [11, 11],
@@ -376,15 +377,15 @@ const Game = (props: GameProps) => {
   }
 
   const action: Ref<string> = useRef(null);
-
   const activePiece: Ref<ActivePiece> = useRef(null);
-
   const pieceQueIndexes: Ref<number[]> = useRef(null);
   const pieceQue: Ref<number[][][]> = useRef(null);
-
   const stats: Ref<Scoring> = useRef(null);
+  const ticker: Ref<NodeJS.Timeout> = useRef(null);
 
-  // TODO: flatten array
+  const columnHeights: Ref<Int8Array> = useRef(null);
+
+  // TODO: flatten array for performance
   const board: Ref<number[][]> = useRef(null);
 
 
@@ -414,7 +415,7 @@ const Game = (props: GameProps) => {
   const updatePosition = () => {
     if(!board.current || !activePiece.current) {return}
 
-    // const rows: number[][] = JSON.parse(JSON.stringify(board.current));
+    const rows = board.current;
     const p: ActivePiece = activePiece.current;
     const perm: number[][] = p.permutation;
     // const permPrev: number[][] = p.permutationPrev;
@@ -422,6 +423,26 @@ const Game = (props: GameProps) => {
     // const hPrev: number = p.heightPrev;
     const w: number = p.width;
     // const wPrev: number = p.widthPrev;
+
+    // let canMoveLateral = true;
+    if (p.x != p.xPrev) {
+      let coords = p.coords;
+      let dx = p.x - p.xPrev;
+      if(coords){
+        for(let i=0;i<coords.length; i++){
+          let y = coords[i][0];
+          let x = coords[i][1];
+          let cellValue = rows[y][x + dx];
+          if(cellValue !== 0 && cellValue < 10){
+            p.x = p.xPrev;
+            // console.log("can't move laterally");
+          }   
+        }
+      }
+      // canMoveLateral = false;
+      // p.yPrev = p.y - 1;
+    }
+
 
     let j_i = p.x;
     let i_i = p.y - 1;
@@ -433,15 +454,12 @@ const Game = (props: GameProps) => {
       let j_s = 0;
       for(let j=j_i; j < (j_i + w); j++) {
         if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
-          canMoveDown = false;
-          console.log("can't move down...");
           if(p.y !== p.yPrev){
+            canMoveDown = false;
+            console.log("can't move down...");
             p.y = p.yPrev;
           }
-          else {
-            p.x = p.xPrev;
-            p.yPrev = p.y - 1;
-          }
+          
         }
         j_s++;
       } 
@@ -495,13 +513,30 @@ const Game = (props: GameProps) => {
     if(piece) {
 
       if(piece.y === piece.yPrev && piece.x === piece.xPrev) {
-        for(let i=0;  i<board.current.length; i++) {
-          for(let j=0;  j<board.current[0].length; j++) {
-            if(board.current[i][j] > 10) {
-              board.current[i][j] = board.current[i][j] / 11; 
-            }
+        // for(let i=0;  i<board.current.length; i++) {
+        //   for(let j=0;  j<board.current[0].length; j++) {
+        //     if(board.current[i][j] > 10) {
+        //       board.current[i][j] = board.current[i][j] / 11; 
+        //     }
+        //   }
+        // }
+
+        let coords = piece.coords;
+        let colHeights = columnHeights.current;
+        for(let i=0; i<TETRONIMO_SIZE; i++){
+          let y = coords[i][0];
+          let x = coords[i][1];
+          rows[coords[i][0]][coords[i][1]] = rows[coords[i][0]][coords[i][1]] / 11;
+          if(colHeights) {
+            colHeights[x] = Math.max((nRows - y), colHeights[x]);
+            // console.log(colHeights.toString());
           }
         }
+
+        if(colHeights) {
+          
+        }
+
         activePiece.current = null; 
         requestAnimationFrame(()=>{
           updateBoard(null);
@@ -517,7 +552,7 @@ const Game = (props: GameProps) => {
           piece.yPrev = piece.y;
           piece.y = Math.min(piece.y + 1, piece.yMax); 
         }
-        console.log({pieceY: piece.y});
+        // console.log({pieceY: piece.y});
         piece.lastTick = tick.value;
         updatePosition()
       }
@@ -623,7 +658,7 @@ const Game = (props: GameProps) => {
 
   const getPieceFromQue = () => {
     pieceQue.current?.push(getNextPiece());    
-    console.log(pieceQue.current);
+    // console.log(pieceQue.current);
     return new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
   }
 
@@ -645,7 +680,7 @@ const Game = (props: GameProps) => {
       case "ArrowLeft":
         if(activePiece.current.x > 0) {
           activePiece.current.xPrev = activePiece.current.x;
-          activePiece.current.yPrev = activePiece.current.y - 1;
+          // activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x -= 1; 
           updatePosition();
         }
@@ -729,6 +764,9 @@ const Game = (props: GameProps) => {
     if(!pieceQueIndexes.current){
       pieceQueIndexes.current = [];
     }
+    if(!columnHeights.current) {
+      columnHeights.current = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    }
     if(!board.current) {
       board.current = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -771,20 +809,31 @@ const Game = (props: GameProps) => {
     }
   }
 
+  const pauseGame = () => {
+    if(ticker.current){
+      clearInterval(ticker.current);
+      ticker.current = null;
+    }
+  }
+  const resumeGame = () => {
+    if(!ticker.current){
+      ticker.current = setInterval(()=>{
+        tick.value = tick.value + 1;
+      },TICK_INTERVAL)
+    }
+  }
+
   useEffect(()=>{
 
     initRefs();
 
-    const ticker = setInterval(() => {
-      tick.value = tick.value + 1;
-    }, TICK_INTERVAL);
-    
+    resumeGame();
     
     pieceQueIndexes.current?.push(
       ...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH + PIECE_QUE_LENGTH, TETRONIMOS.length-1)
       );
 
-      console.log(pieceQueIndexes.current);
+      // console.log(pieceQueIndexes.current);
 
     let indices = pieceQueIndexes.current || [];
     for(let i=0; i<PIECE_QUE_LENGTH; i++) {
@@ -808,8 +857,13 @@ const Game = (props: GameProps) => {
       stats.current = null;
       board.current = null;
       action.current = null;
+      columnHeights.current = null;
 
-      clearInterval(ticker);
+      if(ticker.current) {
+        clearInterval(ticker.current);
+        ticker.current = null;
+      }
+
       document.removeEventListener("keydown", keydownHandler);
     }
   },[]);
@@ -856,8 +910,8 @@ const Game = (props: GameProps) => {
   return (
     <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-4">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-36">
-        <button onClick={()=>{
+      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center">
+        <button className="tw-border-slate-200 tw-w-32 tw-m-6" onClick={()=>{
           tick.value = 0;
           stats.current = {
             score: 0,
@@ -874,7 +928,15 @@ const Game = (props: GameProps) => {
               board.current[i][j] = 0; 
             }
           }
-        }} className="tw-border-slate-200">Restart</button>
+        }}>Restart</button>
+        <button className="tw-border-slate-200 tw-w-32" onClick={()=>{
+          if(ticker.current) {
+            pauseGame();
+          }
+          else {
+            resumeGame();
+          }
+        }}>Pause ||</button>
       </div>
       <div style={{border: "2px inset rgba(0,0,0,0.5)"}}
       className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-px-4 tw-pb-4">

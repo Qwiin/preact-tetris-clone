@@ -102,6 +102,10 @@
   margin: 0px
 }
 
+.tw-m-6 {
+  margin: 1.5rem
+}
+
 .tw-mt-2 {
   margin-top: 0.5rem
 }
@@ -112,6 +116,14 @@
 
 .tw-mt-36 {
   margin-top: 9rem
+}
+
+.tw-mt-20 {
+  margin-top: 5rem
+}
+
+.tw-mt-0 {
+  margin-top: 0px
 }
 
 .tw-box-border {
@@ -168,6 +180,18 @@
 
 .tw-w-60 {
   width: 15rem
+}
+
+.tw-w-12 {
+  width: 3rem
+}
+
+.tw-w-8 {
+  width: 2rem
+}
+
+.tw-w-24 {
+  width: 6rem
 }
 
 .tw-scale-150 {
@@ -8999,6 +9023,14 @@
 
 .tw-p-1 {
   padding: 0.25rem
+}
+
+.tw-p-8 {
+  padding: 2rem
+}
+
+.tw-p-0 {
+  padding: 0px
 }
 
 .tw-px-4 {
