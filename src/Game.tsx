@@ -30,7 +30,7 @@ import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
 
-const TICK_INTERVAL: number = 50;
+const TICK_INTERVAL: number = 200;
 const PIECE_QUE_LENGTH: number = 5;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
 
@@ -138,11 +138,13 @@ class ActivePiece {
   readonly yMax: number = 24;
   readonly yMin: number = 0;
 
-  private _coords: number[][] = [];
-  public set coords(value: number[][]) {
-    this._coords = value;
+  private _coords: Uint8Array = new Uint8Array(4);
+  public set coords(value: Uint8Array) {
+    for(let i=0; i<value.length; i++){
+      this._coords[i] = value[i];
+    }
   }
-  public get coords(): number[][] {
+  public get coords(): Uint8Array {
     return this._coords;
   }
 
@@ -158,7 +160,7 @@ class ActivePiece {
 
   readonly shapeByDirection: number[][][] = [];
 
-  constructor(shape?: number[][], rotation?: Direction, coords?: number[][], x?: number, y?: number) {
+  constructor(shape?: number[][], rotation?: Direction, coords?: Uint8Array, x?: number, y?: number) {
 
     if(shape) {
       this.shape = shape;
@@ -376,6 +378,9 @@ const Game = (props: GameProps) => {
     return;
   }
 
+  const NUM_ROWS = 24;
+  const NUM_COLS = 10;
+
   const action: Ref<string> = useRef(null);
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
@@ -383,39 +388,39 @@ const Game = (props: GameProps) => {
   const stats: Ref<Scoring> = useRef(null);
   const ticker: Ref<NodeJS.Timeout> = useRef(null);
 
-  const columnHeights: Ref<Int8Array> = useRef(null);
+  
+  const columnHeights: Ref<Uint8Array> = useRef(null);
+  const prevPieceCoords: Ref<Uint8Array> = useRef(null);
 
   // TODO: flatten array for performance
-  const board: Ref<number[][]> = useRef(null);
+  const board: Ref<Uint8Array> = useRef(null);
 
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
 
   //const boardCols: Ref<number[][]> = useRef([]);
 
-  const getBoardCols = (): number[][] => {
-    if(!board.current){
-      return [];
-    }
+  // const getBoardCols = (): number[][] => {
+  //   if(!board.current){
+  //     return [];
+  //   }
 
-    let rowLen = board.current[0].length;
-    let cells = board.current.flat();
-    let colLen = board.current.length;
-    const boardCols: number[][] = [];
-    for (let i = 0; i < rowLen; i++) {
-      let col: number[] = [];
-      for (let j = 0; j < colLen; j++) {
-        col.push(cells[j * rowLen + i]);
-      }
-      boardCols.push(col);
-    }
-    return  boardCols;
-  };
+  //   let cells = board.current;
+  //   const boardCols: number[][] = [];
+  //   for (let i = 0; i < NUM_COLS; i++) {
+  //     let col: number[] = [];
+  //     for (let j = 0; j < NUM_ROWS; j++) {
+  //       col.push(cells[j*NUM_COLS + i]);
+  //     }
+  //     boardCols.push(col);
+  //   }
+  //   return  boardCols;
+  // };
 
   const updatePosition = () => {
     if(!board.current || !activePiece.current) {return}
 
-    const rows = board.current;
+    const grid = board.current;
     const p: ActivePiece = activePiece.current;
     const perm: number[][] = p.permutation;
     // const permPrev: number[][] = p.permutationPrev;
@@ -429,10 +434,11 @@ const Game = (props: GameProps) => {
       let coords = p.coords;
       let dx = p.x - p.xPrev;
       if(coords){
+        // FIXME
         for(let i=0;i<coords.length; i++){
-          let y = coords[i][0];
-          let x = coords[i][1];
-          let cellValue = rows[y][x + dx];
+          let y = Math.floor(coords[i] / NUM_COLS);
+          let x = coords[i] % NUM_COLS;
+          let cellValue = grid[y * NUM_COLS + x + dx];
           if(cellValue !== 0 && cellValue < 10){
             p.x = p.xPrev;
             // console.log("can't move laterally");
@@ -450,10 +456,13 @@ const Game = (props: GameProps) => {
     let i_s = h-1;
     
     let canMoveDown = true;
+
+    // FIXME
     for(let i=i_i; i > (i_i - h); i--) {
       let j_s = 0;
       for(let j=j_i; j < (j_i + w); j++) {
-        if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
+        let cellValue: number = grid[i*NUM_COLS + j];
+        if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && cellValue !== 0 && cellValue !== perm[i_s][j_s]) {
           if(p.y !== p.yPrev){
             canMoveDown = false;
             console.log("can't move down...");
@@ -471,7 +480,8 @@ const Game = (props: GameProps) => {
 
       // erase old location
       for(let i=0; i<p.coords.length; i++){
-        board.current[p.coords[i][0]][p.coords[i][1]] = 0;
+        // board.current[p.coords[i][0]][p.coords[i][1]] = 0;
+        board.current[p.coords[i]] = 0;
       }
 
       p.xPrev = p.x;
@@ -481,20 +491,25 @@ const Game = (props: GameProps) => {
       i_i = p.y-1;
 
       let i_ss = h-1;
-      let newCoords: number[][] = [];
+      let newCoords = new Uint8Array(4);
+      let count = 0;
       for(let i=i_i; i > (i_i - h); i--) {
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] === 0) {
-            board.current[i][j] = perm[i_ss][j_s];
-            newCoords.push([i,j]);
+          if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && grid[i*NUM_COLS + j] === 0) {
+            let cellCoord: number = i * NUM_COLS + j;
+            board.current[cellCoord] = perm[i_ss][j_s];
+            newCoords[count] = cellCoord;
+            count++;
           }
           j_s++;
         }
         i_ss--;
       }
 
+      // can this just be set in the loop??
       p.coords = newCoords;
+      // newCoords = null;
 
       // board.current = rows;
     }
@@ -507,8 +522,7 @@ const Game = (props: GameProps) => {
       return;
     }
 
-    const rows = board.current;
-    const nRows = rows.length;
+    const grid = board.current;
 
     if(piece) {
 
@@ -521,20 +535,23 @@ const Game = (props: GameProps) => {
         //   }
         // }
 
+        //
+        //  Set final position of Active Piece
+        //
         let coords = piece.coords;
         let colHeights = columnHeights.current;
         for(let i=0; i<TETRONIMO_SIZE; i++){
-          let y = coords[i][0];
-          let x = coords[i][1];
-          rows[coords[i][0]][coords[i][1]] = rows[coords[i][0]][coords[i][1]] / 11;
+          let y = Math.floor(coords[i] / NUM_COLS);
+          let x = coords[i] % NUM_COLS;
+          // rows[coords[i][0]][coords[i][1]] = rows[coords[i][0]][coords[i][1]] / 11;
+
+          grid[coords[i]] = grid[coords[i]] / 11;
+          
+          // update max column heights of fixed pieces;
           if(colHeights) {
-            colHeights[x] = Math.max((nRows - y), colHeights[x]);
+            colHeights[x] = Math.max((NUM_ROWS - y), colHeights[x]);
             // console.log(colHeights.toString());
           }
-        }
-
-        if(colHeights) {
-          
         }
 
         activePiece.current = null; 
@@ -570,75 +587,82 @@ const Game = (props: GameProps) => {
       let numCleared = 0;
 
       // Method 2: find full rows and recycle them
-      let clearedRowIndexesDesc: number[] = [];
-      for(let i=nRows-1; i>=0; i--){
-        let row = rows[i];
-        if(!row.includes(0) && numCleared < 4){
-          row.fill(0);  // overwrite (erase) the row
-          clearedRowIndexesDesc.push(i);
-          numCleared++;
-          if(numCleared === 4) {  // TODO: cache height of last piece
+      let clearedRowIndexesAsc: number[] = [];
+      for(let i=NUM_ROWS-1; i>=0; i--){
+        let clearCurrentRow: boolean = true;
+        for(let j=0; j<NUM_COLS; j++){
+          if(grid[i * NUM_COLS + j] === 0 || numCleared >= 4) {
+            clearCurrentRow = false;
             break;
           }
         }
+        if(clearCurrentRow) {
+          clearedRowIndexesAsc.unshift(i);
+          numCleared++;
+        } 
       }
       
       // Dear Future Self...
-      // clearedRowIndexesDesc needs to (and should already) be sorted descending
+      // clearedRowIndexesAsc needs to (and should already) be sorted ascending
       // no need to sort this array here, but remember that is required for this splice 
       // loop to work properly
 
       // This should be a memory optimized operation
-      let emptyRowCache: number[][] | null = [];
-      if(emptyRowCache !== null) {
-        for(let j=0; j<numCleared; j++) {
-          emptyRowCache.push(
-            rows.splice(clearedRowIndexesDesc[j],1)[0]
-          );
-        }
-        for(let j=0; j<numCleared; j++) {
-          rows.unshift(emptyRowCache.pop() as number[]);
-        }
-        emptyRowCache = null;
-      }
-      
-      // Check for and clear full rows 
-      // let nNewRows = newRows.length;
-
-      //let numCleared = nRows - nNewRows;
-
-      if(stats.current && numCleared > 0) {
-        stats.current.lines += numCleared;
-        stats.current.level = Math.floor(stats.current.lines / 10) + 1;
-        stats.current.score += ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
-      }
-
-      // for (let i = 0; i < numCleared; i++) {
-      //   newRows.unshift([...emptyRow]);
-      // }
-
-      // // updateRef
-      // for (let i = 0; i < nRows; i++) {
-      //   board.current[i] = newRows[i];
-      // }
-
+      // let emptyRowCache: Uint8Array = new Uint8Array(numCleared * NUM_COLS);
       if(numCleared > 0) {
-        switch(numCleared) {
-          case 1:
-            action.current = "Single!";
-            break;
-          case 2:
-            action.current = "Double!";
-          break;
-          case 3:
-            action.current = "Triple!";
-            break;
-          case 4:
-            action.current = "TETRIS!";
-            break;
+        
+        let colHeights = columnHeights.current;
+        if(colHeights) {
+          for(let i=0; i<NUM_COLS; i++) {
+            colHeights[i] = Math.max(colHeights[i] - numCleared, 0);
+          }
         }
 
-        props.actionCallback(action.current || "");
+        // if we have a multi-line clear where the rows are grouped togther, we do one shift
+        if(numCleared - 1 === clearedRowIndexesAsc[numCleared-1] - clearedRowIndexesAsc[0]) {
+          grid.copyWithin(NUM_COLS * numCleared, 0, clearedRowIndexesAsc[0]*NUM_COLS);
+        }
+        else {
+        // if we have a double or triple line clear where the cleared lines are not all grouped togther, we do two shifts
+          for(let j=0; j<numCleared; j++) {    
+            if(numCleared > 1 && j < (numCleared - 1) && clearedRowIndexesAsc[j+1] - clearedRowIndexesAsc[j] === 1){
+              grid.copyWithin(NUM_COLS * 2, 0, clearedRowIndexesAsc[j+1]*NUM_COLS);
+              j++;
+            }
+            else {
+              grid.copyWithin(NUM_COLS, 0, clearedRowIndexesAsc[j]*NUM_COLS);
+            }
+          }
+        }
+
+        // because we used copy within, to shift all of the rows down,
+        // we have to overwrite the duplicated rows at the top of the board
+        grid.fill(0,0,numCleared*NUM_COLS);
+      
+        if(stats.current && numCleared > 0) {
+          stats.current.lines += numCleared;
+          stats.current.level = Math.floor(stats.current.lines / 10) + 1;
+          stats.current.score += ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+        }
+      
+        if(numCleared > 0) {
+          switch(numCleared) {
+            case 1:
+              action.current = "Single!";
+              break;
+            case 2:
+              action.current = "Double!";
+            break;
+            case 3:
+              action.current = "Triple!";
+              break;
+            case 4:
+              action.current = "TETRIS!";
+              break;
+          }
+
+          props.actionCallback(action.current || "");
+        }
       }
     }
   };
@@ -670,7 +694,7 @@ const Game = (props: GameProps) => {
     }
     switch(e.key) {
       case "ArrowRight":
-        if((activePiece.current.x + activePiece.current.width) < board.current[0].length) {
+        if((activePiece.current.x + activePiece.current.width) < NUM_COLS) {
           activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x += 1; 
@@ -696,7 +720,7 @@ const Game = (props: GameProps) => {
 
       // insta-drop the piece
       case "ArrowUp":
-        const cols: number[][] = getBoardCols();
+        // const cols: number[][] = getBoardCols();
 
         const p: ActivePiece = activePiece.current;
 
@@ -720,21 +744,30 @@ const Game = (props: GameProps) => {
         }
         
         let minDistance: number = activePiece.current.yMax - activePiece.current.y;
-        let minDistances = [];
+        // let minDistances = [];
+        // let minDistances2 = [];
         for(let i=0; i<activePiece.current.width; i++) {
-          let colArr: number[] = (cols[i + colIndex]);
+          // let colArr: number[] = (cols[i + colIndex]);
           let dropDistance = bottomOffsets[i];
-          for(let j=activePiece.current.y; j<colArr.length; j++){
-            if(colArr[j] !== 0) {
-              break;
-            }
-            dropDistance++;
+          // for(let j=activePiece.current.y; j<colArr.length; j++){
+          //   if(colArr[j] !== 0) {
+          //     break;
+          //   }
+          //   dropDistance++;
+          // }
+          if(columnHeights.current){
+            dropDistance += NUM_ROWS - columnHeights.current[colIndex + i] - activePiece.current.y;
+            // minDistances2.push();
           }
-          minDistances.push(minDistance);
           if(dropDistance < minDistance) {
             minDistance = dropDistance;
           }
+          // minDistances.push(dropDistance);
         }
+
+
+        // console.log({minDistances});
+        // console.log({minDistances2});
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
 
@@ -765,35 +798,38 @@ const Game = (props: GameProps) => {
       pieceQueIndexes.current = [];
     }
     if(!columnHeights.current) {
-      columnHeights.current = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      columnHeights.current = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    }
+    if(!prevPieceCoords.current) {
+      prevPieceCoords.current = new Uint8Array([0,0,0,0]);
     }
     if(!board.current) {
-      board.current = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      ];
+      board.current = new Uint8Array([
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ]);
     }
 
     if(!action.current) {
@@ -858,6 +894,7 @@ const Game = (props: GameProps) => {
       board.current = null;
       action.current = null;
       columnHeights.current = null;
+      prevPieceCoords.current = null;
 
       if(ticker.current) {
         clearInterval(ticker.current);
@@ -872,9 +909,9 @@ const Game = (props: GameProps) => {
   // Controls the game speed by level
   useEffect(() => {
 
-    if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
+    // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
       updateBoard(activePiece.current);
-    }
+    // }
     
   });
 
@@ -883,27 +920,61 @@ const Game = (props: GameProps) => {
       return
     };
 
-    const rows = board.current;
-    
-    return rows.map((row) => {
-      return (
-        <div className="tw-flex tw-flex-row tw-gap-0">
-          {row.map((cellValue) => {
-            let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
-            let cellColor =
-              cellValue === 0
-                ? 'tw-bg-black tw-border tw-border-gray-900'
-                : `tw-border tw-bg-${colorEnumVal} tw-border-${colorEnumVal} tw-border-outset`;
-            return (
-              <div
-                className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
-                style={{ borderStyle: (cellValue === 0 ? 'solid' : 'outset') }}
-              ></div>
-            );
-          })}
-        </div>
+    const grid = board.current;
+    let rows = [];
+    for(let i=0; i<NUM_ROWS; i++) {
+
+      let rowCells = [];
+
+      for(let j=0; j<NUM_COLS; j++) {
+        const gridIndex = i * NUM_COLS + j;
+        const cellValue = grid[i * NUM_COLS + j];
+        // const colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
+        const colorEnumVal = cellValue > 10 ? cellValue/11 : cellValue;
+
+        const cellColor = `gc c${colorEnumVal}`;
+
+        rowCells[j] = (
+          <>
+            <div
+              key={`c${gridIndex}`}
+              className={`${cellColor}`}
+            ></div>
+          </>
+        );
+
+      }
+
+      rows[i] = (
+        <>
+          <div key={`r${i}`} className="gr">
+            {rowCells}
+          </div>
+        </>
       );
-    });
+    }
+
+    return rows;
+    
+    // return rows.map((row) => {
+    //   return (
+    //     <div className="tw-flex tw-flex-row tw-gap-0">
+    //       {row.map((cellValue) => {
+    //         let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
+    //         let cellColor =
+    //           cellValue === 0
+    //             ? 'tw-bg-black tw-border tw-border-gray-900'
+    //             : `tw-border tw-bg-${colorEnumVal} tw-border-${colorEnumVal} tw-border-outset`;
+    //         return (
+    //           <div
+    //             className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
+    //             style={{ borderStyle: (cellValue === 0 ? 'solid' : 'outset') }}
+    //           ></div>
+    //         );
+    //       })}
+    //     </div>
+    //   );
+    // });
 
   };
 
@@ -918,16 +989,16 @@ const Game = (props: GameProps) => {
             lines: 0,
             level: 0,
           };
+          if(columnHeights.current) {
+            columnHeights.current.fill(0);
+          }
           if(activePiece.current) {
             // activePiece.current = getNextPiece();
             activePiece.current = getPieceFromQue();
           }
           if(!board.current) { return; }
-          for(let i=0;  i<board.current.length; i++) {
-            for(let j=0;  j<board.current[0].length; j++) {
-              board.current[i][j] = 0; 
-            }
-          }
+          board.current.fill(0);
+    
         }}>Restart</button>
         <button className="tw-border-slate-200 tw-w-32" onClick={()=>{
           if(ticker.current) {
