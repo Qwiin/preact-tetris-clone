@@ -757,12 +757,6 @@ const Game = (props: GameProps) => {
     }
   }
 
-  const updateColumnHeights = () => {
-    if(!columnHeights.current){ return; }
-
-    
-  }
-
   const initRefs = () => {
     if(!pieceQue.current){
       pieceQue.current = [];
