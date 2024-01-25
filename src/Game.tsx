@@ -967,7 +967,7 @@ const Game = (props: GameProps) => {
       className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-px-4 tw-pb-4">
         <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
         <div>
-          <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 25) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
+          <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
           <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content tw-relative">
             
             <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
