@@ -92,8 +92,67 @@ body {
   100% { opacity: 0; }
 }
 
+.game-control-map {
+  background-color: rgb(26, 26, 26, 0.8);
+  border: 1px rgba(148, 163, 184, 0.8) solid;
+}
+
+.game-control-button {
+  border: 1px white solid;
+  background-color: rgb(26, 26, 26, 1);
+}
+
 .action-fade-out {
   animation: fadeOut 1.0s;
   animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   animation-delay: 1.0s;
+}
+
+.tooltip-text {
+  /* height: 0;
+  width: 0; */
+  font-size: 12px;
+  visibility: hidden;
+  position: absolute;
+  z-index: 1;
+  width: 100px;
+  color: white;
+  background-color: rgb(26, 39, 51, 0.8);
+  border-radius: 0.25rem;
+  border: 1px rgba(26,26,26,0.8) solid;
+  padding: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.hover-text:hover .tooltip-text {
+  visibility: visible;
+}
+
+.tooltip-text.top {
+  top: -32px;
+  left: -100%;
+}
+
+.tooltip-text.bottom {
+  top: 36px;
+  left: -100%;
+}
+
+.tooltip-text.left {
+  top: -8px;
+  right: 120%;
+}
+
+.tooltip-text.right {
+  top: -8px;
+  left: 120%;
+}
+
+.hover-text {
+  position: relative;
+  display: inline-block;
+  /* margin: 40px; */
+  text-align: center;
+  user-select: none;  
 }

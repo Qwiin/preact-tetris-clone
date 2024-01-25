@@ -25,7 +25,7 @@ Performance:
 **/
 
 import { Ref } from 'preact';
-import { useRef, useEffect } from 'preact/hooks';
+import { useRef, useEffect, useState } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
@@ -376,6 +376,9 @@ const Game = (props: GameProps) => {
     return;
   }
 
+  const [pause, setPause] = useState(false);
+  const [gameover, setGameover] = useState(false);
+
   const action: Ref<string> = useRef(null);
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
@@ -512,6 +515,9 @@ const Game = (props: GameProps) => {
 
     if(piece) {
 
+
+      // set piece in place
+
       if(piece.y === piece.yPrev && piece.x === piece.xPrev) {
         // for(let i=0;  i<board.current.length; i++) {
         //   for(let j=0;  j<board.current[0].length; j++) {
@@ -521,6 +527,7 @@ const Game = (props: GameProps) => {
         //   }
         // }
 
+        
         let coords = piece.coords;
         let colHeights = columnHeights.current;
         for(let i=0; i<TETRONIMO_SIZE; i++){
@@ -532,9 +539,18 @@ const Game = (props: GameProps) => {
             // console.log(colHeights.toString());
           }
         }
-
-        if(colHeights) {
-          
+        
+        //check for gameover//
+        let numBlocksOffscreen = 0;
+        for(let i=rows.length - 20; i>=0; i--) {
+          numBlocksOffscreen = rows[i].reduce((prev, curr)=> prev + (curr > 0 ? 1 : 0),numBlocksOffscreen);
+          if(numBlocksOffscreen >= 4) {
+            setGameover(true);
+            setPause(true);
+            pauseGame();
+            return;
+            // break;
+          }
         }
 
         activePiece.current = null; 
@@ -662,7 +678,7 @@ const Game = (props: GameProps) => {
     return new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
   }
 
-  const keydownHandler = (e:KeyboardEvent) => {
+  const keydownHandler = (e:any) => {
     
     props.keydownCallback(e.key);
     if(!activePiece.current || !board.current) {
@@ -814,6 +830,7 @@ const Game = (props: GameProps) => {
       clearInterval(ticker.current);
       ticker.current = null;
     }
+    setPause(true);
   }
   const resumeGame = () => {
     if(!ticker.current){
@@ -821,12 +838,15 @@ const Game = (props: GameProps) => {
         tick.value = tick.value + 1;
       },TICK_INTERVAL)
     }
+    setPause(false);
   }
 
   useEffect(()=>{
 
     initRefs();
 
+    setGameover(false);
+    setPause(false);
     resumeGame();
     
     pieceQueIndexes.current?.push(
@@ -928,25 +948,36 @@ const Game = (props: GameProps) => {
               board.current[i][j] = 0; 
             }
           }
+          setPause(false);
+          setGameover(false);
+          resumeGame();
         }}>Restart</button>
-        <button className="tw-border-slate-200 tw-w-32" onClick={()=>{
-          if(ticker.current) {
+        <button className="tw-border-slate-200 tw-w-32" disabled={gameover} onClick={()=>{
+          if(!pause) {
             pauseGame();
           }
           else {
             resumeGame();
           }
-        }}>Pause ||</button>
+        }}>{pause ? 'Resume' : 'Pause'}</button>
+
+        <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
       <div style={{border: "2px inset rgba(0,0,0,0.5)"}}
       className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-px-4 tw-pb-4">
         <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
         <div>
           <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 25) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
-          <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content">
+          <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content tw-relative">
+            
             <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
               {renderBoard()}
             </div>
+            { (gameover || pause) &&
+              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-50 tw-z-10 tw-top-0 tw-left-0">
+                <h2 className="tw-text-center">{gameover ? 'Game Over' : 'Paused'}</h2>
+              </div>
+            }
           </div>
         </div>
         <PieceQue queLength={PIECE_QUE_LENGTH} pieces={pieceQue.current || []}/>
@@ -987,6 +1018,102 @@ const defaultPropsPieceQue: PieceQueProps = {
     TETRONIMOS[5],
     TETRONIMOS[6],
   ]
+}
+
+
+interface ControlsMapProps {
+  clickCallback?: (e:any) => void;
+  keyMoveLeft?: string;
+  keyMoveRight?: string;
+  keyMoveDown?: string;
+  keyDropPiece?: string;
+  keyRotateLeft?: string;
+  keyRotateRight?: string;
+  keyStashPiece?: string;
+}
+
+const DEFAULT_KEY_MAP: ControlsMapProps = {
+  keyMoveLeft: 'ArrowLeft',
+  keyMoveRight: 'ArrowRight',
+  keyMoveDown: 'ArrowDown',
+  keyDropPiece: 'ArrowUp',
+  keyRotateRight: 'Shift',
+  keyRotateLeft: 'Alt',
+  keyStashPiece: '/'
+}
+
+const KEY_CODE_MAP: any = {
+  'ArrowLeft': '←',
+  'ArrowRight': '→',
+  'ArrowUp': '↑',
+  'ArrowDown': '↓',
+  'Control': '^',
+  'Shift': '⬆',
+  'Alt': '⎇',
+}
+export const ControlsMap: preact.FunctionComponent<ControlsMapProps> = (props: ControlsMapProps) => {
+
+  return (
+    <>
+      <div className="game-control-map tw-flex tw-gap-4 tw-flex-col tw-justify-center tw-items-center tw-mt-12 tw-rounded-lg tw-px-2 tw-py-2">
+
+        <div className="tw-flex tw-gap-12 tw-flex-row tw-justify-center tw-items-center">
+          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0" 
+          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateLeft})}}}
+          style={{fontSize: '1.2rem'}}><>↺</>
+            <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateLeft} ({props.keyRotateLeft ? KEY_CODE_MAP[props.keyRotateLeft] : props.keyRotateLeft})</span>
+          </div>
+          {/* <div className="tw-bg-gray-900 tw-rounded-md tw-shadow-inner tw-shadow-slate-400 tw-w-8 tw-h-8 hover-text"><>{KEY_CODE_MAP[props.keyDropPiece]}</>
+            <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece</span>
+          </div> */}
+          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0" 
+          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateRight})}}}
+          style={{fontSize: '1.2rem'}}>
+            <>
+            ↻
+            </>
+            <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateRight} ({props.keyRotateRight ? KEY_CODE_MAP[props.keyRotateRight] : props.keyRotateRight})</span>
+          </div>
+        </div>
+        <div className="tw-flex tw-gap-2 tw-flex-row tw-justify-center tw-items-center">
+          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
+            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveLeft})}}}>
+            <>{props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)}</>
+          <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Left ({props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)})</span>
+          </div>
+          <div className="tw-flex tw-gap-2 tw-flex-col tw-justify-center tw-items-center">
+            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0"
+            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
+              <>
+                {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
+                <div className="tw-text-xs tw-p-0 tw-m-0" style={{marginTop: "-8px",fontSize: '0.5rem'}}>Drop</div>
+              </>
+              <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
+            </div>
+            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
+              onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveDown})}}}>
+              <>{props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)}</>
+              <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Down ({props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)})</span>
+            </div>
+          </div>
+          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
+            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveRight})}}}>
+            <>{props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)}</>
+            <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Right ({props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)})</span>
+            </div>
+        </div>
+      </div>
+    </>
+  );
+};
+ControlsMap.defaultProps = {
+  keyRotateLeft: DEFAULT_KEY_MAP.keyRotateLeft,
+  keyRotateRight: DEFAULT_KEY_MAP.keyRotateRight,
+  keyMoveDown: DEFAULT_KEY_MAP.keyMoveDown,
+  keyMoveLeft: DEFAULT_KEY_MAP.keyMoveLeft,
+  keyMoveRight: DEFAULT_KEY_MAP.keyMoveRight,
+  keyDropPiece: DEFAULT_KEY_MAP.keyDropPiece,
+  keyStashPiece: DEFAULT_KEY_MAP.keyStashPiece
 }
 
 export const PieceQue: preact.FunctionComponent<PieceQueProps> = (props: PieceQueProps) => {
@@ -1036,5 +1163,5 @@ export const PieceQue: preact.FunctionComponent<PieceQueProps> = (props: PieceQu
       </div>
     </>
   );
-}
+};
 PieceQue.defaultProps = defaultPropsPieceQue;
