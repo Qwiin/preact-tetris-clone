@@ -4,9 +4,9 @@ TODO:
 
 Gameplay:
 
-  1. Implement GameOver State
-  2. Fix Collision Detection with left/right moves and rotation against set blocks
-  3. Implement Que (as a stack)
+  1. (done) Implement GameOver State
+  2. (done) Fix Collision Detection with left/right moves and rotation against set blocks
+  3. (done) Implement Que (as a stack)
   4. Balance the distribution of pieces (native RNG does not feel like Tetris, lol)
     a. There should be a more normal distribution considering a game to 100 lines is only 250-300 pieces
 
@@ -25,7 +25,7 @@ Performance:
 **/
 
 import { Ref } from 'preact';
-import { useRef, useEffect, useState } from 'preact/hooks';
+import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
@@ -376,7 +376,9 @@ const Game = (props: GameProps) => {
     return;
   }
 
-  const [pause, setPause] = useState(false);
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+
+  const paused = useRef(false);
   const [gameover, setGameover] = useState(false);
 
   const action: Ref<string> = useRef(null);
@@ -546,7 +548,7 @@ const Game = (props: GameProps) => {
           numBlocksOffscreen = rows[i].reduce((prev, curr)=> prev + (curr > 0 ? 1 : 0),numBlocksOffscreen);
           if(numBlocksOffscreen >= 4) {
             setGameover(true);
-            setPause(true);
+            paused.current = true;
             pauseGame();
             return;
             // break;
@@ -681,7 +683,7 @@ const Game = (props: GameProps) => {
   const keydownHandler = (e:any) => {
     
     props.keydownCallback(e.key);
-    if(!activePiece.current || !board.current) {
+    if(!activePiece.current || !board.current || paused.current || gameover) {
       return;
     }
     switch(e.key) {
@@ -762,13 +764,12 @@ const Game = (props: GameProps) => {
 
       case "Alt":
       case "Control":
-          activePiece.current.rotateLeft();
-          updatePosition();
+        activePiece.current.rotateLeft();
+        updatePosition();
         break;
       case "Shift":
-      case "Meta":
         activePiece.current.rotateRight();
-          updatePosition();
+        updatePosition();
         break;
     }
   }
@@ -830,7 +831,8 @@ const Game = (props: GameProps) => {
       clearInterval(ticker.current);
       ticker.current = null;
     }
-    setPause(true);
+    paused.current = true;
+    forceUpdate(1);
   }
   const resumeGame = () => {
     if(!ticker.current){
@@ -838,7 +840,8 @@ const Game = (props: GameProps) => {
         tick.value = tick.value + 1;
       },TICK_INTERVAL)
     }
-    setPause(false);
+    paused.current = false;
+    forceUpdate(1);
   }
 
   useEffect(()=>{
@@ -846,7 +849,6 @@ const Game = (props: GameProps) => {
     initRefs();
 
     setGameover(false);
-    setPause(false);
     resumeGame();
     
     pieceQueIndexes.current?.push(
@@ -948,18 +950,17 @@ const Game = (props: GameProps) => {
               board.current[i][j] = 0; 
             }
           }
-          setPause(false);
           setGameover(false);
           resumeGame();
         }}>Restart</button>
         <button className="tw-border-slate-200 tw-w-32" disabled={gameover} onClick={()=>{
-          if(!pause) {
+          if(!paused.current) {
             pauseGame();
           }
           else {
             resumeGame();
           }
-        }}>{pause ? 'Resume' : 'Pause'}</button>
+        }}>{paused.current ? 'Resume' : 'Pause'}</button>
 
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
@@ -973,7 +974,7 @@ const Game = (props: GameProps) => {
             <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
               {renderBoard()}
             </div>
-            { (gameover || pause) &&
+            { (gameover || paused.current) &&
               <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-50 tw-z-10 tw-top-0 tw-left-0">
                 <h2 className="tw-text-center">{gameover ? 'Game Over' : 'Paused'}</h2>
               </div>
