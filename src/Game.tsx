@@ -698,7 +698,7 @@ const Game = (props: GameProps) => {
       case "ArrowLeft":
         if(activePiece.current.x > 0) {
           activePiece.current.xPrev = activePiece.current.x;
-          // activePiece.current.yPrev = activePiece.current.y - 1;
+          activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x -= 1; 
           updatePosition();
         }
