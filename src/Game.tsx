@@ -582,7 +582,9 @@ const Game = (props: GameProps) => {
         }
       }
       // canMoveLateral = false;
-      // p.yPrev = p.y - 1;
+      if(p.x !== p.xPrev){
+        p.yPrev = p.y - 1;
+      }
     }
 
 
