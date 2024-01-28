@@ -1,6 +1,6 @@
-import { useState } from 'preact/hooks'
-import './app.css'
-import Game from './Game'
+import { useState } from 'preact/hooks';
+import './app.css';
+import Game from './Game';
 
 export function App() {
 

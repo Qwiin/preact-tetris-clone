@@ -492,7 +492,7 @@ const Game = (props: GameProps) => {
       let i_sss = h-1;
       
 
-      let dx = p.x - p.xPrev;
+      // let dx = p.x - p.xPrev;
       let dy = p.y - p.yPrev;
 
       let canRotateInPlace = true;
