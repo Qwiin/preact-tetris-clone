@@ -138,6 +138,14 @@ class ActivePiece {
   readonly yMax: number = 24;
   readonly yMin: number = 0;
 
+  private _coordsPrev: number[][] = [];
+  public set coordsPrev(value: number[][]) {
+    this._coordsPrev = value;
+  }
+  public get coordsPrev(): number[][] {
+    return this._coordsPrev;
+  }
+
   private _coords: number[][] = [];
   public set coords(value: number[][]) {
     this._coords = value;
@@ -177,6 +185,7 @@ class ActivePiece {
       }
       if(coords) {
         this.coords = coords;
+        this.coordsPrev = [...coords];
       }
     }
   }
@@ -191,6 +200,9 @@ class ActivePiece {
     }
     this.xAdjustAfterRotation();
     this.yAdjustAfterRotation();
+
+    // this._coordsPrev = JSON.parse(JSON.stringify(this._coords));
+    // this._coords = rotateMatrix(this._coords, 4);
   }
 
   rotateRight() {
@@ -203,6 +215,9 @@ class ActivePiece {
     }
     this.xAdjustAfterRotation();
     this.yAdjustAfterRotation();
+
+    // this._coordsPrev = JSON.parse(JSON.stringify(this._coords));
+    // this._coords = rotateMatrix(this._coords, 2);
   }
 
   private xAdjustAfterRotation() {
@@ -429,6 +444,128 @@ const Game = (props: GameProps) => {
     const w: number = p.width;
     // const wPrev: number = p.widthPrev;
 
+
+    // let canMoveLateral = true;
+    if (p.rotation !== p.rotationPrev) {
+      // let coords = p.coords;
+      // let dx = p.x - p.xPrev;
+      // let dy = p.y - p.yPrev;
+      // let canRotateInPlace = true;
+      // let canTSpin = true;
+      // if(coords){
+      //   for(let i=0;i<coords.length; i++){
+      //     let y = coords[i][0];
+      //     let x = coords[i][1];
+      //     let cellValue = rows[y][x + dx];
+      //     if(cellValue !== 0 && cellValue < 10){
+      //       canRotateInPlace = false;
+      //       // p.x = p.xPrev;
+      //       // console.log("can't move laterally");
+      //     }
+      //     let cellValue2 = rows[y+dy][x + dx];
+      //     if(cellValue2 !== 0 && cellValue2 < 10){
+      //       canTSpin = false;
+      //       // p.x = p.xPrev;
+      //       // console.log("can't move laterally");
+      //     }  
+      //   }
+      //   if(canRotateInPlace) {
+      //     console.log("rotate in place");
+      //     p.coords = [...p.coordsPrev];
+      //   }
+      //   else if(!canRotateInPlace && !canTSpin) {
+      //     p.x = p.xPrev
+      //     console.log("can't rotate nor t-spin");
+      //     p.coords = [...p.coordsPrev];
+      //   }
+      //   else if(!canRotateInPlace && canTSpin) {
+      //     console.log("can t-spin");
+      //     p.xPrev = p.x;
+      //     p.y += 1;
+      //     p.yPrev = p.y - 1;
+      //   }
+      // }
+
+      let j_iii = p.x;
+      let i_iii = p.y - 1;
+
+      let i_sss = h-1;
+      
+
+      let dx = p.x - p.xPrev;
+      let dy = p.y - p.yPrev;
+
+      let canRotateInPlace = true;
+      let canTSpin = true;
+      let canTSpinLeft = true;
+      let canTSpinRight = true;
+      // let canMoveDown = true;
+      for(let i=i_iii; i > (i_iii - h); i--) {
+        let j_sss = 0;
+        for(let j=j_iii; j < (j_iii + w); j++) {
+          if(perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_sss][j_sss]) {
+            // if(p.y !== p.yPrev){
+            //   canMoveDown = false;
+            //   console.log("can't move down...");
+            //   p.y = p.yPrev;
+            // }
+            canRotateInPlace = false;
+          }
+          if(i+dy >= p.yMax){
+            canTSpin = false;
+          }
+          else if(perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && board.current[i+dy][j] !== 0 && board.current[i+dy][j] !== perm[i_sss][j_sss]) {
+              // if(p.y !== p.yPrev){
+              //   canMoveDown = false;
+              //   console.log("can't move down...");
+              //   p.y = p.yPrev;
+              // }
+              canTSpin = false;
+          }
+          else if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && board.current[i+dy][j-1] !== 0 && board.current[i+dy][j-1] !== perm[i_sss][j_sss])) {
+            canTSpinLeft = false;
+          }
+          else if(j === (p.xMax-1) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && board.current[i+dy][j+1] !== 0 && board.current[i+dy][j+1] !== perm[i_sss][j_sss])) {
+            canTSpinRight = false;
+          }
+          j_sss++;
+        } 
+        i_sss--;
+      }
+      if(canRotateInPlace) {
+        console.log("rotate in place");
+        // p.coords = [...p.coordsPrev];
+        p.xPrev = p.x;
+        p.rotationPrev = p.rotation;
+      }
+      else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
+        p.x = p.xPrev
+        console.log("can't rotate nor t-spin");
+        // p.coords = [...p.coordsPrev];
+        p.rotation = p.rotationPrev;
+      }
+      else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
+        console.log("can t-spin");
+        if(canTSpinLeft) {
+          p.x = p.x - 1;
+          p.xPrev = p.x;
+        }
+        else if(canTSpinRight) {
+          p.x = p.x + 1;
+          p.xPrev = p.x;
+        }
+        else {
+          p.xPrev = p.x;
+        }
+        p.y += 1;
+        p.yPrev = p.y - 1;
+        p.rotationPrev = p.rotation;
+      }
+
+      // canMoveLateral = false;
+      // p.yPrev = p.y - 1;
+    }
+
     // let canMoveLateral = true;
     if (p.x != p.xPrev) {
       let coords = p.coords;
@@ -464,7 +601,6 @@ const Game = (props: GameProps) => {
             console.log("can't move down...");
             p.y = p.yPrev;
           }
-          
         }
         j_s++;
       } 
@@ -499,6 +635,7 @@ const Game = (props: GameProps) => {
         i_ss--;
       }
 
+      p.coordsPrev = p.coords;
       p.coords = newCoords;
 
       // board.current = rows;
