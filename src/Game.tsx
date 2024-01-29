@@ -160,8 +160,24 @@ class ActivePiece {
   xPrev: number = 4;
   y: number = 4;
   yPrev: number = -1;
-  rotation: Direction = Direction.N;
-  rotationPrev: Direction = Direction.N;
+
+  private _rotation: Direction = Direction.N;
+  public get rotation(): Direction {
+    return this._rotation;
+  }
+  public set rotation(value: Direction) {
+    this._rotation = value;
+    this.permutation
+  }
+
+  private _rotationPrev: Direction = Direction.N;
+  public get rotationPrev(): Direction {
+    return this._rotationPrev
+  }
+  public set rotationPrev(value: Direction) {
+    this._rotationPrev = value;
+  }
+
   readonly shape: number[][] = [];
 
   readonly shapeByDirection: number[][][] = [];
@@ -172,8 +188,8 @@ class ActivePiece {
       this.shape = shape;
       this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {
-        this.rotation = rotation;
-        this.rotationPrev = rotation;
+        this._rotation = rotation;
+        this._rotationPrev = rotation;
       }
       if(x) {
         this.x = Math.floor((10 - this.shape[0].length) / 2);
@@ -191,7 +207,7 @@ class ActivePiece {
   }
 
   rotateLeft() {
-    this.rotationPrev = this.rotation;
+    this._rotationPrev = this._rotation;
     if(this.rotation === Direction.N) {
       this.rotation = Direction.W;
     }
@@ -206,7 +222,7 @@ class ActivePiece {
   }
 
   rotateRight() {
-    this.rotationPrev = this.rotation;
+    this._rotationPrev = this._rotation;
     if(this.rotation === Direction.W) {
       this.rotation = Direction.N;
     }
@@ -437,11 +453,11 @@ const Game = (props: GameProps) => {
 
     const rows = board.current;
     const p: ActivePiece = activePiece.current;
-    const perm: number[][] = p.permutation;
+    let perm: number[][] = p.permutation;
     // const permPrev: number[][] = p.permutationPrev;
-    const h: number = p.height;
+    let h: number = p.height;
     // const hPrev: number = p.heightPrev;
-    const w: number = p.width;
+    let w: number = p.width;
     // const wPrev: number = p.widthPrev;
 
 
@@ -513,20 +529,24 @@ const Game = (props: GameProps) => {
           }
           if(i+dy >= p.yMax){
             canTSpin = false;
+            canTSpinLeft = false;
+            canTSpinRight = false;
           }
-          else if(perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && board.current[i+dy][j] !== 0 && board.current[i+dy][j] !== perm[i_sss][j_sss]) {
+          else {
+            if(perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && board.current[i+dy][j] !== 0 && board.current[i+dy][j] !== perm[i_sss][j_sss]) {
               // if(p.y !== p.yPrev){
               //   canMoveDown = false;
               //   console.log("can't move down...");
               //   p.y = p.yPrev;
               // }
               canTSpin = false;
-          }
-          else if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && board.current[i+dy][j-1] !== 0 && board.current[i+dy][j-1] !== perm[i_sss][j_sss])) {
-            canTSpinLeft = false;
-          }
-          else if(j === (p.xMax-1) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && board.current[i+dy][j+1] !== 0 && board.current[i+dy][j+1] !== perm[i_sss][j_sss])) {
-            canTSpinRight = false;
+            }
+            if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && board.current[i+dy][j-1] !== 0 && board.current[i+dy][j-1] !== perm[i_sss][j_sss])) {
+              canTSpinLeft = false;
+            }
+            if(j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && board.current[i+dy][j+1] !== 0 && board.current[i+dy][j+1] !== perm[i_sss][j_sss])) {
+              canTSpinRight = false;
+            }
           }
           j_sss++;
         } 
@@ -539,10 +559,20 @@ const Game = (props: GameProps) => {
         p.rotationPrev = p.rotation;
       }
       else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
-        p.x = p.xPrev
+        p.x = p.xPrev;
+        p.yPrev = p.y - 1;
         console.log("can't rotate nor t-spin");
         // p.coords = [...p.coordsPrev];
-        p.rotation = p.rotationPrev;
+        if(p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
+          p.rotateLeft();
+        }
+        else if(p.rotation < p.rotationPrev || (p.rotation === 4 && p.rotationPrev === 1)) {
+          p.rotateRight();
+        }
+        // p.rotation = p.rotationPrev;
+        perm = p.permutation;
+        w = p.width;
+        h = p.height;
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
         console.log("can t-spin");
