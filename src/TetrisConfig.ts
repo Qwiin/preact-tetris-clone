@@ -5,6 +5,8 @@ export interface GameAction {
   transitioning?: boolean;
 }
 
+export const ToastTimeout: number = 2500;
+
 export const ShapeColors: string[] = [
   'transparent',
   'yellow-400',
