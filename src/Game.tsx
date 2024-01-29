@@ -567,9 +567,7 @@ const Game = (props: GameProps) => {
           activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x += 1; 
-          updatePosition();
-          play();
-          
+          updatePosition();      
         }
         break;
       case "ArrowLeft":
@@ -578,7 +576,6 @@ const Game = (props: GameProps) => {
           activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x -= 1; 
           updatePosition();
-          play();
         }
         break;
       case "ArrowDown":
