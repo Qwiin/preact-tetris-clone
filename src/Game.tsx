@@ -33,7 +33,7 @@ import { StatsPanel } from './StatsPanel';
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
-const LINE_CLEAR_TIMEOUT: number = 1000;
+// const LINE_CLEAR_TIMEOUT: number = 1000;
 
 const tick: Signal<number> = signal(0);
 
@@ -379,7 +379,7 @@ const Game = (props: GameProps) => {
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
-  const lineClearAnimating: Ref<boolean >= useRef(true);
+  // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
   const [gameover, setGameover] = useState(false);
 
@@ -983,7 +983,7 @@ const Game = (props: GameProps) => {
               {renderBoard()}
             </div>
             { (gameover || paused.current) &&
-              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-50 tw-z-10 tw-top-0 tw-left-0">
+              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity  tw-z-10 tw-top-0 tw-left-0">
                 <h2 className="tw-text-center">{gameover ? 'Game Over' : 'Paused'}</h2>
               </div>
             }
