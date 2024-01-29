@@ -383,12 +383,11 @@ const TETRONIMOS: number[][][] = [
  * @returns 
  */
 function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex: number = 0): number[] {
-  const indexes = [];
+  const indexes: number[] = [];
 
   for (let i = 0; i < count; i++) {
     
-    const randomIndex = Math.floor(Math.random() * (maxIndex - minIndex + 1));
-    
+    const randomIndex = Math.floor(Math.random() * (maxIndex - minIndex + 1));    
 
     if(i > 2) {
       if(indexes[i-1] === randomIndex && indexes[i-2] === randomIndex) {
