@@ -388,14 +388,16 @@ function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex
   for (let i = 0; i < count; i++) {
     
     const randomIndex = Math.floor(Math.random() * (maxIndex - minIndex + 1));
-    indexes.push(randomIndex);
+    
 
     if(i > 2) {
       if(indexes[i-1] === randomIndex && indexes[i-2] === randomIndex) {
         i--;
+        continue;
         // rerun the loop 
       }
     }
+    indexes.push(randomIndex);
   }
 
   return indexes;
@@ -555,7 +557,7 @@ const Game = (props: GameProps) => {
       if(canRotateInPlace) {
         console.log("rotate in place");
         // p.coords = [...p.coordsPrev];
-        p.xPrev = p.x;
+        // p.xPrev = p.x;
         p.rotationPrev = p.rotation;
       }
       else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
