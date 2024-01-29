@@ -9321,6 +9321,11 @@
   color: rgb(250 204 21 / var(--tw-text-opacity))
 }
 
+.tw-text-amber-600 {
+  --tw-text-opacity: 1;
+  color: rgb(217 119 6 / var(--tw-text-opacity))
+}
+
 .tw-opacity-0 {
   opacity: 0
 }

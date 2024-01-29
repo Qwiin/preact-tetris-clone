@@ -2,6 +2,7 @@ export interface GameAction {
   text: string;
   points: number;
   id?: string;
+  transitioning?: boolean;
 }
 
 export const ShapeColors: string[] = [

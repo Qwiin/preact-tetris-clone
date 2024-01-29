@@ -29,8 +29,10 @@ import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
-import { Direction, ShapeColors, TETRONIMOS } from './TetrisConfig';
+import { ShapeColors, TETRONIMOS } from './TetrisConfig';
 import { PieceQue } from './PieceQue';
+import ActivePiece from './ActivePiece';
+import ControlsMap from './ControlsMap';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -53,282 +55,6 @@ interface Scoring {
   score: number;
   lines: number;
   level: number;
-}
-
-
-
-const rotateMatrix = (matrix: number[][], toDirection: Direction | number): number[][] => {
-
-  if(toDirection === Direction.N){
-    return JSON.parse(JSON.stringify(matrix));
-  }
-
-  let matrixT: number[][] = [];
-  const nR = matrix.length;
-  const nC = matrix[0].length;
-
-  let iT=0;
-  
-  switch(toDirection) {
-
-    // forward cols, reverse rows
-    case Direction.E:
-
-      for(let i=0; i<nC; i++) {
-        matrixT[iT] = [];
-        for(let j=nR-1; j>=0; j--) {
-          matrixT[iT].push(matrix[j][i]);
-        }
-        // console.log(JSON.stringify(matrixT[iT]));
-        iT++;
-      }
-      break;
-
-
-    // reverse rows, reverse cols
-    case Direction.S:
-
-      for(let i=nR-1; i>=0; i--) {
-        matrixT[iT] = [];
-        for(let j=nC-1; j>=0; j--) {
-          matrixT[iT].push(matrix[i][j]);
-        }
-        // console.log(JSON.stringify(matrixT[iT]));
-        iT++;
-      }
-      break;
-
-
-    // reverse cols, forward rows
-    case Direction.W: 
-    
-      for(let i=nC-1; i>=0; i--) {
-      matrixT[iT] = [];
-      for(let j=0; j<nR; j++) {
-          matrixT[iT].push(matrix[j][i]);
-        }
-        // console.log(JSON.stringify(matrixT[iT]));
-        iT++;
-      }
-      break;
-  }
-
-  return matrixT;
-}
-
-class ActivePiece {
-
-  dropped: boolean = false;
-
-  readonly xMax: number = 10;
-  readonly xMin: number = 0;
-  readonly yMax: number = 24;
-  readonly yMin: number = 0;
-
-  private _coordsPrev: number[][] = [];
-  public set coordsPrev(value: number[][]) {
-    this._coordsPrev = value;
-  }
-  public get coordsPrev(): number[][] {
-    return this._coordsPrev;
-  }
-
-  private _coords: number[][] = [];
-  public set coords(value: number[][]) {
-    this._coords = value;
-  }
-  public get coords(): number[][] {
-    return this._coords;
-  }
-
-  lastTick: number = -1;
-
-  x: number = 4;
-  xPrev: number = 4;
-  y: number = 4;
-  yPrev: number = -1;
-
-  private _rotation: Direction = Direction.N;
-  public get rotation(): Direction {
-    return this._rotation;
-  }
-  public set rotation(value: Direction) {
-    this._rotation = value;
-    this.permutation
-  }
-
-  private _rotationPrev: Direction = Direction.N;
-  public get rotationPrev(): Direction {
-    return this._rotationPrev
-  }
-  public set rotationPrev(value: Direction) {
-    this._rotationPrev = value;
-  }
-
-  readonly shape: number[][] = [];
-
-  readonly shapeByDirection: number[][][] = [];
-
-  constructor(shape?: number[][], rotation?: Direction, coords?: number[][], x?: number, y?: number) {
-
-    if(shape) {
-      this.shape = shape;
-      this.shapeByDirection[Direction.N] = this.shape;
-      if(rotation) {
-        this._rotation = rotation;
-        this._rotationPrev = rotation;
-      }
-      if(x) {
-        this.x = Math.floor((10 - this.shape[0].length) / 2);
-        this.xPrev = this.x;
-      }
-      if(y) {
-        this.y = y;
-        this.yPrev = y-1;
-      }
-      if(coords) {
-        this.coords = coords;
-        this.coordsPrev = [...coords];
-      }
-    }
-  }
-
-  rotateLeft() {
-    this._rotationPrev = this._rotation;
-    if(this.rotation === Direction.N) {
-      this.rotation = Direction.W;
-    }
-    else {
-      this.rotation -= 1;
-    }
-    this.xAdjustAfterRotation();
-    this.yAdjustAfterRotation();
-
-    // this._coordsPrev = JSON.parse(JSON.stringify(this._coords));
-    // this._coords = rotateMatrix(this._coords, 4);
-  }
-
-  rotateRight() {
-    this._rotationPrev = this._rotation;
-    if(this.rotation === Direction.W) {
-      this.rotation = Direction.N;
-    }
-    else {
-      this.rotation += 1;
-    }
-    this.xAdjustAfterRotation();
-    this.yAdjustAfterRotation();
-
-    // this._coordsPrev = JSON.parse(JSON.stringify(this._coords));
-    // this._coords = rotateMatrix(this._coords, 2);
-  }
-
-  private xAdjustAfterRotation() {
-    // console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
-    // console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
-    // console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
-    let dWidth = this.width - this.widthPrev;
-    if(dWidth !== 0) {
-      
-
-      // TODO: clean up
-
-      let newX: number = (this.rotation === Direction.E) 
-        ? (this.x + 1) 
-        : (this.rotation !== this.rotationPrev && this.rotationPrev === Direction.E) 
-          ? this.x - 1
-          : this.x;
-
-      if(this.width === 1) {
-        if (this.rotation === Direction.E) {
-          newX = this.x + 2;
-        }
-        else if (this.rotation === Direction.W) {
-          newX = this.x + 1;
-        }
-      }
-      else if(this.width === 4) { 
-        if(this.rotationPrev === Direction.E) {
-          newX = this.x - 2;
-        }
-        if(this.rotationPrev === Direction.W) {
-          newX = this.x - 1;
-        }
-      }
-
-      this.xPrev = this.x;
-      if(newX < this.xMin) {
-        this.x = this.xMin;
-      }
-      else if(newX > this.xMax - this.width) {
-        this.x = this.xMax - this.width;
-      }
-      else {
-        this.x = newX;
-      }
-    }
-  }
-  private yAdjustAfterRotation() {
-    // console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
-    // console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
-    // console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
-    let dHeight = this.height - this.heightPrev;
-    if(dHeight !== 0) {
-      // let d: number = this.y;// - Math.abs(dHeight * (Math.sin(Math.PI / 2 * (this.rotation - 1))));
-
-      let newY: number = (this.rotation !== this.rotationPrev && this.rotationPrev === Direction.N) 
-        ? (this.y + 1) 
-        : (this.rotation === Direction.N) 
-          ? this.y - 1
-          : this.y;
-
-
-      if(newY < this.yMin) {
-        this.y = this.yMin;
-      }
-      else if(newY >= this.yMax) {
-        this.y = this.yMax;
-      }
-      else {
-        this.y = newY;
-      }
-      this.yPrev = this.y - 1;
-    }
-  }
-
-  get permutationPrev(): number[][] {
-    if(!this.shapeByDirection[this.rotationPrev]){
-      this.shapeByDirection[this.rotationPrev] = rotateMatrix(this.shape, this.rotationPrev);
-    }
-
-    return this.shapeByDirection[this.rotationPrev];
-  }
-
-  get permutation(): number[][] {
-    if(!this.shapeByDirection[this.rotation]){
-      this.shapeByDirection[this.rotation] = rotateMatrix(this.shape, this.rotation);
-    }
-
-    return this.shapeByDirection[this.rotation];
-  }
-
-  get height(): number {
-    return this.permutation.length;
-  }
-  get heightPrev(): number {
-    return this.permutationPrev.length;
-  }
-
-  get width(): number {
-    return this.permutation[0].length;
-  }
-  get widthPrev(): number {
-    return this.permutationPrev[0].length;
-  }
-
-  getWidthProjection(): number {
-    return this.permutation[0].length 
-  }
 }
 
 /**
@@ -782,20 +508,20 @@ const Game = (props: GameProps) => {
       if(numCleared > 0) {
         switch(numCleared) {
           case 1:
-            action.current = "Single!";
+            action.current = "Line Clear!";
             break;
           case 2:
-            action.current = "Double!";
+            action.current = "Double Clear!";
           break;
           case 3:
-            action.current = "Triple!";
+            action.current = "Triple Clear!";
             break;
           case 4:
-            action.current = "TETRIS!";
+            action.current = "T E T R I S !";
             break;
         }
 
-        props.actionCallback({action: action.current, points: points} || null);
+        props.actionCallback({text: action.current, points: points} || null);
 
 
       }
@@ -1160,101 +886,3 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
-
-
-
-interface ControlsMapProps {
-  clickCallback?: (e:any) => void;
-  keyMoveLeft?: string;
-  keyMoveRight?: string;
-  keyMoveDown?: string;
-  keyDropPiece?: string;
-  keyRotateLeft?: string;
-  keyRotateRight?: string;
-  keyStashPiece?: string;
-}
-
-const DEFAULT_KEY_MAP: ControlsMapProps = {
-  keyMoveLeft: 'ArrowLeft',
-  keyMoveRight: 'ArrowRight',
-  keyMoveDown: 'ArrowDown',
-  keyDropPiece: 'ArrowUp',
-  keyRotateRight: 'Shift',
-  keyRotateLeft: 'Alt',
-  keyStashPiece: '/'
-}
-
-const KEY_CODE_MAP: any = {
-  'ArrowLeft': '←',
-  'ArrowRight': '→',
-  'ArrowUp': '↑',
-  'ArrowDown': '↓',
-  'Control': '^',
-  'Shift': '⬆',
-  'Alt': '⎇',
-}
-
-export const ControlsMap: preact.FunctionComponent<ControlsMapProps> = (props: ControlsMapProps) => {
-
-  return (
-    <>
-      <div className="game-control-map tw-flex tw-gap-4 tw-flex-col tw-justify-center tw-items-center tw-mt-12 tw-rounded-lg tw-px-2 tw-py-2">
-
-        <div className="tw-flex tw-gap-12 tw-flex-row tw-justify-center tw-items-center">
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0" 
-          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateLeft})}}}
-          style={{fontSize: '1.2rem'}}><>↺</>
-            <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateLeft} ({props.keyRotateLeft ? KEY_CODE_MAP[props.keyRotateLeft] : props.keyRotateLeft})</span>
-          </div>
-          {/* <div className="tw-bg-gray-900 tw-rounded-md tw-shadow-inner tw-shadow-slate-400 tw-w-8 tw-h-8 hover-text"><>{KEY_CODE_MAP[props.keyDropPiece]}</>
-            <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece</span>
-          </div> */}
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0" 
-          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateRight})}}}
-          style={{fontSize: '1.2rem'}}>
-            <>
-            ↻
-            </>
-            <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateRight} ({props.keyRotateRight ? KEY_CODE_MAP[props.keyRotateRight] : props.keyRotateRight})</span>
-          </div>
-        </div>
-        <div className="tw-flex tw-gap-2 tw-flex-row tw-justify-center tw-items-center">
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveLeft})}}}>
-            <>{props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)}</>
-          <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Left ({props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)})</span>
-          </div>
-          <div className="tw-flex tw-gap-2 tw-flex-col tw-justify-center tw-items-center">
-            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
-              <>
-                {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
-                <div className="digital tw-text-sm tw-text-s tw-p-0 tw-m-0 tetris-font" style={{paddingLeft: ".125rem",marginTop: "-8px",fontSize: '0.4rem'}}>Drop</div>
-              </>
-              <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
-            </div>
-            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-              onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveDown})}}}>
-              <>{props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)}</>
-              <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Down ({props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)})</span>
-            </div>
-          </div>
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveRight})}}}>
-            <>{props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)}</>
-            <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Right ({props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)})</span>
-            </div>
-        </div>
-      </div>
-    </>
-  );
-};
-ControlsMap.defaultProps = {
-  keyRotateLeft: DEFAULT_KEY_MAP.keyRotateLeft,
-  keyRotateRight: DEFAULT_KEY_MAP.keyRotateRight,
-  keyMoveDown: DEFAULT_KEY_MAP.keyMoveDown,
-  keyMoveLeft: DEFAULT_KEY_MAP.keyMoveLeft,
-  keyMoveRight: DEFAULT_KEY_MAP.keyMoveRight,
-  keyDropPiece: DEFAULT_KEY_MAP.keyDropPiece,
-  keyStashPiece: DEFAULT_KEY_MAP.keyStashPiece
-}

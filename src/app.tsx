@@ -49,8 +49,8 @@ export function App() {
           {(actionQue && actionQue.current &&
           actionQue.current.map((a: GameAction)=>{ return (
             <>
-            <div key={a.id} className={`tw-w-full tw-flex tw-justify-center tw-items-center tw-absolute tw-top-0 tw-left tw-opacity-1 ${ a.transitioning ? "tw-opacity-1 action-fade-out" : "tw-opacity-0"}`}>
-              <h1 className="tw-m-0 tw-py-2 tw-font-thin">{a.text}</h1>
+            <div key={a.id} className={`tw-w-full tw-flex tw-font-mono tw-text-amber-600 tw-justify-center tw-items-center tw-absolute tw-top-0 tw-left tw-opacity-1 ${ a.transitioning ? "tw-opacity-1 action-fade-out" : "tw-opacity-0"}`}>
+              <h2 className="tw-m-0 tw-py-2 tw-font-thin">{a.text}</h2>
             </div>
             <div key={a.id + 'b'} className={`tw-font-extrabold tw-font-mono tw-w-full tw-flex tw-justify-center tw-items-center tw-absolute tw-top-0 tw-left tw-opacity-1 ${ a.transitioning ? "tw-opacity-1 action-fade-out2" : "tw-opacity-0"}`}>
               <h2 className="tw-m-0 tw-py-2 tw-font-thin tw-text-green-500">+{a.points}</h2>
