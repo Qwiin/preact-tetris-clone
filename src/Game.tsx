@@ -29,6 +29,10 @@ import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
+import { ShapeColors, TETRONIMOS } from './TetrisConfig';
+import { PieceQue } from './PieceQue';
+import ActivePiece from './ActivePiece';
+import ControlsMap from './ControlsMap';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -38,17 +42,6 @@ const PIECE_INDEXES_QUE_LENGTH: number = 40;
 const tick: Signal<number> = signal(0);
 
 // const actionSignal: Signal<string> = signal("action");
-
-const colorEnum: string[] = [
-  'transparent',
-  'yellow-400',
-  'pink-600',
-  'green-500',
-  'blue-600',
-  'orange-500',
-  'violet-600',
-  'blue-400',
-];
 
 interface GameProps {
   numColumns?: number;
@@ -63,318 +56,6 @@ interface Scoring {
   lines: number;
   level: number;
 }
-
-enum Direction {
-  N=1,
-  E,
-  S,
-  W
-}
-
-const rotateMatrix = (matrix: number[][], toDirection: Direction | number): number[][] => {
-
-  if(toDirection === Direction.N){
-    return JSON.parse(JSON.stringify(matrix));
-  }
-
-  let matrixT: number[][] = [];
-  const nR = matrix.length;
-  const nC = matrix[0].length;
-
-  let iT=0;
-  
-  switch(toDirection) {
-
-    // forward cols, reverse rows
-    case Direction.E:
-
-      for(let i=0; i<nC; i++) {
-        matrixT[iT] = [];
-        for(let j=nR-1; j>=0; j--) {
-          matrixT[iT].push(matrix[j][i]);
-        }
-        // console.log(JSON.stringify(matrixT[iT]));
-        iT++;
-      }
-      break;
-
-
-    // reverse rows, reverse cols
-    case Direction.S:
-
-      for(let i=nR-1; i>=0; i--) {
-        matrixT[iT] = [];
-        for(let j=nC-1; j>=0; j--) {
-          matrixT[iT].push(matrix[i][j]);
-        }
-        // console.log(JSON.stringify(matrixT[iT]));
-        iT++;
-      }
-      break;
-
-
-    // reverse cols, forward rows
-    case Direction.W: 
-    
-      for(let i=nC-1; i>=0; i--) {
-      matrixT[iT] = [];
-      for(let j=0; j<nR; j++) {
-          matrixT[iT].push(matrix[j][i]);
-        }
-        // console.log(JSON.stringify(matrixT[iT]));
-        iT++;
-      }
-      break;
-  }
-
-  return matrixT;
-}
-
-class ActivePiece {
-
-  dropped: boolean = false;
-
-  readonly xMax: number = 10;
-  readonly xMin: number = 0;
-  readonly yMax: number = 24;
-  readonly yMin: number = 0;
-
-  private _coordsPrev: number[][] = [];
-  public set coordsPrev(value: number[][]) {
-    this._coordsPrev = value;
-  }
-  public get coordsPrev(): number[][] {
-    return this._coordsPrev;
-  }
-
-  private _coords: number[][] = [];
-  public set coords(value: number[][]) {
-    this._coords = value;
-  }
-  public get coords(): number[][] {
-    return this._coords;
-  }
-
-  lastTick: number = -1;
-
-  x: number = 4;
-  xPrev: number = 4;
-  y: number = 4;
-  yPrev: number = -1;
-
-  private _rotation: Direction = Direction.N;
-  public get rotation(): Direction {
-    return this._rotation;
-  }
-  public set rotation(value: Direction) {
-    this._rotation = value;
-    this.permutation
-  }
-
-  private _rotationPrev: Direction = Direction.N;
-  public get rotationPrev(): Direction {
-    return this._rotationPrev
-  }
-  public set rotationPrev(value: Direction) {
-    this._rotationPrev = value;
-  }
-
-  readonly shape: number[][] = [];
-
-  readonly shapeByDirection: number[][][] = [];
-
-  constructor(shape?: number[][], rotation?: Direction, coords?: number[][], x?: number, y?: number) {
-
-    if(shape) {
-      this.shape = shape;
-      this.shapeByDirection[Direction.N] = this.shape;
-      if(rotation) {
-        this._rotation = rotation;
-        this._rotationPrev = rotation;
-      }
-      if(x) {
-        this.x = Math.floor((10 - this.shape[0].length) / 2);
-        this.xPrev = this.x;
-      }
-      if(y) {
-        this.y = y;
-        this.yPrev = y-1;
-      }
-      if(coords) {
-        this.coords = coords;
-        this.coordsPrev = [...coords];
-      }
-    }
-  }
-
-  rotateLeft() {
-    this._rotationPrev = this._rotation;
-    if(this.rotation === Direction.N) {
-      this.rotation = Direction.W;
-    }
-    else {
-      this.rotation -= 1;
-    }
-    this.xAdjustAfterRotation();
-    this.yAdjustAfterRotation();
-
-    // this._coordsPrev = JSON.parse(JSON.stringify(this._coords));
-    // this._coords = rotateMatrix(this._coords, 4);
-  }
-
-  rotateRight() {
-    this._rotationPrev = this._rotation;
-    if(this.rotation === Direction.W) {
-      this.rotation = Direction.N;
-    }
-    else {
-      this.rotation += 1;
-    }
-    this.xAdjustAfterRotation();
-    this.yAdjustAfterRotation();
-
-    // this._coordsPrev = JSON.parse(JSON.stringify(this._coords));
-    // this._coords = rotateMatrix(this._coords, 2);
-  }
-
-  private xAdjustAfterRotation() {
-    // console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
-    // console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
-    // console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
-    let dWidth = this.width - this.widthPrev;
-    if(dWidth !== 0) {
-      
-
-      // TODO: clean up
-
-      let newX: number = (this.rotation === Direction.E) 
-        ? (this.x + 1) 
-        : (this.rotation !== this.rotationPrev && this.rotationPrev === Direction.E) 
-          ? this.x - 1
-          : this.x;
-
-      if(this.width === 1) {
-        if (this.rotation === Direction.E) {
-          newX = this.x + 2;
-        }
-        else if (this.rotation === Direction.W) {
-          newX = this.x + 1;
-        }
-      }
-      else if(this.width === 4) { 
-        if(this.rotationPrev === Direction.E) {
-          newX = this.x - 2;
-        }
-        if(this.rotationPrev === Direction.W) {
-          newX = this.x - 1;
-        }
-      }
-
-      this.xPrev = this.x;
-      if(newX < this.xMin) {
-        this.x = this.xMin;
-      }
-      else if(newX > this.xMax - this.width) {
-        this.x = this.xMax - this.width;
-      }
-      else {
-        this.x = newX;
-      }
-    }
-  }
-  private yAdjustAfterRotation() {
-    // console.log({'rotationChange': `${this.rotationPrev} -> ${this.rotation}`});
-    // console.log({'       xChange': `${this.xPrev} -> ${this.x}`});
-    // console.log({'       yChange': `${this.yPrev} -> ${this.y}`});
-    let dHeight = this.height - this.heightPrev;
-    if(dHeight !== 0) {
-      // let d: number = this.y;// - Math.abs(dHeight * (Math.sin(Math.PI / 2 * (this.rotation - 1))));
-
-      let newY: number = (this.rotation !== this.rotationPrev && this.rotationPrev === Direction.N) 
-        ? (this.y + 1) 
-        : (this.rotation === Direction.N) 
-          ? this.y - 1
-          : this.y;
-
-
-      if(newY < this.yMin) {
-        this.y = this.yMin;
-      }
-      else if(newY >= this.yMax) {
-        this.y = this.yMax;
-      }
-      else {
-        this.y = newY;
-      }
-      this.yPrev = this.y - 1;
-    }
-  }
-
-  get permutationPrev(): number[][] {
-    if(!this.shapeByDirection[this.rotationPrev]){
-      this.shapeByDirection[this.rotationPrev] = rotateMatrix(this.shape, this.rotationPrev);
-    }
-
-    return this.shapeByDirection[this.rotationPrev];
-  }
-
-  get permutation(): number[][] {
-    if(!this.shapeByDirection[this.rotation]){
-      this.shapeByDirection[this.rotation] = rotateMatrix(this.shape, this.rotation);
-    }
-
-    return this.shapeByDirection[this.rotation];
-  }
-
-  get height(): number {
-    return this.permutation.length;
-  }
-  get heightPrev(): number {
-    return this.permutationPrev.length;
-  }
-
-  get width(): number {
-    return this.permutation[0].length;
-  }
-  get widthPrev(): number {
-    return this.permutationPrev[0].length;
-  }
-
-  getWidthProjection(): number {
-    return this.permutation[0].length 
-  }
-}
-
-const TETRONIMO_SIZE: number = 4;
-const TETRONIMOS: number[][][] = [
-  [
-    [11, 11],
-    [11, 11]
-  ],
-  [
-    [22, 22, 0 ],
-    [ 0, 22, 22],
-  ],
-  [
-    [ 0, 33, 33],
-    [33, 33,  0]
-  ],
-  [
-    [44,  0,  0],
-    [44, 44, 44]
-  ],
-  [
-    [ 0,  0, 55],
-    [55, 55, 55]
-  ],
-  [
-    [ 0, 66, 0 ],
-    [66, 66, 66]
-  ],
-  [
-    [77, 77, 77, 77]
-  ]
-]
 
 /**
  * 
@@ -704,13 +385,22 @@ const Game = (props: GameProps) => {
         
         let coords = piece.coords;
         let colHeights = columnHeights.current;
-        for(let i=0; i<TETRONIMO_SIZE; i++){
+        for(let i=0; i<coords.length; i++){
           let y = coords[i][0];
           let x = coords[i][1];
-          rows[coords[i][0]][coords[i][1]] = rows[coords[i][0]][coords[i][1]] / 11;
+          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11;
+          rows[coords[i][0]][coords[i][1]] = newCellVal;
           if(colHeights) {
             colHeights[x] = Math.max((nRows - y), colHeights[x]);
             // console.log(colHeights.toString());
+          }
+
+          //check for gameover//
+          if(newCellVal > 0 && newCellVal < 0.9) {
+            setGameover(true);
+            paused.current = true;
+            pauseGame();
+            return;
           }
         }
         
@@ -729,6 +419,7 @@ const Game = (props: GameProps) => {
 
         activePiece.current = null; 
         requestAnimationFrame(()=>{
+          updatePosition();
           updateBoard(null);
         });
         setTimeout(()=>{
@@ -817,20 +508,20 @@ const Game = (props: GameProps) => {
       if(numCleared > 0) {
         switch(numCleared) {
           case 1:
-            action.current = "Single!";
+            action.current = "Line Clear!";
             break;
           case 2:
-            action.current = "Double!";
+            action.current = "Double Clear!";
           break;
           case 3:
-            action.current = "Triple!";
+            action.current = "Triple Clear!";
             break;
           case 4:
-            action.current = "TETRIS!";
+            action.current = "T E T R I S !";
             break;
         }
 
-        props.actionCallback({action: action.current, points: points} || null);
+        props.actionCallback({text: action.current, points: points} || null);
 
 
       }
@@ -853,7 +544,15 @@ const Game = (props: GameProps) => {
   const getPieceFromQue = () => {
     pieceQue.current?.push(getNextPiece());    
     // console.log(pieceQue.current);
-    return new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
+    let p: ActivePiece = new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
+    let c: number[][] = [];
+    for(let i=0; i<p.height; i++) {
+      for(let j=0; j<p.width; j++) {
+        c.push([p.y-i,p.x+j]);
+      }
+    }
+    p.coords = c;
+    return p;
   }
 
   const keydownHandler = (e:any) => {
@@ -868,7 +567,7 @@ const Game = (props: GameProps) => {
           activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x += 1; 
-          updatePosition();
+          updatePosition();      
         }
         break;
       case "ArrowLeft":
@@ -1085,15 +784,15 @@ const Game = (props: GameProps) => {
     
     return rows.map((row) => {
       return (
-        <div className="tw-flex tw-flex-row tw-gap-0">
+        <div className="tw-flex tw-flex-row tw-gap-0 tw-box-border">
           
           { 
             row.map((cellValue) => {
-            let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
+            let ShapeColorsVal = cellValue > 10 ? ShapeColors[cellValue/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
                 ? 'tw-bg-black tw-border tw-border-gray-900'
-                : `tw-border tw-bg-${colorEnumVal} tw-border-${colorEnumVal} tw-border-outset`;
+                : `tw-border tw-bg-${ShapeColorsVal} tw-border-${ShapeColorsVal} tw-border-outset`;
             return (
               <div
                 className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
@@ -1108,10 +807,12 @@ const Game = (props: GameProps) => {
   };
 
   return (
-    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-4">
+    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center">
-        <button className="tw-border-slate-200 tw-w-32 tw-m-6" onClick={()=>{
+      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center tw-pb-6">
+        <button className="tetris-font tw-border-slate-200 tw-w-32 tw-m-6 tw-p-2 tw-text-md" 
+          style={{paddingTop:"0.7rem"}}
+          onClick={()=>{
           tick.value = 0;
           stats.current = {
             score: 0,
@@ -1131,9 +832,14 @@ const Game = (props: GameProps) => {
           setGameover(false);
           resumeGame();
         }}>Restart</button>
-        <button className="tw-border-slate-200 tw-w-32" disabled={gameover} onClick={()=>{
+        <button 
+          className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
+          style={{paddingTop:"0.7rem"}}
+          disabled={gameover} 
+          onClick={()=>{
           if(!paused.current) {
             pauseGame();
+
           }
           else {
             resumeGame();
@@ -1143,23 +849,23 @@ const Game = (props: GameProps) => {
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
       <div style={{border: "2px inset rgba(0,0,0,0.5)"}}
-      className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-px-4 tw-pb-4">
+      className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-4 tw-pb-4">
         <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
         <div>
-          <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
-          <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content tw-relative">
+          <h5 className="bg-green-100 game-clock tetris-font tw-text-lg">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
+          <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"0.6px solid rgba(200,200,200,1)"}}>
             
-            <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
+            <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
               {renderBoard()}
             </div>
             { (gameover || paused.current) &&
-              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity  tw-z-10 tw-top-0 tw-left-0">
-                <h2 className="tw-text-center">{gameover ? 'Game Over' : 'Paused'}</h2>
+              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
+                <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
               </div>
             }
           </div>
         </div>
-        <PieceQue queLength={PIECE_QUE_LENGTH} pieces={pieceQue.current || []}/>
+        <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} pieces={pieceQue.current || []}/>
       </div>
       <StatsPanel fields={[
         {
@@ -1180,167 +886,3 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
-
-interface PieceQueProps {
-  queLength: number;
-  pieces?: number[][][];
-}
-
-const defaultPropsPieceQue: PieceQueProps = {
-  queLength: 5,
-  pieces: [
-    TETRONIMOS[0],
-    TETRONIMOS[1],
-    TETRONIMOS[2],
-    TETRONIMOS[3],
-    TETRONIMOS[4],
-    TETRONIMOS[5],
-    TETRONIMOS[6],
-  ]
-}
-
-
-interface ControlsMapProps {
-  clickCallback?: (e:any) => void;
-  keyMoveLeft?: string;
-  keyMoveRight?: string;
-  keyMoveDown?: string;
-  keyDropPiece?: string;
-  keyRotateLeft?: string;
-  keyRotateRight?: string;
-  keyStashPiece?: string;
-}
-
-const DEFAULT_KEY_MAP: ControlsMapProps = {
-  keyMoveLeft: 'ArrowLeft',
-  keyMoveRight: 'ArrowRight',
-  keyMoveDown: 'ArrowDown',
-  keyDropPiece: 'ArrowUp',
-  keyRotateRight: 'Shift',
-  keyRotateLeft: 'Alt',
-  keyStashPiece: '/'
-}
-
-const KEY_CODE_MAP: any = {
-  'ArrowLeft': '←',
-  'ArrowRight': '→',
-  'ArrowUp': '↑',
-  'ArrowDown': '↓',
-  'Control': '^',
-  'Shift': '⬆',
-  'Alt': '⎇',
-}
-export const ControlsMap: preact.FunctionComponent<ControlsMapProps> = (props: ControlsMapProps) => {
-
-  return (
-    <>
-      <div className="game-control-map tw-flex tw-gap-4 tw-flex-col tw-justify-center tw-items-center tw-mt-12 tw-rounded-lg tw-px-2 tw-py-2">
-
-        <div className="tw-flex tw-gap-12 tw-flex-row tw-justify-center tw-items-center">
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0" 
-          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateLeft})}}}
-          style={{fontSize: '1.2rem'}}><>↺</>
-            <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateLeft} ({props.keyRotateLeft ? KEY_CODE_MAP[props.keyRotateLeft] : props.keyRotateLeft})</span>
-          </div>
-          {/* <div className="tw-bg-gray-900 tw-rounded-md tw-shadow-inner tw-shadow-slate-400 tw-w-8 tw-h-8 hover-text"><>{KEY_CODE_MAP[props.keyDropPiece]}</>
-            <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece</span>
-          </div> */}
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0" 
-          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateRight})}}}
-          style={{fontSize: '1.2rem'}}>
-            <>
-            ↻
-            </>
-            <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateRight} ({props.keyRotateRight ? KEY_CODE_MAP[props.keyRotateRight] : props.keyRotateRight})</span>
-          </div>
-        </div>
-        <div className="tw-flex tw-gap-2 tw-flex-row tw-justify-center tw-items-center">
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveLeft})}}}>
-            <>{props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)}</>
-          <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Left ({props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)})</span>
-          </div>
-          <div className="tw-flex tw-gap-2 tw-flex-col tw-justify-center tw-items-center">
-            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
-              <>
-                {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
-                <div className="tw-text-xs tw-p-0 tw-m-0" style={{marginTop: "-8px",fontSize: '0.5rem'}}>Drop</div>
-              </>
-              <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
-            </div>
-            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-              onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveDown})}}}>
-              <>{props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)}</>
-              <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Down ({props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)})</span>
-            </div>
-          </div>
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveRight})}}}>
-            <>{props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)}</>
-            <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Right ({props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)})</span>
-            </div>
-        </div>
-      </div>
-    </>
-  );
-};
-ControlsMap.defaultProps = {
-  keyRotateLeft: DEFAULT_KEY_MAP.keyRotateLeft,
-  keyRotateRight: DEFAULT_KEY_MAP.keyRotateRight,
-  keyMoveDown: DEFAULT_KEY_MAP.keyMoveDown,
-  keyMoveLeft: DEFAULT_KEY_MAP.keyMoveLeft,
-  keyMoveRight: DEFAULT_KEY_MAP.keyMoveRight,
-  keyDropPiece: DEFAULT_KEY_MAP.keyDropPiece,
-  keyStashPiece: DEFAULT_KEY_MAP.keyStashPiece
-}
-
-export const PieceQue: preact.FunctionComponent<PieceQueProps> = (props: PieceQueProps) => {
-
-  return (
-    <>
-      <div className="tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24">
-        {
-          props.pieces &&
-          props.pieces.slice(0,5).map((piece: number[][])=>{
-            
-            return (
-              <>
-                <div className="tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16">
-                {
-                  piece.map((row: number[]) => {
-                    return (
-                      <>
-                      <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length * 4}`}>
-                        {
-                          row.map((cellValue: number)=>{
-                            let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
-                            let cellColor: string =
-                              cellValue === 0
-                                ? 'tw-bg-transparent'
-                                : `tw-border tw-bg-${colorEnumVal} tw-border-${colorEnumVal} tw-border-outset`;
-                            return (
-                              <>
-                                <div
-                                  className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
-                                  style={{ borderStyle: (cellValue === 0 ? 'none' : 'outset') }}
-                                ></div>
-                              </>
-                            );
-                          })
-                        }
-                      </div>
-                      </>
-                    );
-                  })
-                }
-                </div>
-              </>
-            );
-          })
-        }
-      </div>
-    </>
-  );
-};
-PieceQue.defaultProps = defaultPropsPieceQue;

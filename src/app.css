@@ -31,6 +31,11 @@ body {
   src: local("SfDigitalReadoutHeavy-AwVg"),
     url("/src/font/SfDigitalReadoutHeavy-AwVg.ttf") format("truetype");
 }
+@font-face {
+  font-family: "Absolute Empire";   /*Can be any text*/
+  src: local("AAbsoluteEmpire-EaXpg"),
+    url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
+}
 
 .timer-font {
   font-family: "SF Digital Medium";
@@ -40,7 +45,7 @@ body {
   margin: 8px;
   margin-bottom: 4px;
   font-family: 'SF Digital Heavy';
-  font-size: 48px;
+  /* font-size: 48px; */
   padding: 0;
 }
 
@@ -52,6 +57,11 @@ body {
 
 .stats-field {
   line-height: 40px;
+}
+
+.digital {
+  font-family: 'SF Digital Heavy';
+  letter-spacing: 0.15rem;
 }
 
 #app {
@@ -80,20 +90,40 @@ body {
   color: #888;
 }
 
+.tetris-font {
+  font-family: 'Absolute Empire';
+}
+
 .game-header {
   padding-top: 24px;
   line-height: 40px;
   letter-spacing: 0.3em;
-  font-family: 'SF Digital Heavy';
+  font-family: 'Absolute Empire';
+  font-weight: 300;
+  font-size: 2.5rem;
+  color:aliceblue;
+  text-shadow: rgba(0,128,196,0.9) 0rem 0.2rem 0.7rem;
+  opacity: 0.8;
 }
 
 @keyframes fadeOut {
-  0% { opacity: 1; transform: translateY(0)  }
-  100% { opacity: 0; transform: translateY(-200%) }
+  0% { 
+    opacity: 1; 
+    transform: translateY(-150%) scale(100%);
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateY(-400%) scale(200%);
+  }
 }
 @keyframes fadeOut2 {
   0% { opacity: 1; transform: translateY(-100%)  }
   100% { opacity: 0; transform: translateY(-300%) }
+}
+@keyframes scaleBounce {
+  0% { transform: scale(100%)  }
+  50% { transform: scale(300%)  }
+  0% { transform: scale(100%)  }
 }
 
 .game-control-map {
@@ -106,14 +136,20 @@ body {
   background-color: rgb(26, 26, 26, 1);
 }
 
+.menu-button.disabled {
+  border: 1px rgba(255,255,255,0.4) solid;
+}
+
 .action-fade-out {
-  animation: fadeOut 2.5s;
+  animation: fadeOut;
+  animation-duration: 2.5s;
   animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   animation-delay: 0s;
 }
 .action-fade-out2 {
   font-weight: bold;
-  animation: fadeOut2 2.5s;
+  animation: fadeOut2;
+  animation-duration: 2.5s;
   animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   animation-delay: 0s;
 }
