@@ -31,6 +31,11 @@ body {
   src: local("SfDigitalReadoutHeavy-AwVg"),
     url("/src/font/SfDigitalReadoutHeavy-AwVg.ttf") format("truetype");
 }
+@font-face {
+  font-family: "Absolute Empire";   /*Can be any text*/
+  src: local("AAbsoluteEmpire-EaXpg"),
+    url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
+}
 
 .timer-font {
   font-family: "SF Digital Medium";
@@ -40,7 +45,7 @@ body {
   margin: 8px;
   margin-bottom: 4px;
   font-family: 'SF Digital Heavy';
-  font-size: 48px;
+  /* font-size: 48px; */
   padding: 0;
 }
 
@@ -52,6 +57,11 @@ body {
 
 .stats-field {
   line-height: 40px;
+}
+
+.digital {
+  font-family: 'SF Digital Heavy';
+  letter-spacing: 0.15rem;
 }
 
 #app {
@@ -80,11 +90,20 @@ body {
   color: #888;
 }
 
+.tetris-font {
+  font-family: 'Absolute Empire';
+}
+
 .game-header {
   padding-top: 24px;
   line-height: 40px;
   letter-spacing: 0.3em;
-  font-family: 'SF Digital Heavy';
+  font-family: 'Absolute Empire';
+  font-weight: 300;
+  font-size: 2.5rem;
+  color:aliceblue;
+  text-shadow: rgba(0,128,196,0.9) 0rem 0.2rem 0.7rem;
+  opacity: 0.8;
 }
 
 @keyframes fadeOut {
@@ -104,6 +123,10 @@ body {
 .game-control-button {
   border: 1px white solid;
   background-color: rgb(26, 26, 26, 1);
+}
+
+.menu-button.disabled {
+  border: 1px rgba(255,255,255,0.4) solid;
 }
 
 .action-fade-out {

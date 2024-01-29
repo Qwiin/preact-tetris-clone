@@ -704,13 +704,22 @@ const Game = (props: GameProps) => {
         
         let coords = piece.coords;
         let colHeights = columnHeights.current;
-        for(let i=0; i<TETRONIMO_SIZE; i++){
+        for(let i=0; i<coords.length; i++){
           let y = coords[i][0];
           let x = coords[i][1];
-          rows[coords[i][0]][coords[i][1]] = rows[coords[i][0]][coords[i][1]] / 11;
+          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11;
+          rows[coords[i][0]][coords[i][1]] = newCellVal;
           if(colHeights) {
             colHeights[x] = Math.max((nRows - y), colHeights[x]);
             // console.log(colHeights.toString());
+          }
+
+          //check for gameover//
+          if(newCellVal > 0 && newCellVal < 0.9) {
+            setGameover(true);
+            paused.current = true;
+            pauseGame();
+            return;
           }
         }
         
@@ -729,6 +738,7 @@ const Game = (props: GameProps) => {
 
         activePiece.current = null; 
         requestAnimationFrame(()=>{
+          updatePosition();
           updateBoard(null);
         });
         setTimeout(()=>{
@@ -853,7 +863,15 @@ const Game = (props: GameProps) => {
   const getPieceFromQue = () => {
     pieceQue.current?.push(getNextPiece());    
     // console.log(pieceQue.current);
-    return new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
+    let p: ActivePiece = new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
+    let c: number[][] = [];
+    for(let i=0; i<p.height; i++) {
+      for(let j=0; j<p.width; j++) {
+        c.push([p.y-i,p.x+j]);
+      }
+    }
+    p.coords = c;
+    return p;
   }
 
   const keydownHandler = (e:any) => {
@@ -1085,7 +1103,7 @@ const Game = (props: GameProps) => {
     
     return rows.map((row) => {
       return (
-        <div className="tw-flex tw-flex-row tw-gap-0">
+        <div className="tw-flex tw-flex-row tw-gap-0 tw-box-border">
           
           { 
             row.map((cellValue) => {
@@ -1108,10 +1126,12 @@ const Game = (props: GameProps) => {
   };
 
   return (
-    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-4">
+    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center">
-        <button className="tw-border-slate-200 tw-w-32 tw-m-6" onClick={()=>{
+      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center tw-pb-6">
+        <button className="tetris-font tw-border-slate-200 tw-w-32 tw-m-6 tw-p-2 tw-text-md" 
+          style={{paddingTop:"0.7rem"}}
+          onClick={()=>{
           tick.value = 0;
           stats.current = {
             score: 0,
@@ -1131,9 +1151,14 @@ const Game = (props: GameProps) => {
           setGameover(false);
           resumeGame();
         }}>Restart</button>
-        <button className="tw-border-slate-200 tw-w-32" disabled={gameover} onClick={()=>{
+        <button 
+          className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
+          style={{paddingTop:"0.7rem"}}
+          disabled={gameover} 
+          onClick={()=>{
           if(!paused.current) {
             pauseGame();
+
           }
           else {
             resumeGame();
@@ -1143,18 +1168,18 @@ const Game = (props: GameProps) => {
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
       <div style={{border: "2px inset rgba(0,0,0,0.5)"}}
-      className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-px-4 tw-pb-4">
+      className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-4 tw-pb-4">
         <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
         <div>
-          <h5 className="bg-green-100 game-clock">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
-          <div class="container tw-pt-2 tw-h-80 tw-overflow-hidden tw-border-content tw-relative">
+          <h5 className="bg-green-100 game-clock tetris-font tw-text-lg">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
+          <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"0.6px solid rgba(200,200,200,1)"}}>
             
-            <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0"  style={{transform: "translateY(-4.5rem)"}}>
+            <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
               {renderBoard()}
             </div>
             { (gameover || paused.current) &&
-              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity  tw-z-10 tw-top-0 tw-left-0">
-                <h2 className="tw-text-center">{gameover ? 'Game Over' : 'Paused'}</h2>
+              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
+                <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
               </div>
             }
           </div>
@@ -1265,7 +1290,7 @@ export const ControlsMap: preact.FunctionComponent<ControlsMapProps> = (props: C
             onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
               <>
                 {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
-                <div className="tw-text-xs tw-p-0 tw-m-0" style={{marginTop: "-8px",fontSize: '0.5rem'}}>Drop</div>
+                <div className="digital tw-text-sm tw-text-s tw-p-0 tw-m-0 tetris-font" style={{paddingLeft: ".125rem",marginTop: "-8px",fontSize: '0.4rem'}}>Drop</div>
               </>
               <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
             </div>
@@ -1299,14 +1324,14 @@ export const PieceQue: preact.FunctionComponent<PieceQueProps> = (props: PieceQu
 
   return (
     <>
-      <div className="tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24">
+      <div className="tw-flex tw-flex-col tw-w-20 tw-items-center tw-justify-start tw-gap-2 tw-mt-3 tw-h-80 tw-bg-black tw-rounded-xl tw-pt-4 tw-pb-4 tw-pr-2 tw-pl-3" style={{transform: "translateX(-33%) translateY(1.13px) scale(60%)", zIndex:"-1", border:"1px solid rgba(255,255,255,0.8)", borderTopLeftRadius:"0", borderBottomLeftRadius:"0"}}>
         {
           props.pieces &&
           props.pieces.slice(0,5).map((piece: number[][])=>{
             
             return (
               <>
-                <div className="tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16">
+                <div className="tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16 tw-m-0">
                 {
                   piece.map((row: number[]) => {
                     return (
