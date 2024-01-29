@@ -33,6 +33,7 @@ import { StatsPanel } from './StatsPanel';
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
+const LINE_CLEAR_TIMEOUT: number = 1000;
 
 const tick: Signal<number> = signal(0);
 
@@ -54,7 +55,7 @@ interface GameProps {
   numRows?: number;
   init: boolean;
   keydownCallback: (key: string) => void;
-  actionCallback: (action: string) => void;
+  actionCallback: (value: any) => void;
 }
 
 interface Scoring {
@@ -378,6 +379,7 @@ const Game = (props: GameProps) => {
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
+  const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
   const [gameover, setGameover] = useState(false);
 
@@ -625,10 +627,12 @@ const Game = (props: GameProps) => {
 
       //let numCleared = nRows - nNewRows;
 
+      let points: number = 0;
       if(stats.current && numCleared > 0) {
         stats.current.lines += numCleared;
         stats.current.level = Math.floor(stats.current.lines / 10) + 1;
-        stats.current.score += ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+        points = ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+        stats.current.score += points;
       }
 
       // for (let i = 0; i < numCleared; i++) {
@@ -656,7 +660,9 @@ const Game = (props: GameProps) => {
             break;
         }
 
-        props.actionCallback(action.current || "");
+        props.actionCallback({action: action.current, points: points} || null);
+
+
       }
     }
   };
@@ -910,7 +916,9 @@ const Game = (props: GameProps) => {
     return rows.map((row) => {
       return (
         <div className="tw-flex tw-flex-row tw-gap-0">
-          {row.map((cellValue) => {
+          
+          { 
+            row.map((cellValue) => {
             let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
             let cellColor =
               cellValue === 0

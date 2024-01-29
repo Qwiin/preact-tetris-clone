@@ -91,6 +91,10 @@ body {
   0% { opacity: 1; transform: translateY(0)  }
   100% { opacity: 0; transform: translateY(-200%) }
 }
+@keyframes fadeOut2 {
+  0% { opacity: 1; transform: translateY(-100%)  }
+  100% { opacity: 0; transform: translateY(-300%) }
+}
 
 .game-control-map {
   background-color: rgb(26, 26, 26, 0.8);
@@ -103,7 +107,13 @@ body {
 }
 
 .action-fade-out {
-  animation: fadeOut 3s;
+  animation: fadeOut 2.5s;
+  animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation-delay: 0s;
+}
+.action-fade-out2 {
+  font-weight: bold;
+  animation: fadeOut2 2.5s;
   animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   animation-delay: 0s;
 }
