@@ -114,6 +114,10 @@
   top: 0px
 }
 
+.tw-top-1 {
+  top: 0.25rem
+}
+
 .tw-z-10 {
   z-index: 10
 }
@@ -174,6 +178,22 @@
   margin-top: 0.75rem
 }
 
+.tw-mb-2 {
+  margin-bottom: 0.5rem
+}
+
+.tw-mb-4 {
+  margin-bottom: 1rem
+}
+
+.tw-mb-5 {
+  margin-bottom: 1.25rem
+}
+
+.tw-mb-6 {
+  margin-bottom: 1.5rem
+}
+
 .tw-box-border {
   box-sizing: border-box
 }
@@ -216,6 +236,14 @@
 
 .tw-h-60 {
   height: 15rem
+}
+
+.tw-h-2 {
+  height: 0.5rem
+}
+
+.tw-h-0 {
+  height: 0px
 }
 
 .tw-w-16 {

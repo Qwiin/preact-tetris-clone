@@ -29,6 +29,8 @@ import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import './app.css';
 import { StatsPanel } from './StatsPanel';
+import { Direction, ShapeColors, TETRONIMOS } from './TetrisConfig';
+import { PieceQue } from './PieceQue';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -38,17 +40,6 @@ const PIECE_INDEXES_QUE_LENGTH: number = 40;
 const tick: Signal<number> = signal(0);
 
 // const actionSignal: Signal<string> = signal("action");
-
-const colorEnum: string[] = [
-  'transparent',
-  'yellow-400',
-  'pink-600',
-  'green-500',
-  'blue-600',
-  'orange-500',
-  'violet-600',
-  'blue-400',
-];
 
 interface GameProps {
   numColumns?: number;
@@ -64,12 +55,7 @@ interface Scoring {
   level: number;
 }
 
-enum Direction {
-  N=1,
-  E,
-  S,
-  W
-}
+
 
 const rotateMatrix = (matrix: number[][], toDirection: Direction | number): number[][] => {
 
@@ -344,37 +330,6 @@ class ActivePiece {
     return this.permutation[0].length 
   }
 }
-
-const TETRONIMO_SIZE: number = 4;
-const TETRONIMOS: number[][][] = [
-  [
-    [11, 11],
-    [11, 11]
-  ],
-  [
-    [22, 22, 0 ],
-    [ 0, 22, 22],
-  ],
-  [
-    [ 0, 33, 33],
-    [33, 33,  0]
-  ],
-  [
-    [44,  0,  0],
-    [44, 44, 44]
-  ],
-  [
-    [ 0,  0, 55],
-    [55, 55, 55]
-  ],
-  [
-    [ 0, 66, 0 ],
-    [66, 66, 66]
-  ],
-  [
-    [77, 77, 77, 77]
-  ]
-]
 
 /**
  * 
@@ -1107,11 +1062,11 @@ const Game = (props: GameProps) => {
           
           { 
             row.map((cellValue) => {
-            let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
+            let ShapeColorsVal = cellValue > 10 ? ShapeColors[cellValue/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
                 ? 'tw-bg-black tw-border tw-border-gray-900'
-                : `tw-border tw-bg-${colorEnumVal} tw-border-${colorEnumVal} tw-border-outset`;
+                : `tw-border tw-bg-${ShapeColorsVal} tw-border-${ShapeColorsVal} tw-border-outset`;
             return (
               <div
                 className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
@@ -1184,7 +1139,7 @@ const Game = (props: GameProps) => {
             }
           </div>
         </div>
-        <PieceQue queLength={PIECE_QUE_LENGTH} pieces={pieceQue.current || []}/>
+        <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} pieces={pieceQue.current || []}/>
       </div>
       <StatsPanel fields={[
         {
@@ -1206,23 +1161,6 @@ const Game = (props: GameProps) => {
 
 export default Game;
 
-interface PieceQueProps {
-  queLength: number;
-  pieces?: number[][][];
-}
-
-const defaultPropsPieceQue: PieceQueProps = {
-  queLength: 5,
-  pieces: [
-    TETRONIMOS[0],
-    TETRONIMOS[1],
-    TETRONIMOS[2],
-    TETRONIMOS[3],
-    TETRONIMOS[4],
-    TETRONIMOS[5],
-    TETRONIMOS[6],
-  ]
-}
 
 
 interface ControlsMapProps {
@@ -1255,6 +1193,7 @@ const KEY_CODE_MAP: any = {
   'Shift': '⬆',
   'Alt': '⎇',
 }
+
 export const ControlsMap: preact.FunctionComponent<ControlsMapProps> = (props: ControlsMapProps) => {
 
   return (
@@ -1319,53 +1258,3 @@ ControlsMap.defaultProps = {
   keyDropPiece: DEFAULT_KEY_MAP.keyDropPiece,
   keyStashPiece: DEFAULT_KEY_MAP.keyStashPiece
 }
-
-export const PieceQue: preact.FunctionComponent<PieceQueProps> = (props: PieceQueProps) => {
-
-  return (
-    <>
-      <div className="tw-flex tw-flex-col tw-w-20 tw-items-center tw-justify-start tw-gap-2 tw-mt-3 tw-h-80 tw-bg-black tw-rounded-xl tw-pt-4 tw-pb-4 tw-pr-2 tw-pl-3" style={{transform: "translateX(-33%) translateY(1.13px) scale(60%)", zIndex:"-1", border:"1px solid rgba(255,255,255,0.8)", borderTopLeftRadius:"0", borderBottomLeftRadius:"0"}}>
-        {
-          props.pieces &&
-          props.pieces.slice(0,5).map((piece: number[][])=>{
-            
-            return (
-              <>
-                <div className="tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16 tw-m-0">
-                {
-                  piece.map((row: number[]) => {
-                    return (
-                      <>
-                      <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length * 4}`}>
-                        {
-                          row.map((cellValue: number)=>{
-                            let colorEnumVal = cellValue > 10 ? colorEnum[cellValue/11] : colorEnum[cellValue]
-                            let cellColor: string =
-                              cellValue === 0
-                                ? 'tw-bg-transparent'
-                                : `tw-border tw-bg-${colorEnumVal} tw-border-${colorEnumVal} tw-border-outset`;
-                            return (
-                              <>
-                                <div
-                                  className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
-                                  style={{ borderStyle: (cellValue === 0 ? 'none' : 'outset') }}
-                                ></div>
-                              </>
-                            );
-                          })
-                        }
-                      </div>
-                      </>
-                    );
-                  })
-                }
-                </div>
-              </>
-            );
-          })
-        }
-      </div>
-    </>
-  );
-};
-PieceQue.defaultProps = defaultPropsPieceQue;

@@ -1,6 +1,8 @@
 import { useRef, useReducer } from 'preact/hooks'
 import './app.css'
 import Game from './Game'
+import { GameAction } from './TetrisConfig';
+import { Ref } from 'preact';
 
 export function App() {
 
@@ -8,16 +10,21 @@ export function App() {
 
   // const [transitioning, setTransitioning] = useState(false);
 
-  const actionQue = useRef([]);
+  const actionQue: Ref<any[]> = useRef([]);
 
-  const keyDownCallback = (key) => {
+  const keyDownCallback = (key: string) => {
     console.log(key);
   }
 
-  const actionCallback = (a) => {
+  const actionCallback = (a: GameAction) => {
     
     if(actionQue.current){
-      actionQue.current.push({text: a.action, points: a.points, id: Math.round(window.performance.now()).toString(), transitioning: true});
+      actionQue.current.push({
+        text: a.text, 
+        points: a.points, 
+        id: Math.round(window.performance.now()).toString(), 
+        transitioning: true
+      });
       console.log(JSON.stringify(actionQue.current));
     }
     setTimeout(()=>{
@@ -34,12 +41,13 @@ export function App() {
     <>
     <div className="tw-bg-slate-700 tw-scale-125 tw-bg-opacity-40">
       <div className={`tw-opacity-1`}>
-        <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header tw-text">TETRIS</h1>
+        <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header">TETRIS</h1>
       </div>
+      {/* @ts-expect-error Server Component */}
       <Game init={true} keydownCallback={keyDownCallback} actionCallback={actionCallback}/>
         <div className='tw-relative tw-w-full tw-h-14'>
           {(actionQue && actionQue.current &&
-          actionQue.current.map((a)=>{ return (
+          actionQue.current.map((a: GameAction)=>{ return (
             <>
             <div key={a.id} className={`tw-w-full tw-flex tw-justify-center tw-items-center tw-absolute tw-top-0 tw-left tw-opacity-1 ${ a.transitioning ? "tw-opacity-1 action-fade-out" : "tw-opacity-0"}`}>
               <h1 className="tw-m-0 tw-py-2 tw-font-thin">{a.text}</h1>
