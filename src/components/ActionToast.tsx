@@ -37,6 +37,7 @@ const pointsDivVariants = {
 
 
 export function ActionToast(props: ActionToastProps) {
+
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
       <div className='tw-relative tw-w-80 tw-h-14 tw-max-w-80'>
@@ -44,7 +45,7 @@ export function ActionToast(props: ActionToastProps) {
         (props.actions || [{text: "Action", points: "1,000,000"}]).map((action: GameAction)=>{ return (
           <>
           {/* @ts-expect-error Motion Component */}
-          <motion.div className={`tw-w-full tw-flex tw-font-mono tw-text-amber-600 tw-justify-center tw-items-center tw-absolute tw-top-0 tw-opacity-1 ${ false ? "tw-opacity-1 action-fade-out" : "tw-opacity-0"}`}
+          <motion.div className="tw-w-full tw-flex tw-font-mono tw-text-amber-600 tw-justify-center tw-items-center tw-absolute tw-top-0 tw-opacity-1"
             key={action.id} 
             variants={textDivVariants}
             initial="show"
@@ -57,7 +58,7 @@ export function ActionToast(props: ActionToastProps) {
             <h2 className="tw-m-0 tw-py-2 tw-font-thin">{action.text}</h2>
           </motion.div>
           {/* @ts-expect-error Motion Component */}
-          <motion.div className={`tw-font-extrabold tw-font-mono tw-w-full tw-flex tw-justify-center tw-items-center tw-absolute tw-top-0 tw-left tw-opacity-1 ${ false ? "tw-opacity-1 action-fade-out2" : "tw-opacity-0"}`}
+          <motion.div className="tw-font-extrabold tw-font-mono tw-w-full tw-flex tw-justify-center tw-items-center tw-absolute tw-top-0 tw-left tw-opacity-1"
             key={action.id + 'b'} 
             variants={pointsDivVariants}
             initial="show"
