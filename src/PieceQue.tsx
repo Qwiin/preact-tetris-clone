@@ -43,7 +43,7 @@ export function PieceQue(props: PieceQueProps) {
       <h5 className="tw-flex-none tw-relative tw-top-1 tw-h-0 tw-p-0 tw-mb-6" style={{marginTop: "-12px"}}>{props.title}</h5>
         {
           props.pieces &&
-          props.pieces.slice(0,5).map((item: PieceQueItem, index)=>{
+          props.pieces.slice(0,5).map((item: PieceQueItem)=>{
             
             return (
               <>
