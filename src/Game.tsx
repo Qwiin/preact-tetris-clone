@@ -35,10 +35,9 @@ import ActivePiece from './ActivePiece';
 import ControlsMap from './ControlsMap';
 import {motion} from 'framer-motion';
 
-// const LINE_CLEAR_TIMEOUT
-const transitionEnd = {
-  display: 'none'
-};
+// const transitionEnd = {
+//   display: 'none'
+// };
 
 const lineClearVariants = {
     show: {
@@ -510,9 +509,10 @@ const Game = (props: GameProps) => {
       // loop to work properly
 
       // This should be a memory optimized operation
+      setTimeout(()=>{
       let emptyRowCache: number[][] | null = [];
       if(emptyRowCache !== null) {
-        setTimeout(()=>{
+        
           for(let j=0; j<numCleared; j++) {
             emptyRowCache.push(
               rows.splice(clearedRowIndexesDesc[j],1)[0]
@@ -522,8 +522,8 @@ const Game = (props: GameProps) => {
             rows.unshift(emptyRowCache.pop() as number[]);
           }
           emptyRowCache = null;
-        },LINE_CLEAR_TIMEOUT);
-      }
+        }
+      },LINE_CLEAR_TIMEOUT);
       
       // Check for and clear full rows 
       // let nNewRows = newRows.length;
