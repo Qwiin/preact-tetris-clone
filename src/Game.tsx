@@ -33,11 +33,43 @@ import { ShapeColors, TETRONIMOS } from './TetrisConfig';
 import { PieceQue } from './PieceQue';
 import ActivePiece from './ActivePiece';
 import ControlsMap from './ControlsMap';
+import {motion} from 'framer-motion';
+
+// const LINE_CLEAR_TIMEOUT
+const transitionEnd = {
+  display: 'none'
+};
+
+const lineClearVariants = {
+    show: {
+      transform: "scaleY(100%)",
+      opacity: 1
+    }, 
+    hidden: {
+      transform: "scaleY(0%)",
+      opacity: 1,
+      // transitionEnd
+    }
+};
+
+// const pointsDivVariants = {
+//   show: {
+//     transform: "translateY(-100%)",
+//     opacity: 1
+    
+//   }, 
+//   hidden: {
+//     transform: "translateY(-300%)",
+//     opacity: 0,
+//     transitionEnd
+//   }
+// };
+
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 6;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
-// const LINE_CLEAR_TIMEOUT: number = 1000;
+const LINE_CLEAR_TIMEOUT: number = 500;
 
 const tick: Signal<number> = signal(0);
 
@@ -465,6 +497,7 @@ const Game = (props: GameProps) => {
           row.fill(0);  // overwrite (erase) the row
           clearedRowIndexesDesc.push(i);
           numCleared++;
+          pauseGame(true);
           if(numCleared === 4) {  // TODO: cache height of last piece
             break;
           }
@@ -479,15 +512,17 @@ const Game = (props: GameProps) => {
       // This should be a memory optimized operation
       let emptyRowCache: number[][] | null = [];
       if(emptyRowCache !== null) {
-        for(let j=0; j<numCleared; j++) {
-          emptyRowCache.push(
-            rows.splice(clearedRowIndexesDesc[j],1)[0]
-          );
-        }
-        for(let j=0; j<numCleared; j++) {
-          rows.unshift(emptyRowCache.pop() as number[]);
-        }
-        emptyRowCache = null;
+        setTimeout(()=>{
+          for(let j=0; j<numCleared; j++) {
+            emptyRowCache.push(
+              rows.splice(clearedRowIndexesDesc[j],1)[0]
+            );
+          }
+          for(let j=0; j<numCleared; j++) {
+            rows.unshift(emptyRowCache.pop() as number[]);
+          }
+          emptyRowCache = null;
+        },LINE_CLEAR_TIMEOUT);
       }
       
       // Check for and clear full rows 
@@ -530,6 +565,10 @@ const Game = (props: GameProps) => {
 
         props.actionCallback({text: action.current, points: points} || null);
 
+        pauseGame(true);
+        setTimeout(()=>{
+          resumeGame(true);
+        }, LINE_CLEAR_TIMEOUT);
 
       }
     }
@@ -716,22 +755,26 @@ const Game = (props: GameProps) => {
     }
   }
 
-  const pauseGame = () => {
+  const pauseGame = (discrete: boolean = false) => {
     if(ticker.current){
       clearInterval(ticker.current);
       ticker.current = null;
     }
-    paused.current = true;
-    forceUpdate(1);
+    if(!discrete) {
+      paused.current = true;
+      forceUpdate(1);
+    }
   }
-  const resumeGame = () => {
+  const resumeGame = (discrete: boolean = false) => {
     if(!ticker.current){
       ticker.current = setInterval(()=>{
         tick.value = tick.value + 1;
       },TICK_INTERVAL)
     }
-    paused.current = false;
-    forceUpdate(1);
+    if(!discrete) {
+      paused.current = false;
+      forceUpdate(1);
+    }
   }
 
   useEffect(()=>{
@@ -798,9 +841,20 @@ const Game = (props: GameProps) => {
 
     const rows = board.current;
     
-    return rows.map((row) => {
+    return rows.map((row: number[], index) => {
+      const clear: boolean = !row.includes(0);
       return (
-        <div className="tw-flex tw-flex-row tw-gap-0 tw-box-border">
+        // @ts-expect-error framer-motion + preact
+        <motion.div key={index} className="tw-flex tw-flex-row tw-gap-0 tw-box-border"
+        
+            variants={lineClearVariants}
+            initial="show"
+            animate={`${clear ? "hidden" : ''}`}
+            transition={{
+              duration: (LINE_CLEAR_TIMEOUT / 1000), 
+              ease: "easeOut"
+            }}
+            >
           
           { 
             row.map((cellValue) => {
@@ -816,7 +870,7 @@ const Game = (props: GameProps) => {
               ></div>
             );
           })}
-        </div>
+        </motion.div>
       );
     });
 
