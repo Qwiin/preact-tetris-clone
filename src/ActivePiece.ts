@@ -1,3 +1,4 @@
+import { PieceQueItem } from "./Game";
 import { rotateMatrix } from "./GameUtils";
 import { Direction } from "./TetrisConfig";
 
@@ -50,14 +51,16 @@ export default class ActivePiece {
     this._rotationPrev = value;
   }
 
+  readonly id: string = "";
   readonly shape: number[][] = [];
 
   readonly shapeByDirection: number[][][] = [];
 
-  constructor(shape?: number[][], rotation?: Direction, coords?: number[][], x?: number, y?: number) {
+  constructor(item?: PieceQueItem, rotation?: Direction, coords?: number[][], x?: number, y?: number) {
 
-    if(shape) {
-      this.shape = shape;
+    if(item) {
+      this.shape = item.piece;
+      this.id = item.id;
       this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {
         this._rotation = rotation;

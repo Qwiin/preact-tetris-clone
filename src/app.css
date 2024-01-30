@@ -106,26 +106,6 @@ body {
   opacity: 0.8;
 }
 
-@keyframes fadeOut {
-  0% { 
-    opacity: 1; 
-    transform: translateY(-150%) scale(100%);
-  }
-  100% { 
-    opacity: 0; 
-    transform: translateY(-400%) scale(200%);
-  }
-}
-@keyframes fadeOut2 {
-  0% { opacity: 1; transform: translateY(-100%)  }
-  100% { opacity: 0; transform: translateY(-300%) }
-}
-@keyframes scaleBounce {
-  0% { transform: scale(100%)  }
-  50% { transform: scale(300%)  }
-  0% { transform: scale(100%)  }
-}
-
 .game-control-map {
   background-color: rgb(26, 26, 26, 0.8);
   border: 1px rgba(148, 163, 184, 0.8) solid;
@@ -138,20 +118,6 @@ body {
 
 .menu-button.disabled {
   border: 1px rgba(255,255,255,0.4) solid;
-}
-
-.action-fade-out {
-  animation: fadeOut;
-  animation-duration: 2.5s;
-  animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation-delay: 0s;
-}
-.action-fade-out2 {
-  font-weight: bold;
-  animation: fadeOut2;
-  animation-duration: 2.5s;
-  animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation-delay: 0s;
 }
 
 .tooltip-text {
