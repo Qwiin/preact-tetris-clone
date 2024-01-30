@@ -35,7 +35,7 @@ import ActivePiece from './ActivePiece';
 import ControlsMap from './ControlsMap';
 
 const TICK_INTERVAL: number = 50;
-const PIECE_QUE_LENGTH: number = 5;
+const PIECE_QUE_LENGTH: number = 6;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
@@ -49,12 +49,19 @@ interface GameProps {
   init: boolean;
   keydownCallback: (key: string) => void;
   actionCallback: (value: any) => void;
+  setPieceCallback?: (value: any) => void;
+  setStatsCallback?: (value: any) => void;
 }
 
 interface Scoring {
   score: number;
   lines: number;
   level: number;
+}
+
+export interface PieceQueItem {
+  piece: number[][];
+  id: string;
 }
 
 /**
@@ -99,7 +106,7 @@ const Game = (props: GameProps) => {
   const action: Ref<string> = useRef(null);
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
-  const pieceQue: Ref<number[][][]> = useRef(null);
+  const pieceQue: Ref<PieceQueItem[]> = useRef(null);
   const stats: Ref<Scoring> = useRef(null);
   const ticker: Ref<NodeJS.Timeout> = useRef(null);
 
@@ -528,7 +535,7 @@ const Game = (props: GameProps) => {
     }
   };
 
-  const getNextPiece = () => {
+  const getNextPiece = (): PieceQueItem => {
 
     // replenish que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 5) {
@@ -537,14 +544,19 @@ const Game = (props: GameProps) => {
 
     let index: number = pieceQueIndexes.current?.shift() ?? -1;
     let shape: number[][] = TETRONIMOS[index];
-    return JSON.parse(JSON.stringify(shape));
+    return {
+      piece: JSON.parse(JSON.stringify(shape)),
+      id: Math.round(window.performance.now()).toString()
+    }
     // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
   }
 
   const getPieceFromQue = () => {
-    pieceQue.current?.push(getNextPiece());    
+    if(pieceQue.current){
+    pieceQue.current.push(getNextPiece());    
     // console.log(pieceQue.current);
-    let p: ActivePiece = new ActivePiece(pieceQue.current?.shift(), (Math.round(Math.random() * 3) + 1));
+    let newPiece = pieceQue.current.shift();
+    let p: ActivePiece = new ActivePiece(newPiece, (Math.round(Math.random() * 3) + 1));
     let c: number[][] = [];
     for(let i=0; i<p.height; i++) {
       for(let j=0; j<p.width; j++) {
@@ -553,14 +565,17 @@ const Game = (props: GameProps) => {
     }
     p.coords = c;
     return p;
+    }
+    return null;
   }
 
   const keydownHandler = (e:any) => {
     
-    props.keydownCallback(e.key);
     if(!activePiece.current || !board.current || paused.current || gameover) {
       return;
     }
+    props.keydownCallback(e.key);
+
     switch(e.key) {
       case "ArrowRight":
         if((activePiece.current.x + activePiece.current.width) < board.current[0].length) {
@@ -734,9 +749,10 @@ const Game = (props: GameProps) => {
 
     let indices = pieceQueIndexes.current || [];
     for(let i=0; i<PIECE_QUE_LENGTH; i++) {
-      pieceQue.current?.push(TETRONIMOS[
-        indices[i]
-      ] );
+      pieceQue.current?.push({
+        piece: TETRONIMOS[indices[i]],
+        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
+      });
     }
 
     setTimeout(()=> {
@@ -839,7 +855,6 @@ const Game = (props: GameProps) => {
           onClick={()=>{
           if(!paused.current) {
             pauseGame();
-
           }
           else {
             resumeGame();
@@ -865,7 +880,15 @@ const Game = (props: GameProps) => {
             }
           </div>
         </div>
-        <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} pieces={pieceQue.current || []}/>
+        {pieceQue.current &&
+        <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} 
+        pieces={
+          pieceQue?.current || [{id: "123", piece: [[]]},{id: "1", piece: [[]]},{id: "12", piece: [[]]},{id: "124", piece: [[]]},{id: "125", piece: [[]]}]
+            // ? [{piece: activePiece?.current?.shape || TETRONIMOS[1], id: window.performance.now().toString()}, ...pieceQue?.current] 
+            // : [{piece: TETRONIMOS[1], id:"11"}]
+        
+        }/>
+      }
       </div>
       <StatsPanel fields={[
         {

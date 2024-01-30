@@ -296,6 +296,10 @@
   overflow: hidden
 }
 
+.tw-overflow-y-hidden {
+  overflow-y: hidden
+}
+
 .tw-rounded-lg {
   border-radius: 0.5rem
 }
@@ -9144,6 +9148,10 @@
 
 .tw-pt-4 {
   padding-top: 1rem
+}
+
+.tw-pb-2 {
+  padding-bottom: 0.5rem
 }
 
 .tw-text-center {
