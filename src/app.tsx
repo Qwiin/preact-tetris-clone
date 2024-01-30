@@ -8,9 +8,6 @@ import ActionToast from './components/ActionToast';
 export function App() {
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
-
-  // const [transitioning, setTransitioning] = useState(false);
-
   const actionQue: Ref<GameAction[]> = useRef([]);
 
   const keyDownCallback = (key: string) => {
@@ -23,16 +20,15 @@ export function App() {
       actionQue.current.push({
         text: a.text, 
         points: a.points, 
-        id: Math.round(window.performance.now()).toString(), 
+        id: Math.round(window.performance.now() * 1000).toString(), 
         transitioning: true
       });
       console.log(JSON.stringify(actionQue.current));
     }
     setTimeout(()=>{
-      // setTransitioning(false);
       actionQue.current?.shift();
-      forceUpdate(1);
     },ToastTimeout);
+    
     requestAnimationFrame(() => {
       forceUpdate(1);
     });
