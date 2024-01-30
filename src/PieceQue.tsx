@@ -1,8 +1,6 @@
-import { useRef, useState } from "preact/hooks";
 import { TETRONIMOS, ShapeColors } from "./TetrisConfig";
 import { PieceQueItem } from "./Game";
-import {useAnimate, usePresence, motion} from 'framer-motion';
-import { Ref } from "preact";
+import {motion} from 'framer-motion';
 
 interface PieceQueProps {
   title: string;
@@ -49,7 +47,7 @@ export function PieceQue(props: PieceQueProps) {
             
             return (
               <>
-              {/* @ts-expect-error Server Component */}
+              {/* @ts-expect-error Motion Component */}
                 <motion.div key={item.id} className={`que-item tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16 tw-m-0`}
                 variants={{
                   show: {
