@@ -68,7 +68,7 @@ const lineClearVariants = {
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 6;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
-const LINE_CLEAR_TIMEOUT: number = 1500;
+const LINE_CLEAR_TIMEOUT: number = 1000;
 
 const tick: Signal<number> = signal(0);
 
@@ -853,7 +853,7 @@ const Game = (props: GameProps) => {
       return (
         <>
         {/* @ts-expect-error */}
-        <motion.div key={index} className="tw-flex tw-flex-row tw-gap-0 tw-box-border" 
+        <motion.div key={`${index}` + (clearRow ? 'c' : '')} className="tw-flex tw-flex-row tw-gap-0 tw-box-border" 
             variants={lineClearVariants} //{clearRow ? lineClearVariants : undefined}
             initial="show"//{clearRow ? "show" : undefined}
             animate={clearRow ? "hidden" : undefined}
