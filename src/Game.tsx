@@ -243,7 +243,7 @@ const Game = (props: GameProps) => {
       for(let i=i_iii; i > (i_iii - h); i--) {
         let j_sss = 0;
         for(let j=j_iii; j < (j_iii + w); j++) {
-          if(perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_sss][j_sss]) {
+          if(perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] < 11) {
             // if(p.y !== p.yPrev){
             //   canMoveDown = false;
             //   console.log("can't move down...");
@@ -257,7 +257,7 @@ const Game = (props: GameProps) => {
             canTSpinRight = false;
           }
           else {
-            if(perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && board.current[i+dy][j] !== 0 && board.current[i+dy][j] !== perm[i_sss][j_sss]) {
+            if(perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && board.current[i+dy][j] !== 0 && board.current[i+dy][j] < 11) {
               // if(p.y !== p.yPrev){
               //   canMoveDown = false;
               //   console.log("can't move down...");
@@ -265,10 +265,10 @@ const Game = (props: GameProps) => {
               // }
               canTSpin = false;
             }
-            if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && board.current[i+dy][j-1] !== 0 && board.current[i+dy][j-1] !== perm[i_sss][j_sss])) {
+            if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && board.current[i+dy][j-1] !== 0 && board.current[i+dy][j-1] < 11)) {
               canTSpinLeft = false;
             }
-            if(j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && board.current[i+dy][j+1] !== 0 && board.current[i+dy][j+1] !== perm[i_sss][j_sss])) {
+            if(j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && board.current[i+dy][j+1] !== 0 && board.current[i+dy][j+1] < 11)) {
               canTSpinRight = false;
             }
           }
@@ -277,7 +277,7 @@ const Game = (props: GameProps) => {
         i_sss--;
       }
       if(canRotateInPlace) {
-        console.log("rotate in place");
+        // console.log("rotate in place");
         // p.coords = [...p.coordsPrev];
         // p.xPrev = p.x;
         p.rotationPrev = p.rotation;
@@ -285,7 +285,7 @@ const Game = (props: GameProps) => {
       else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
         p.x = p.xPrev;
         p.yPrev = p.y - 1;
-        console.log("can't rotate nor t-spin");
+        // console.log("can't rotate nor t-spin");
         // p.coords = [...p.coordsPrev];
         if(p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
           p.rotateLeft();
@@ -299,7 +299,7 @@ const Game = (props: GameProps) => {
         h = p.height;
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
-        console.log("can t-spin");
+        // console.log("can t-spin");
         if(canTSpinLeft) {
           p.x = p.x - 1;
           p.xPrev = p.x;
@@ -351,10 +351,10 @@ const Game = (props: GameProps) => {
     for(let i=i_i; i > (i_i - h); i--) {
       let j_s = 0;
       for(let j=j_i; j < (j_i + w); j++) {
-        if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
+        if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] < 11) {
           if(p.y !== p.yPrev){
             canMoveDown = false;
-            console.log("can't move down...");
+            // console.log("can't move down...");
             p.y = p.yPrev;
           }
         }
@@ -458,9 +458,11 @@ const Game = (props: GameProps) => {
         }
 
         activePiece.current = null; 
+        console.log(".... active piece = null");
         requestAnimationFrame(()=>{
           updatePosition();
           updateBoard(null);
+          // console.log(tick.value);
         });
         setTimeout(()=>{
           activePiece.current = getPieceFromQue();          
@@ -511,46 +513,48 @@ const Game = (props: GameProps) => {
       // no need to sort this array here, but remember that is required for this splice 
       // loop to work properly
 
-      // This should be a memory optimized operation
-      setTimeout(()=>{
-      let emptyRowCache: number[][] | null = [];
-      if(emptyRowCache !== null) {
-        
-          for(let j=0; j<numCleared; j++) {
-            emptyRowCache.push(
-              rows.splice(clearedRowIndexesDesc[j],1)[0]
-            );
-          }
-          for(let j=0; j<numCleared; j++) {
-            rows.unshift(emptyRowCache.pop() as number[]);
-          }
-          emptyRowCache = null;
-        }
-      },LINE_CLEAR_TIMEOUT);
-      
-      // Check for and clear full rows 
-      // let nNewRows = newRows.length;
-
-      //let numCleared = nRows - nNewRows;
-
-      let points: number = 0;
-      if(stats.current && numCleared > 0) {
-        stats.current.lines += numCleared;
-        stats.current.level = Math.floor(stats.current.lines / 10) + 1;
-        points = ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
-        stats.current.score += points;
-      }
-
-      // for (let i = 0; i < numCleared; i++) {
-      //   newRows.unshift([...emptyRow]);
-      // }
-
-      // // updateRef
-      // for (let i = 0; i < nRows; i++) {
-      //   board.current[i] = newRows[i];
-      // }
-
       if(numCleared > 0) {
+
+        // This should be a memory optimized operation
+        setTimeout(()=>{
+          let emptyRowCache: number[][] | null = [];
+          if(emptyRowCache !== null) {
+          
+            for(let j=0; j<numCleared; j++) {
+              emptyRowCache.push(
+                rows.splice(clearedRowIndexesDesc[j],1)[0]
+              );
+            }
+            for(let j=0; j<numCleared; j++) {
+              rows.unshift(emptyRowCache.pop() as number[]);
+            }
+            emptyRowCache = null;
+            // console.log("rowsUpdated");
+          }
+        },LINE_CLEAR_TIMEOUT);
+        
+        // Check for and clear full rows 
+        // let nNewRows = newRows.length;
+
+        //let numCleared = nRows - nNewRows;
+
+        let points: number = 0;
+        if(stats.current && numCleared > 0) {
+          stats.current.lines += numCleared;
+          stats.current.level = Math.floor(stats.current.lines / 10) + 1;
+          points = ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+          stats.current.score += points;
+        }
+
+        // for (let i = 0; i < numCleared; i++) {
+        //   newRows.unshift([...emptyRow]);
+        // }
+
+        // // updateRef
+        // for (let i = 0; i < nRows; i++) {
+        //   board.current[i] = newRows[i];
+        // }
+   
         switch(numCleared) {
           case 1:
             action.current = "Line Clear!";
@@ -571,6 +575,7 @@ const Game = (props: GameProps) => {
         pauseGame(true);
         setTimeout(()=>{
           resumeGame();
+          // console.log("animation timeout complete")
         }, LINE_CLEAR_TIMEOUT + 200);
 
       }
@@ -641,10 +646,12 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowDown":
         if(activePiece.current.y < 24) {
+          activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y;
           activePiece.current.y += 1;
-          // tick.value = tick.value + 1; // optimization?
+          tick.value = tick.value + 1; // optimization?
           updatePosition();
+          // forceUpdate(1);
         }
         break;
 
@@ -695,6 +702,7 @@ const Game = (props: GameProps) => {
         p.xPrev = p.x;
         activePiece.current.y += minDistance;
         activePiece.current.yPrev = activePiece.current.y;
+        // tick.value = tick.value + 1;
         updatePosition();
         break;
 
@@ -780,8 +788,8 @@ const Game = (props: GameProps) => {
     }
     if(!discrete) {
       paused.current = false;
-      forceUpdate(1);
     }
+    forceUpdate(1);
   }
 
   useEffect(()=>{
@@ -855,12 +863,18 @@ const Game = (props: GameProps) => {
         const piece = activePiece.current;
         const pieceIsSet = !!(piece && piece.y === piece.yPrev && piece.x === piece.xPrev);
         clearRow = pieceIsSet;
+        // if(clearRow){
+        // console.log('clearRow');
+        // }
+        // else {
+        //   console.log('leaveRow');
+        // }
       }
       
       return (
         <>
         {/* @ts-expect-error */}
-        <motion.div key={`${index}` + (clearRow ? 'c' : '')} className="tw-flex tw-flex-row tw-gap-0 tw-box-border" 
+        <motion.div key={`${index}` + (clearRow ? (activePiece.current?.id || 'null') : '')} className="tw-flex tw-flex-row tw-gap-0 tw-box-border" 
             variants={lineClearVariants} //{clearRow ? lineClearVariants : undefined}
             initial="show"//{clearRow ? "show" : undefined}
             animate={clearRow ? "hidden" : undefined}
@@ -937,7 +951,7 @@ const Game = (props: GameProps) => {
       className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-4 tw-pb-4">
         <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
         <div>
-          <h5 className="bg-green-100 game-clock tetris-font tw-text-lg">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
+          <h5 className="bg-green-100 game-clock tetris-font tw-text-lg">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 20) % 60 + 100).toString().substring(1,3)}"</h5>
           <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"0.6px solid rgba(200,200,200,1)"}}>
             
             <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
