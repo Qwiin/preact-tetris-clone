@@ -41,14 +41,14 @@ import {motion} from 'framer-motion';
 
 const lineClearVariants = {
     show: {
-      // transform: "scaleX(100%)",
+      transform: "rotateX(0deg)",
       filter: 'contrast(100%)',
       opacity: 1
     }, 
     hidden: {
-      // transform: "scaleX(0%)",
+      transform: "rotateX(90deg)",
       filter: 'contrast(0%)',
-      opacity: 0,
+      opacity: 1,
       // transitionEnd
     }
 };
@@ -70,7 +70,7 @@ const lineClearVariants = {
 const TICK_INTERVAL: number = 60;
 const PIECE_QUE_LENGTH: number = 5;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
-const LINE_CLEAR_TIMEOUT: number = 1000;
+const LINE_CLEAR_TIMEOUT: number = 800;
 
 const tick: Signal<number> = signal(0);
 
@@ -526,7 +526,7 @@ const Game = (props: GameProps) => {
           }
           emptyRowCache = null;
         }
-      },300);
+      },LINE_CLEAR_TIMEOUT);
       
       // Check for and clear full rows 
       // let nNewRows = newRows.length;
