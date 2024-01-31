@@ -1,4 +1,4 @@
-import { PieceQueItem } from "./Game";
+import { PieceQueItem } from "./components/Game";
 import { rotateMatrix } from "./GameUtils";
 import { Direction } from "./TetrisConfig";
 

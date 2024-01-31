@@ -1,4 +1,5 @@
 export interface GameAction {
+  type: ActionType;
   text: string;
   points: number;
   id?: string;
@@ -6,6 +7,19 @@ export interface GameAction {
 }
 
 export const ToastTimeout: number = 1000;
+
+export enum ActionType {
+  SINGLE=1,
+  DOUBLE,
+  TRIPLE,
+  TETRIS,
+  MOVE,
+  DROP,
+  ROTATE,
+  LEVEL_UP,
+  GAME_OVER,
+  PAUSE,
+}
 
 export const ShapeColors: string[] = [
   'transparent',

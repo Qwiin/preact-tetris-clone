@@ -1,4 +1,4 @@
-import { BaseComponentProps } from "./BaseTypes";
+import { BaseComponentProps } from "../BaseTypes";
 
 interface StatField {
   id?: string;

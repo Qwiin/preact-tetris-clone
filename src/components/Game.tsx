@@ -27,11 +27,11 @@ Performance:
 import { Ref } from 'preact';
 import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
-import './app.css';
+import '../app.css';
 import { StatsPanel } from './StatsPanel';
-import { ShapeColors, TETRONIMOS } from './TetrisConfig';
+import { ActionType, ShapeColors, TETRONIMOS } from '../TetrisConfig';
 import { PieceQue } from './PieceQue';
-import ActivePiece from './ActivePiece';
+import ActivePiece from '../ActivePiece';
 import ControlsMap from './ControlsMap';
 
 const TICK_INTERVAL: number = 50;
@@ -90,6 +90,7 @@ function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex
 
   return indexes;
 }
+
 
 const Game = (props: GameProps) => {
 
@@ -404,9 +405,7 @@ const Game = (props: GameProps) => {
 
           //check for gameover//
           if(newCellVal > 0 && newCellVal < 0.9) {
-            setGameover(true);
-            paused.current = true;
-            pauseGame();
+            gameOver();
             return;
           }
         }
@@ -416,9 +415,7 @@ const Game = (props: GameProps) => {
         for(let i=rows.length - 20; i>=0; i--) {
           numBlocksOffscreen = rows[i].reduce((prev, curr)=> prev + (curr > 0 ? 1 : 0),numBlocksOffscreen);
           if(numBlocksOffscreen >= 4) {
-            setGameover(true);
-            paused.current = true;
-            pauseGame();
+            gameOver();
             return;
             // break;
           }
@@ -498,7 +495,11 @@ const Game = (props: GameProps) => {
       let points: number = 0;
       if(stats.current && numCleared > 0) {
         stats.current.lines += numCleared;
-        stats.current.level = Math.floor(stats.current.lines / 10) + 1;
+        let level: number = Math.floor(stats.current.lines / 10) + 1;
+        if(stats.current.level !== level){
+          stats.current.level = level;
+          props.actionCallback({type: ActionType.LEVEL_UP});  
+        }
         points = ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
         stats.current.score += points;
       }
@@ -513,6 +514,7 @@ const Game = (props: GameProps) => {
       // }
 
       if(numCleared > 0) {
+        let actionEnum = numCleared;
         switch(numCleared) {
           case 1:
             action.current = "Line Clear!";
@@ -528,7 +530,7 @@ const Game = (props: GameProps) => {
             break;
         }
 
-        props.actionCallback({text: action.current, points: points} || null);
+        props.actionCallback({type: actionEnum, text: action.current, points: points} || null);
 
 
       }
@@ -571,14 +573,29 @@ const Game = (props: GameProps) => {
 
   const keydownHandler = (e:any) => {
     
-    if(!activePiece.current || !board.current || paused.current || gameover) {
+    if(e.key === "Escape" && gameover === false) {
+      if(!paused.current) {
+        pauseGame();
+        forceUpdate(1);
+      }
+      else {
+        resumeGame();
+      }
+    }
+
+    if(!activePiece.current || !board.current || paused.current || gameover || !ticker.current) {
       return;
     }
-    props.keydownCallback(e.key);
+    // props.keydownCallback(e.key);
 
     switch(e.key) {
+      
       case "ArrowRight":
         if((activePiece.current.x + activePiece.current.width) < board.current[0].length) {
+          
+          // sfx_movePiece();
+
+          props.keydownCallback(e.key);
           activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x += 1; 
@@ -587,6 +604,8 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowLeft":
         if(activePiece.current.x > 0) {
+          props.keydownCallback(e.key);
+          // sfx_movePiece();
           activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x -= 1; 
@@ -595,6 +614,8 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowDown":
         if(activePiece.current.y < 24) {
+          props.keydownCallback(e.key);
+          // sfx_movePiece();
           activePiece.current.yPrev = activePiece.current.y;
           activePiece.current.y += 1;
           tick.value = tick.value + 1; // optimization?
@@ -604,6 +625,7 @@ const Game = (props: GameProps) => {
 
       // insta-drop the piece
       case "ArrowUp":
+        
         const cols: number[][] = getBoardCols();
 
         const p: ActivePiece = activePiece.current;
@@ -645,6 +667,7 @@ const Game = (props: GameProps) => {
         }
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
+        props.keydownCallback(e.key);
 
         p.xPrev = p.x;
         activePiece.current.y += minDistance;
@@ -655,10 +678,12 @@ const Game = (props: GameProps) => {
       case "Alt":
       case "Control":
         activePiece.current.rotateLeft();
+        props.keydownCallback(e.key);
         updatePosition();
         break;
       case "Shift":
         activePiece.current.rotateRight();
+        props.keydownCallback(e.key);
         updatePosition();
         break;
     }
@@ -716,13 +741,20 @@ const Game = (props: GameProps) => {
     }
   }
 
+  const gameOver = () => {
+    setGameover(true);
+    paused.current = true;
+    pauseGame();
+    props.actionCallback({type: ActionType.GAME_OVER});
+  }
+
   const pauseGame = () => {
     if(ticker.current){
       clearInterval(ticker.current);
       ticker.current = null;
     }
     paused.current = true;
-    forceUpdate(1);
+    // forceUpdate(1);
   }
   const resumeGame = () => {
     if(!ticker.current){
@@ -847,7 +879,9 @@ const Game = (props: GameProps) => {
           }
           setGameover(false);
           resumeGame();
-        }}>Restart</button>
+        }} disabled={
+          paused.current === false && gameover === false
+          }>Restart</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
           style={{paddingTop:"0.7rem"}}
@@ -855,6 +889,7 @@ const Game = (props: GameProps) => {
           onClick={()=>{
           if(!paused.current) {
             pauseGame();
+            forceUpdate(1);
           }
           else {
             resumeGame();
