@@ -643,7 +643,7 @@ const Game = (props: GameProps) => {
         if(activePiece.current.y < 24) {
           activePiece.current.yPrev = activePiece.current.y;
           activePiece.current.y += 1;
-          tick.value = tick.value + 1; // optimization?
+          // tick.value = tick.value + 1; // optimization?
           updatePosition();
         }
         break;
