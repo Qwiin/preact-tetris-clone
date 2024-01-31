@@ -499,7 +499,7 @@ const Game = (props: GameProps) => {
           row.fill(0);  // overwrite (erase) the row
           clearedRowIndexesDesc.push(i);
           numCleared++;
-          pauseGame(true);
+          // pauseGame(true);
           if(numCleared === 4) {  // TODO: cache height of last piece
             break;
           }
@@ -835,7 +835,7 @@ const Game = (props: GameProps) => {
   // Controls the game speed by level
   useEffect(() => {
 
-    if(tick.value % (Math.max(80 - 10*((stats.current?.level || 1) + 1)/2,10)/8) === 0) {
+    if(tick.value % (Math.max(80 - 10*((stats.current?.level || 1) + 1)/2,10)/10) === 0) {
       updateBoard(activePiece.current);
     }
     
