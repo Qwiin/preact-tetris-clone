@@ -11,7 +11,6 @@ import {useSound} from 'use-sound';
 import audio_movePiece from './assets/sounds/mixkit-game-ball-tap-2073.wav';
 import audio_dropPiece from './assets/sounds/sci-fi-gun-shot-x6-14447.mp3'
 import audio_levelUp from './assets/sounds/mixkit-bonus-earned-in-video-game-2058.wav';
-import audio_gameSounds from './assets/sounds/game-ui-sounds-14857.mp3'
 import audio_rotate from './assets/sounds/click-button-140881.mp3'
 import audio_lineClear from './assets/sounds/game-ui-sounds-14857.mp3'
 import audio_tetris from './assets/sounds/dark-boom-139891.mp3'
