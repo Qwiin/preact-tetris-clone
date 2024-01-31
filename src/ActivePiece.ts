@@ -55,10 +55,13 @@ export default class ActivePiece {
   readonly shape: number[][] = [];
 
   readonly shapeByDirection: number[][][] = [];
+  readonly cellValue: number = 0;
 
   constructor(item?: PieceQueItem, rotation?: Direction, coords?: number[][], x?: number, y?: number) {
 
     if(item) {
+      this.cellValue = Math.max(...item.piece.flat());
+
       this.shape = item.piece;
       this.id = item.id;
       this.shapeByDirection[Direction.N] = this.shape;

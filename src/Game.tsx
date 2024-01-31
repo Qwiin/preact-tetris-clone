@@ -41,11 +41,11 @@ import {motion} from 'framer-motion';
 
 const lineClearVariants = {
     show: {
-      transform: "scaleY(100%)",
+      transform: "scaleX(100%)",
       opacity: 1
     }, 
     hidden: {
-      transform: "scaleY(0%)",
+      transform: "scaleX(0%)",
       opacity: 1,
       // transitionEnd
     }
@@ -68,7 +68,7 @@ const lineClearVariants = {
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 6;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
-const LINE_CLEAR_TIMEOUT: number = 500;
+const LINE_CLEAR_TIMEOUT: number = 1500;
 
 const tick: Signal<number> = signal(0);
 
@@ -523,7 +523,7 @@ const Game = (props: GameProps) => {
           }
           emptyRowCache = null;
         }
-      },LINE_CLEAR_TIMEOUT);
+      },LINE_CLEAR_TIMEOUT/3);
       
       // Check for and clear full rows 
       // let nNewRows = newRows.length;
@@ -567,8 +567,8 @@ const Game = (props: GameProps) => {
 
         pauseGame(true);
         setTimeout(()=>{
-          resumeGame(true);
-        }, LINE_CLEAR_TIMEOUT);
+          resumeGame();
+        }, LINE_CLEAR_TIMEOUT + 300);
 
       }
     }
@@ -610,7 +610,7 @@ const Game = (props: GameProps) => {
 
   const keydownHandler = (e:any) => {
     
-    if(!activePiece.current || !board.current || paused.current || gameover) {
+    if(!activePiece.current || !board.current || paused.current || gameover || !ticker.current) {
       return;
     }
     props.keydownCallback(e.key);
@@ -762,8 +762,8 @@ const Game = (props: GameProps) => {
     }
     if(!discrete) {
       paused.current = true;
-      forceUpdate(1);
     }
+    forceUpdate(1);
   }
   const resumeGame = (discrete: boolean = false) => {
     if(!ticker.current){
@@ -842,18 +842,25 @@ const Game = (props: GameProps) => {
     const rows = board.current;
     
     return rows.map((row: number[], index) => {
-      const clear: boolean = !row.includes(0);
+      const noZeros: boolean = !row.includes(0);
+      let clearRow: boolean = false;
+      if(noZeros && activePiece.current !== null){
+        const piece = activePiece.current;
+        const pieceIsSet = !!(piece && piece.y === piece.yPrev && piece.x === piece.xPrev);
+        clearRow = pieceIsSet;
+      }
+      
       return (
-        // @ts-expect-error framer-motion + preact
-        <motion.div key={index} className="tw-flex tw-flex-row tw-gap-0 tw-box-border"
-        
-            variants={lineClearVariants}
-            initial="show"
-            animate={`${clear ? "hidden" : ''}`}
-            transition={{
+        <>
+        {/* @ts-expect-error */}
+        <motion.div key={index} className="tw-flex tw-flex-row tw-gap-0 tw-box-border" 
+            variants={lineClearVariants} //{clearRow ? lineClearVariants : undefined}
+            initial="show"//{clearRow ? "show" : undefined}
+            animate={clearRow ? "hidden" : undefined}
+            transition={ clearRow ? {
               duration: (LINE_CLEAR_TIMEOUT / 1000), 
               ease: "easeOut"
-            }}
+            } : undefined}
             >
           
           { 
@@ -871,6 +878,7 @@ const Game = (props: GameProps) => {
             );
           })}
         </motion.div>
+        </>
       );
     });
 
