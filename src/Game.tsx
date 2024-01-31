@@ -41,12 +41,14 @@ import {motion} from 'framer-motion';
 
 const lineClearVariants = {
     show: {
-      transform: "scaleX(100%)",
+      // transform: "scaleX(100%)",
+      filter: 'contrast(100%)',
       opacity: 1
     }, 
     hidden: {
-      transform: "scaleX(0%)",
-      opacity: 1,
+      // transform: "scaleX(0%)",
+      filter: 'contrast(0%)',
+      opacity: 0,
       // transitionEnd
     }
 };
@@ -65,8 +67,8 @@ const lineClearVariants = {
 // };
 
 
-const TICK_INTERVAL: number = 100;
-const PIECE_QUE_LENGTH: number = 6;
+const TICK_INTERVAL: number = 60;
+const PIECE_QUE_LENGTH: number = 5;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
 const LINE_CLEAR_TIMEOUT: number = 1000;
 
@@ -524,7 +526,7 @@ const Game = (props: GameProps) => {
           }
           emptyRowCache = null;
         }
-      },LINE_CLEAR_TIMEOUT/3);
+      },300);
       
       // Check for and clear full rows 
       // let nNewRows = newRows.length;
@@ -569,7 +571,7 @@ const Game = (props: GameProps) => {
         pauseGame(true);
         setTimeout(()=>{
           resumeGame();
-        }, LINE_CLEAR_TIMEOUT + 300);
+        }, LINE_CLEAR_TIMEOUT + 200);
 
       }
     }
@@ -833,7 +835,7 @@ const Game = (props: GameProps) => {
   // Controls the game speed by level
   useEffect(() => {
 
-    if(tick.value % (Math.max(80 - 10*((stats.current?.level || 1) + 1)/2,10)/20) === 0) {
+    if(tick.value % (Math.max(80 - 10*((stats.current?.level || 1) + 1)/2,10)/8) === 0) {
       updateBoard(activePiece.current);
     }
     
