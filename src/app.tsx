@@ -72,21 +72,7 @@ export function App() {
     playbackRate: 1.0
   });
 
-  
-  const [sfx_sprite] = useSound(audio_gameSounds, {
-    sprite: {
-      woop: [0, 600],
-      boop: [400, 600],
-      // click: [1500, 2000],
-    },
-    volume: 0.6,
-
-  });
-
-  // const [transitioning, setTransitioning] = useState(false);
-
   const actionQue: Ref<GameAction[]> = useRef([]);
-
   const mouseEventArgs:[string, any] = [...fakeMouseEventArgs];
 
   const keyDownCallback = (key: string) => {
