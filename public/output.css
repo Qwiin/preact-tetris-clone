@@ -9114,6 +9114,10 @@
   padding-bottom: 0px
 }
 
+.tw-pb-2 {
+  padding-bottom: 0.5rem
+}
+
 .tw-pb-4 {
   padding-bottom: 1rem
 }
@@ -9148,10 +9152,6 @@
 
 .tw-pt-4 {
   padding-top: 1rem
-}
-
-.tw-pb-2 {
-  padding-bottom: 0.5rem
 }
 
 .tw-text-center {
@@ -9203,10 +9203,6 @@
 .tw-text-yellow-400 {
   --tw-text-opacity: 1;
   color: rgb(250 204 21 / var(--tw-text-opacity))
-}
-
-.tw-opacity-0 {
-  opacity: 0
 }
 
 .tw-shadow-inner {
