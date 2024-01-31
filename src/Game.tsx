@@ -65,7 +65,7 @@ const lineClearVariants = {
 // };
 
 
-const TICK_INTERVAL: number = 50;
+const TICK_INTERVAL: number = 100;
 const PIECE_QUE_LENGTH: number = 6;
 const PIECE_INDEXES_QUE_LENGTH: number = 40;
 const LINE_CLEAR_TIMEOUT: number = 1000;
@@ -468,6 +468,7 @@ const Game = (props: GameProps) => {
 
       if(piece.lastTick != tick.value){
         if(!piece.dropped){
+          piece.xPrev = piece.x;
           piece.yPrev = piece.y;
           piece.y = Math.min(piece.y + 1, piece.yMax); 
         }
@@ -614,6 +615,10 @@ const Game = (props: GameProps) => {
       return;
     }
     props.keydownCallback(e.key);
+
+    if(activePiece.current.dropped){
+      return;
+    }
 
     switch(e.key) {
       case "ArrowRight":
@@ -828,7 +833,7 @@ const Game = (props: GameProps) => {
   // Controls the game speed by level
   useEffect(() => {
 
-    if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
+    if(tick.value % (Math.max(80 - 10*((stats.current?.level || 1) + 1)/2,10)/20) === 0) {
       updateBoard(activePiece.current);
     }
     
@@ -859,6 +864,7 @@ const Game = (props: GameProps) => {
             animate={clearRow ? "hidden" : undefined}
             transition={ clearRow ? {
               duration: (LINE_CLEAR_TIMEOUT / 1000), 
+              delay: 0.1,
               ease: "easeOut"
             } : undefined}
             >
