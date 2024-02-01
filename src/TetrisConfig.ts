@@ -1,7 +1,7 @@
 export interface GameAction {
   type: ActionType;
   text: string;
-  points: number;
+  points?: number;
   id?: string;
   transitioning?: boolean;
 }

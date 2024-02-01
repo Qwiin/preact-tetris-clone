@@ -154,6 +154,10 @@
   margin-top: 0.75rem
 }
 
+.tw-ml-2 {
+  margin-left: 0.5rem
+}
+
 .tw-box-border {
   box-sizing: border-box
 }
@@ -9180,6 +9184,11 @@
 .tw-text-xl {
   font-size: 1.25rem;
   line-height: 1.75rem
+}
+
+.tw-text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem
 }
 
 .tw-font-extrabold {

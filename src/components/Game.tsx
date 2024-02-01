@@ -47,7 +47,6 @@ interface GameProps {
   numColumns?: number;
   numRows?: number;
   init: boolean;
-  keydownCallback: (key: string) => void;
   actionCallback: (value: any) => void;
   setPieceCallback?: (value: any) => void;
   setStatsCallback?: (value: any) => void;
@@ -584,11 +583,10 @@ const Game = (props: GameProps) => {
       }
     }
 
-    if(!activePiece.current || !board.current || paused.current || gameover || !ticker.current) {
+    if(!activePiece.current || !board.current || paused.current || gameoverRef.current || !ticker.current) {
       return;
     }
-    // props.keydownCallback(e.key);
-
+    
     switch(e.key) {
       
       case "ArrowRight":
@@ -596,7 +594,7 @@ const Game = (props: GameProps) => {
           
           // sfx_movePiece();
 
-          props.keydownCallback(e.key);
+          props.actionCallback({type: ActionType.MOVE, text: e.key});
           activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y - 1;
           activePiece.current.x += 1; 
@@ -605,7 +603,7 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowLeft":
         if(!activePiece.current.dropped && activePiece.current.x > 0) {
-          props.keydownCallback(e.key);
+          props.actionCallback({type: ActionType.MOVE, text: e.key});
           // sfx_movePiece();
           activePiece.current.xPrev = activePiece.current.x;
           activePiece.current.yPrev = activePiece.current.y - 1;
@@ -615,7 +613,7 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowDown":
         if(!activePiece.current.dropped && activePiece.current.y < 24) {
-          props.keydownCallback(e.key);
+          props.actionCallback({type: ActionType.MOVE, text: e.key});
           // sfx_movePiece();
           activePiece.current.yPrev = activePiece.current.y;
           activePiece.current.y += 1;
@@ -671,7 +669,7 @@ const Game = (props: GameProps) => {
         }
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
-        props.keydownCallback(e.key);
+        props.actionCallback({type: ActionType.DROP, text: e.key});
 
         p.xPrev = p.x;
         activePiece.current.y += minDistance;
@@ -682,12 +680,13 @@ const Game = (props: GameProps) => {
       case "Alt":
       case "Control":
         activePiece.current.rotateLeft();
-        props.keydownCallback(e.key);
+        props.actionCallback({type: ActionType.ROTATE, text: e.key});
         updatePosition();
         break;
+
       case "Shift":
         activePiece.current.rotateRight();
-        props.keydownCallback(e.key);
+        props.actionCallback({type: ActionType.ROTATE, text: e.key});
         updatePosition();
         break;
     }
