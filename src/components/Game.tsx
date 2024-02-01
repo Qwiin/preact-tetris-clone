@@ -681,7 +681,7 @@ const Game = (props: GameProps) => {
           // console.log(columnHeights.current?.toString());
 
 
-          tick.value = tick.value + 1; // optimization?
+          // tick.value = tick.value + 1; // optimization?
           p.lastMoveTrigger = MovementTrigger.INPUT_DOWN;
           updatePosition();
         }
@@ -897,7 +897,7 @@ const Game = (props: GameProps) => {
     let speedIndex = Math.min((stats.current?.level || 1)-1,9);
 
     // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
-    if((100*tick.value) % Math.round(100/GAME_SPEEDS[speedIndex]) === 0) {
+    if((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]) === 0) {
       updateBoard(activePiece.current);
     }
     
