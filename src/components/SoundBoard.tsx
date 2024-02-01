@@ -11,7 +11,7 @@ import audio_lineClear from '@sounds/game-ui-sounds-14857.mp3'
 import audio_tetris from '@sounds/dark-boom-139891.mp3'
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3'
 import { ActionType } from '../TetrisConfig';
-import { FunctionalComponent, Ref } from 'preact';
+import { Ref } from 'preact';
 
 interface SoundBoardProps {
   eventTargetRef: Ref<HTMLDivElement> 

@@ -57,10 +57,9 @@ export function App() {
           <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header">TETRIS</h1>
         </div>
 
-        {/* @ts-expect-error Server Component */}
+        {/* @ts-expect-error Preact Component */}
         <Game init={true} actionCallback={actionCallback}/>
         <ActionToast actions={actionQue.current || []}/>  
-        {/* @ts-expect-error */}
         <SoundBoard eventTargetRef={soundBoardDomRef} />
       </div>
       
