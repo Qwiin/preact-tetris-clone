@@ -36,7 +36,6 @@ import ControlsMap from './ControlsMap';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 6;
-const PIECE_INDEXES_QUE_LENGTH: number = 40;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
 const tick: Signal<number> = signal(0);
