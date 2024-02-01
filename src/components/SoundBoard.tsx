@@ -1,4 +1,4 @@
-import { useRef, useState } from 'preact/hooks'
+import { useState } from 'preact/hooks'
 
 // @ts-expect-error
 import {useSound} from 'use-sound';
@@ -17,9 +17,7 @@ interface SoundBoardProps {
   eventTargetRef: Ref<HTMLDivElement> 
 }
 
-export function SoundBoard(props:SoundBoardProps): FunctionalComponent {
-
-  // const btn: Ref<HTMLDivElement> = useRef(null);
+export function SoundBoard(props:SoundBoardProps) {
 
   const [soundEnabled, setSoundEnabled] = useState(false);
 
