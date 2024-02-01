@@ -29,7 +29,7 @@ import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import '../app.css';
 import { StatsPanel } from './StatsPanel';
-import { ActionType, Direction, G, GAME_SPEEDS, ShapeColors, TETRONIMOS } from '../TetrisConfig';
+import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOS } from '../TetrisConfig';
 import { PieceQue } from './PieceQue';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import ControlsMap from './ControlsMap';
