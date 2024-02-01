@@ -102,6 +102,7 @@ const Game = (props: GameProps) => {
 
   // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
+  const gameoverRef = useRef(false);
   const [gameover, setGameover] = useState(false);
 
   const action: Ref<string> = useRef(null);
@@ -591,7 +592,7 @@ const Game = (props: GameProps) => {
     switch(e.key) {
       
       case "ArrowRight":
-        if((activePiece.current.x + activePiece.current.width) < board.current[0].length) {
+        if(!activePiece.current.dropped && (activePiece.current.x + activePiece.current.width) < board.current[0].length) {
           
           // sfx_movePiece();
 
@@ -603,7 +604,7 @@ const Game = (props: GameProps) => {
         }
         break;
       case "ArrowLeft":
-        if(activePiece.current.x > 0) {
+        if(!activePiece.current.dropped && activePiece.current.x > 0) {
           props.keydownCallback(e.key);
           // sfx_movePiece();
           activePiece.current.xPrev = activePiece.current.x;
@@ -613,7 +614,7 @@ const Game = (props: GameProps) => {
         }
         break;
       case "ArrowDown":
-        if(activePiece.current.y < 24) {
+        if(!activePiece.current.dropped && activePiece.current.y < 24) {
           props.keydownCallback(e.key);
           // sfx_movePiece();
           activePiece.current.yPrev = activePiece.current.y;
@@ -626,12 +627,15 @@ const Game = (props: GameProps) => {
       // insta-drop the piece
       case "ArrowUp":
         
-        const cols: number[][] = getBoardCols();
-
         const p: ActivePiece = activePiece.current;
+        
+        if(p.dropped) {
+          return;
+        }
 
         p.dropped = true;
-
+        
+        const cols: number[][] = getBoardCols();
         let colIndex = activePiece.current.x;
         let perm: number[][] = activePiece.current.permutation;
 
@@ -743,6 +747,7 @@ const Game = (props: GameProps) => {
 
   const gameOver = () => {
     setGameover(true);
+    gameoverRef.current = true;
     paused.current = true;
     pauseGame();
     props.actionCallback({type: ActionType.GAME_OVER});
@@ -771,6 +776,7 @@ const Game = (props: GameProps) => {
     initRefs();
 
     setGameover(false);
+    gameoverRef.current = false;
     resumeGame();
     
     pieceQueIndexes.current?.push(
@@ -878,6 +884,7 @@ const Game = (props: GameProps) => {
             }
           }
           setGameover(false);
+          gameoverRef.current = false;
           resumeGame();
         }} disabled={
           paused.current === false && gameover === false
