@@ -1,9 +1,9 @@
-import { useRef, useReducer } from 'preact/hooks'
-import './app.css'
-import Game from './components/Game'
-import { GameAction, ToastTimeout } from './TetrisConfig';
 import { Ref } from 'preact';
+import { useReducer, useRef } from 'preact/hooks';
+import { GameAction, ToastTimeout } from './TetrisConfig';
+import './app.css';
 import ActionToast from './components/ActionToast';
+import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
 
 
@@ -60,7 +60,7 @@ export function App() {
         {/* @ts-expect-error Preact Component */}
         <Game init={true} actionCallback={actionCallback}/>
         <ActionToast actions={actionQue.current || []}/>  
-        <SoundBoard eventTargetRef={soundBoardDomRef} />
+        <SoundBoard eventTargetRef={soundBoardDomRef} volume={50}/>
       </div>
       
     </>

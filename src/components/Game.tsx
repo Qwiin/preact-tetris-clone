@@ -31,7 +31,7 @@ import '../app.css';
 import { StatsPanel } from './StatsPanel';
 import { ActionType, ShapeColors, TETRONIMOS } from '../TetrisConfig';
 import { PieceQue } from './PieceQue';
-import ActivePiece from '../ActivePiece';
+import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import ControlsMap from './ControlsMap';
 
 const TICK_INTERVAL: number = 50;
@@ -316,22 +316,23 @@ const Game = (props: GameProps) => {
     let i_s = h-1;
     
     let canMoveDown = true;
-    for(let i=i_i; i > (i_i - h); i--) {
-      let j_s = 0;
-      for(let j=j_i; j < (j_i + w); j++) {
-        if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
-          if(p.y !== p.yPrev){
+    if(p.y === p.yPrev && p.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
+      canMoveDown = false;
+    }
+    else {
+      for(let i=i_i; i > (i_i - h); i--) {
+        let j_s = 0;
+        for(let j=j_i; j < (j_i + w); j++) {
+          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
             canMoveDown = false;
-            console.log("can't move down...");
             p.y = p.yPrev;
           }
-        }
-        j_s++;
-      } 
-      i_s--;
+          j_s++;
+        } 
+        i_s--;
+      }
     }
 
-    // TODO: optimize
     if(canMoveDown) { 
 
       // erase old location
@@ -364,6 +365,12 @@ const Game = (props: GameProps) => {
 
       // board.current = rows;
     }
+    else {
+      if(p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) {
+        console.log("can't move down...");
+        props.actionCallback({type: ActionType.THUD});
+      }
+    }
 
   }
 
@@ -381,7 +388,7 @@ const Game = (props: GameProps) => {
 
       // set piece in place
 
-      if(piece.y === piece.yPrev && piece.x === piece.xPrev) {
+      if((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
         // for(let i=0;  i<board.current.length; i++) {
         //   for(let j=0;  j<board.current[0].length; j++) {
         //     if(board.current[i][j] > 10) {
@@ -421,6 +428,9 @@ const Game = (props: GameProps) => {
           }
         }
 
+        if(piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
+          props.actionCallback({type: ActionType.SET_PIECE})
+        }
         activePiece.current = null; 
         requestAnimationFrame(()=>{
           updatePosition();
@@ -432,11 +442,16 @@ const Game = (props: GameProps) => {
         return;
       }
 
-      if(piece.lastTick != tick.value){
-        if(!piece.dropped){
-          piece.yPrev = piece.y;
-          piece.y = Math.min(piece.y + 1, piece.yMax); 
+      if(piece.lastTick !== tick.value){
+      
+        piece.xPrev = piece.x;
+        piece.yPrev = piece.y;
+        piece.y = Math.min(piece.y + 1, piece.yMax); 
+
+        if(piece.y !== piece.yPrev) {
+          piece.lastMoveTrigger = MovementTrigger.GRAVITY;
         }
+        
         // console.log({pieceY: piece.y});
         piece.lastTick = tick.value;
         updatePosition()
@@ -573,69 +588,95 @@ const Game = (props: GameProps) => {
 
   const keydownHandler = (e:any) => {
     
+    if(gameoverRef.current === true || !board.current) {
+      // currently, no keyboard input should be processed if gameover (or board ref is null)
+      return;
+    }
+
+    // if not gameover, pause should be allowed
     if(e.key === "Escape" && gameover === false) {
       if(!paused.current) {
         pauseGame();
-        forceUpdate(1);
+        forceUpdate(1); // changes "Pause" button label to "Resume"
       }
       else {
         resumeGame();
       }
     }
 
-    if(!activePiece.current || !board.current || paused.current || gameoverRef.current || !ticker.current) {
+    const p: ActivePiece | null = activePiece.current || null;
+
+    // only "Escape" (pause control) will be allowed if
+    //  1. no current active piece
+    //  2. current active piece was already "insta dropped" (up arrow)
+    //  3. game is paused
+    //  4. ticker ref is null
+    if(!p || paused.current || !ticker.current || p.lastMoveTrigger === MovementTrigger.INPUT_DROP || p.lastMoveTrigger === MovementTrigger.INPUT_SET) {
       return;
     }
     
     switch(e.key) {
       
       case "ArrowRight":
-        if(!activePiece.current.dropped && (activePiece.current.x + activePiece.current.width) < board.current[0].length) {
+        if((p.x + p.width) < board.current[0].length) {
           
           // sfx_movePiece();
 
           props.actionCallback({type: ActionType.MOVE, text: e.key});
-          activePiece.current.xPrev = activePiece.current.x;
-          activePiece.current.yPrev = activePiece.current.y - 1;
-          activePiece.current.x += 1; 
+          p.xPrev = p.x;
+          p.yPrev = p.y - 1;
+          p.x += 1; 
+          p.lastMoveTrigger = MovementTrigger.INPUT_LATERAL;
           updatePosition();      
         }
         break;
       case "ArrowLeft":
-        if(!activePiece.current.dropped && activePiece.current.x > 0) {
+        if(p.x > 0) {
           props.actionCallback({type: ActionType.MOVE, text: e.key});
           // sfx_movePiece();
-          activePiece.current.xPrev = activePiece.current.x;
-          activePiece.current.yPrev = activePiece.current.y - 1;
-          activePiece.current.x -= 1; 
+          p.xPrev = p.x;
+          p.yPrev = p.y - 1;
+          p.x -= 1; 
+          p.lastMoveTrigger = MovementTrigger.INPUT_LATERAL;
           updatePosition();
         }
         break;
       case "ArrowDown":
-        if(!activePiece.current.dropped && activePiece.current.y < 24) {
-          props.actionCallback({type: ActionType.MOVE, text: e.key});
+        if(p.yPrev !== p.y && p.y < p.yMax ) {
+          p.lastTick = tick.value;
+          props.actionCallback({type: ActionType.MOVE_DOWN, text: e.key});
           // sfx_movePiece();
-          activePiece.current.yPrev = activePiece.current.y;
-          activePiece.current.y += 1;
+          p.yPrev = p.y;
+          
+          
+          p.y += 1;
+
+          console.log("y:", p.y);
+          console.log(columnHeights.current?.toString());
+
+
           tick.value = tick.value + 1; // optimization?
+          p.lastMoveTrigger = MovementTrigger.INPUT_DOWN;
           updatePosition();
+        }
+        else if (p.yPrev === p.y || p.y >= p.yMax) {
+          p.xPrev = p.x;
+          p.y = Math.min(p.y, p.yMax);
+          p.yPrev = p.y
+          p.lastMoveTrigger = MovementTrigger.INPUT_SET;
+          updateBoard();
         }
         break;
 
       // insta-drop the piece
       case "ArrowUp":
         
-        const p: ActivePiece = activePiece.current;
-        
-        if(p.dropped) {
-          return;
-        }
-
-        p.dropped = true;
+        p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
+        // p.dropped = true;
         
         const cols: number[][] = getBoardCols();
-        let colIndex = activePiece.current.x;
-        let perm: number[][] = activePiece.current.permutation;
+        let colIndex = p.x;
+        let perm: number[][] = p.permutation;
 
         //
         // Gets the offsets from the bottoms contour of the piece's current permutation
@@ -651,12 +692,12 @@ const Game = (props: GameProps) => {
           }
         }
         
-        let minDistance: number = activePiece.current.yMax - activePiece.current.y;
+        let minDistance: number = p.yMax - p.y;
         let minDistances = [];
-        for(let i=0; i<activePiece.current.width; i++) {
+        for(let i=0; i<p.width; i++) {
           let colArr: number[] = (cols[i + colIndex]);
           let dropDistance = bottomOffsets[i];
-          for(let j=activePiece.current.y; j<colArr.length; j++){
+          for(let j=p.y; j<colArr.length; j++){
             if(colArr[j] !== 0) {
               break;
             }
@@ -672,20 +713,25 @@ const Game = (props: GameProps) => {
         props.actionCallback({type: ActionType.DROP, text: e.key});
 
         p.xPrev = p.x;
-        activePiece.current.y += minDistance;
-        activePiece.current.yPrev = activePiece.current.y;
-        updatePosition();
+        p.rotationPrev = p.rotation;
+        p.y += minDistance;
+        p.yPrev = p.y;
+
+        if(minDistance > 0) {
+          console.log(minDistance);
+          updatePosition();
+        }
         break;
 
       case "Alt":
       case "Control":
-        activePiece.current.rotateLeft();
+        p.rotateLeft();
         props.actionCallback({type: ActionType.ROTATE, text: e.key});
         updatePosition();
         break;
 
       case "Shift":
-        activePiece.current.rotateRight();
+        p.rotateRight();
         props.actionCallback({type: ActionType.ROTATE, text: e.key});
         updatePosition();
         break;
@@ -795,7 +841,7 @@ const Game = (props: GameProps) => {
     setTimeout(()=> {
       // activePiece.current = getNextPiece();
       activePiece.current = getPieceFromQue();
-    },TICK_INTERVAL * (0.5 / Math.pow((stats.current?.level || 1), 2)) );
+    },100);
   
     document.addEventListener("keydown", keydownHandler);
 

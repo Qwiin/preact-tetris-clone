@@ -3,31 +3,35 @@ import { useState } from 'preact/hooks'
 // @ts-expect-error
 import {useSound} from 'use-sound';
 
-import audio_t99 from '@sounds/t99-1s-lvl-set-drop-rot-1-2-3-4-ts-hold-nm-ac.mp3'
+import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac.mp3';
 import audio_movePiece from '@sounds/mixkit-game-ball-tap-2073.wav';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 import { ActionType } from '../TetrisConfig';
 import { Ref } from 'preact';
 
 interface SoundBoardProps {
-  eventTargetRef: Ref<HTMLDivElement> 
+  eventTargetRef: Ref<HTMLDivElement>;
+  volume?: number;
 }
 
 export function SoundBoard(props:SoundBoardProps) {
 
   const [soundEnabled, setSoundEnabled] = useState(false);
 
-  const [sfx_movePiece] = useSound(audio_movePiece, {
-    volume: 0.2,
-    playbackRate: 1,
-  });
+  // const [sfx_movePiece] = useSound(audio_movePiece, {
+  //   volume: 0.2,
+  //   playbackRate: 1,
+  // });
 
   const [sfx_tetris] = useSound(audio_t99, {
     sprite: {
       levelUp: [0,950],
       setPiece: [1000,650],
       dropPiece: [2000,650],
-      rotatePiece: [3000,200],
+      movePiece: [2750,120],
+      movePieceDown: [2875,120],
+      thudPiece: [3000,300],
+      rotatePiece: [3500,200],
       single: [4000,500],
       double: [5000,700],
       triple: [6000,700],
@@ -37,7 +41,7 @@ export function SoundBoard(props:SoundBoardProps) {
       moveNotAllowed: [9000,400],
       allClear: [10000,950],
     },
-    volume: 1.0,
+    volume: (props.volume || 50) / 100,
     playbackRate: 1.0
   });
 
@@ -52,18 +56,21 @@ export function SoundBoard(props:SoundBoardProps) {
     }
     switch(e.buttons) {
       case ActionType.MOVE:
-        // sfx_tetris({id:"rotatePiece"});
-        sfx_movePiece();
+        sfx_tetris({id:"movePiece"});
+        break;
+      case ActionType.MOVE_DOWN:
+        sfx_tetris({id:"movePieceDown"});
+        break;
+      case ActionType.THUD:
+        sfx_tetris({id:"thudPiece"});
         break;
       case ActionType.DROP:
         sfx_tetris({id:"dropPiece"});
         break;
       case ActionType.ROTATE:
-        // sfx_rotate();
         sfx_tetris({id:"rotatePiece"});
         break;
       case ActionType.LEVEL_UP:
-        // sfx_rotate();
         sfx_tetris({id:"levelUp"});
         break;
       case ActionType.SINGLE:
@@ -73,11 +80,13 @@ export function SoundBoard(props:SoundBoardProps) {
         sfx_tetris({id:"double"});
         break;
       case ActionType.TRIPLE:
-        // sfx_rotate();
         sfx_tetris({id:"triple"});
         break;
       case ActionType.TETRIS:
         sfx_tetris({id:"tetris"});
+        break;
+      case ActionType.SET_PIECE:
+        sfx_tetris({id:"setPiece"});
         break;
       case ActionType.GAME_OVER:
         sfx_gameOver();
