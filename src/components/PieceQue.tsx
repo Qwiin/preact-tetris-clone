@@ -1,4 +1,4 @@
-import { TETRONIMOS, ShapeColors } from "./TetrisConfig";
+import { TETRONIMOS, ShapeColors } from "../TetrisConfig";
 import { PieceQueItem } from "./Game";
 import {motion} from 'framer-motion';
 

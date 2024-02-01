@@ -154,6 +154,10 @@
   margin-top: 0.75rem
 }
 
+.tw-ml-2 {
+  margin-left: 0.5rem
+}
+
 .tw-box-border {
   box-sizing: border-box
 }
@@ -9114,6 +9118,10 @@
   padding-bottom: 0px
 }
 
+.tw-pb-2 {
+  padding-bottom: 0.5rem
+}
+
 .tw-pb-4 {
   padding-bottom: 1rem
 }
@@ -9150,10 +9158,6 @@
   padding-top: 1rem
 }
 
-.tw-pb-2 {
-  padding-bottom: 0.5rem
-}
-
 .tw-text-center {
   text-align: center
 }
@@ -9182,6 +9186,11 @@
   line-height: 1.75rem
 }
 
+.tw-text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem
+}
+
 .tw-font-extrabold {
   font-weight: 800
 }
@@ -9203,10 +9212,6 @@
 .tw-text-yellow-400 {
   --tw-text-opacity: 1;
   color: rgb(250 204 21 / var(--tw-text-opacity))
-}
-
-.tw-opacity-0 {
-  opacity: 0
 }
 
 .tw-shadow-inner {

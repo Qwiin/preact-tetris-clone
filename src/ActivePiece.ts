@@ -1,10 +1,23 @@
-import { PieceQueItem } from "./Game";
+import { PieceQueItem } from "./components/Game";
 import { rotateMatrix } from "./GameUtils";
 import { Direction } from "./TetrisConfig";
 
+export enum MovementTrigger {
+  GRAVITY=1,
+  INPUT_DOWN,
+  INPUT_LATERAL,
+  INPUT_DROP,
+  INPUT_SET,  // pressing down arrow when piece can't move down will set it in place
+}
+
 export default class ActivePiece {
 
-  dropped: boolean = false;
+
+  // flag to indicate if the piece was moved by gravity (time)
+  // or moved by user input;
+  lastMoveTrigger: MovementTrigger = MovementTrigger.GRAVITY;
+
+  // dropped: boolean = false;
 
   readonly xMax: number = 10;
   readonly xMin: number = 0;

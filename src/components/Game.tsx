@@ -27,11 +27,11 @@ Performance:
 import { Ref } from 'preact';
 import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
-import './app.css';
+import '../app.css';
 import { StatsPanel } from './StatsPanel';
-import { ShapeColors, TETRONIMOS } from './TetrisConfig';
+import { ActionType, ShapeColors, TETRONIMOS } from '../TetrisConfig';
 import { PieceQue } from './PieceQue';
-import ActivePiece from './ActivePiece';
+import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import ControlsMap from './ControlsMap';
 
 const TICK_INTERVAL: number = 50;
@@ -47,7 +47,6 @@ interface GameProps {
   numColumns?: number;
   numRows?: number;
   init: boolean;
-  keydownCallback: (key: string) => void;
   actionCallback: (value: any) => void;
   setPieceCallback?: (value: any) => void;
   setStatsCallback?: (value: any) => void;
@@ -91,6 +90,7 @@ function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex
   return indexes;
 }
 
+
 const Game = (props: GameProps) => {
 
   if(!props.init) {
@@ -101,6 +101,7 @@ const Game = (props: GameProps) => {
 
   // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
+  const gameoverRef = useRef(false);
   const [gameover, setGameover] = useState(false);
 
   const action: Ref<string> = useRef(null);
@@ -315,22 +316,23 @@ const Game = (props: GameProps) => {
     let i_s = h-1;
     
     let canMoveDown = true;
-    for(let i=i_i; i > (i_i - h); i--) {
-      let j_s = 0;
-      for(let j=j_i; j < (j_i + w); j++) {
-        if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
-          if(p.y !== p.yPrev){
+    if(p.y === p.yPrev && p.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
+      canMoveDown = false;
+    }
+    else {
+      for(let i=i_i; i > (i_i - h); i--) {
+        let j_s = 0;
+        for(let j=j_i; j < (j_i + w); j++) {
+          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
             canMoveDown = false;
-            console.log("can't move down...");
             p.y = p.yPrev;
           }
-        }
-        j_s++;
-      } 
-      i_s--;
+          j_s++;
+        } 
+        i_s--;
+      }
     }
 
-    // TODO: optimize
     if(canMoveDown) { 
 
       // erase old location
@@ -363,6 +365,12 @@ const Game = (props: GameProps) => {
 
       // board.current = rows;
     }
+    else {
+      if(p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) {
+        console.log("can't move down...");
+        props.actionCallback({type: ActionType.THUD});
+      }
+    }
 
   }
 
@@ -380,7 +388,7 @@ const Game = (props: GameProps) => {
 
       // set piece in place
 
-      if(piece.y === piece.yPrev && piece.x === piece.xPrev) {
+      if((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
         // for(let i=0;  i<board.current.length; i++) {
         //   for(let j=0;  j<board.current[0].length; j++) {
         //     if(board.current[i][j] > 10) {
@@ -404,9 +412,7 @@ const Game = (props: GameProps) => {
 
           //check for gameover//
           if(newCellVal > 0 && newCellVal < 0.9) {
-            setGameover(true);
-            paused.current = true;
-            pauseGame();
+            gameOver();
             return;
           }
         }
@@ -416,14 +422,15 @@ const Game = (props: GameProps) => {
         for(let i=rows.length - 20; i>=0; i--) {
           numBlocksOffscreen = rows[i].reduce((prev, curr)=> prev + (curr > 0 ? 1 : 0),numBlocksOffscreen);
           if(numBlocksOffscreen >= 4) {
-            setGameover(true);
-            paused.current = true;
-            pauseGame();
+            gameOver();
             return;
             // break;
           }
         }
 
+        if(piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
+          props.actionCallback({type: ActionType.SET_PIECE})
+        }
         activePiece.current = null; 
         requestAnimationFrame(()=>{
           updatePosition();
@@ -435,11 +442,16 @@ const Game = (props: GameProps) => {
         return;
       }
 
-      if(piece.lastTick != tick.value){
-        if(!piece.dropped){
-          piece.yPrev = piece.y;
-          piece.y = Math.min(piece.y + 1, piece.yMax); 
+      if(piece.lastTick !== tick.value){
+      
+        piece.xPrev = piece.x;
+        piece.yPrev = piece.y;
+        piece.y = Math.min(piece.y + 1, piece.yMax); 
+
+        if(piece.y !== piece.yPrev) {
+          piece.lastMoveTrigger = MovementTrigger.GRAVITY;
         }
+        
         // console.log({pieceY: piece.y});
         piece.lastTick = tick.value;
         updatePosition()
@@ -498,7 +510,11 @@ const Game = (props: GameProps) => {
       let points: number = 0;
       if(stats.current && numCleared > 0) {
         stats.current.lines += numCleared;
-        stats.current.level = Math.floor(stats.current.lines / 10) + 1;
+        let level: number = Math.floor(stats.current.lines / 10) + 1;
+        if(stats.current.level !== level){
+          stats.current.level = level;
+          props.actionCallback({type: ActionType.LEVEL_UP});  
+        }
         points = ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
         stats.current.score += points;
       }
@@ -513,6 +529,7 @@ const Game = (props: GameProps) => {
       // }
 
       if(numCleared > 0) {
+        let actionEnum = numCleared;
         switch(numCleared) {
           case 1:
             action.current = "Line Clear!";
@@ -528,7 +545,7 @@ const Game = (props: GameProps) => {
             break;
         }
 
-        props.actionCallback({text: action.current, points: points} || null);
+        props.actionCallback({type: actionEnum, text: action.current, points: points} || null);
 
 
       }
@@ -571,47 +588,95 @@ const Game = (props: GameProps) => {
 
   const keydownHandler = (e:any) => {
     
-    if(!activePiece.current || !board.current || paused.current || gameover) {
+    if(gameoverRef.current === true || !board.current) {
+      // currently, no keyboard input should be processed if gameover (or board ref is null)
       return;
     }
-    props.keydownCallback(e.key);
 
+    // if not gameover, pause should be allowed
+    if(e.key === "Escape" && gameover === false) {
+      if(!paused.current) {
+        pauseGame();
+        forceUpdate(1); // changes "Pause" button label to "Resume"
+      }
+      else {
+        resumeGame();
+      }
+    }
+
+    const p: ActivePiece | null = activePiece.current || null;
+
+    // only "Escape" (pause control) will be allowed if
+    //  1. no current active piece
+    //  2. current active piece was already "insta dropped" (up arrow)
+    //  3. game is paused
+    //  4. ticker ref is null
+    if(!p || paused.current || !ticker.current || p.lastMoveTrigger === MovementTrigger.INPUT_DROP || p.lastMoveTrigger === MovementTrigger.INPUT_SET) {
+      return;
+    }
+    
     switch(e.key) {
+      
       case "ArrowRight":
-        if((activePiece.current.x + activePiece.current.width) < board.current[0].length) {
-          activePiece.current.xPrev = activePiece.current.x;
-          activePiece.current.yPrev = activePiece.current.y - 1;
-          activePiece.current.x += 1; 
+        if((p.x + p.width) < board.current[0].length) {
+          
+          // sfx_movePiece();
+
+          props.actionCallback({type: ActionType.MOVE, text: e.key});
+          p.xPrev = p.x;
+          p.yPrev = p.y - 1;
+          p.x += 1; 
+          p.lastMoveTrigger = MovementTrigger.INPUT_LATERAL;
           updatePosition();      
         }
         break;
       case "ArrowLeft":
-        if(activePiece.current.x > 0) {
-          activePiece.current.xPrev = activePiece.current.x;
-          activePiece.current.yPrev = activePiece.current.y - 1;
-          activePiece.current.x -= 1; 
+        if(p.x > 0) {
+          props.actionCallback({type: ActionType.MOVE, text: e.key});
+          // sfx_movePiece();
+          p.xPrev = p.x;
+          p.yPrev = p.y - 1;
+          p.x -= 1; 
+          p.lastMoveTrigger = MovementTrigger.INPUT_LATERAL;
           updatePosition();
         }
         break;
       case "ArrowDown":
-        if(activePiece.current.y < 24) {
-          activePiece.current.yPrev = activePiece.current.y;
-          activePiece.current.y += 1;
+        if(p.yPrev !== p.y && p.y < p.yMax ) {
+          p.lastTick = tick.value;
+          props.actionCallback({type: ActionType.MOVE_DOWN, text: e.key});
+          // sfx_movePiece();
+          p.yPrev = p.y;
+          
+          
+          p.y += 1;
+
+          console.log("y:", p.y);
+          console.log(columnHeights.current?.toString());
+
+
           tick.value = tick.value + 1; // optimization?
+          p.lastMoveTrigger = MovementTrigger.INPUT_DOWN;
           updatePosition();
+        }
+        else if (p.yPrev === p.y || p.y >= p.yMax) {
+          p.xPrev = p.x;
+          p.y = Math.min(p.y, p.yMax);
+          p.yPrev = p.y
+          p.lastMoveTrigger = MovementTrigger.INPUT_SET;
+          updateBoard();
         }
         break;
 
       // insta-drop the piece
       case "ArrowUp":
+        
+        p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
+        // p.dropped = true;
+        
         const cols: number[][] = getBoardCols();
-
-        const p: ActivePiece = activePiece.current;
-
-        p.dropped = true;
-
-        let colIndex = activePiece.current.x;
-        let perm: number[][] = activePiece.current.permutation;
+        let colIndex = p.x;
+        let perm: number[][] = p.permutation;
 
         //
         // Gets the offsets from the bottoms contour of the piece's current permutation
@@ -627,12 +692,12 @@ const Game = (props: GameProps) => {
           }
         }
         
-        let minDistance: number = activePiece.current.yMax - activePiece.current.y;
+        let minDistance: number = p.yMax - p.y;
         let minDistances = [];
-        for(let i=0; i<activePiece.current.width; i++) {
+        for(let i=0; i<p.width; i++) {
           let colArr: number[] = (cols[i + colIndex]);
           let dropDistance = bottomOffsets[i];
-          for(let j=activePiece.current.y; j<colArr.length; j++){
+          for(let j=p.y; j<colArr.length; j++){
             if(colArr[j] !== 0) {
               break;
             }
@@ -645,20 +710,29 @@ const Game = (props: GameProps) => {
         }
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
+        props.actionCallback({type: ActionType.DROP, text: e.key});
 
         p.xPrev = p.x;
-        activePiece.current.y += minDistance;
-        activePiece.current.yPrev = activePiece.current.y;
-        updatePosition();
+        p.rotationPrev = p.rotation;
+        p.y += minDistance;
+        p.yPrev = p.y;
+
+        if(minDistance > 0) {
+          console.log(minDistance);
+          updatePosition();
+        }
         break;
 
       case "Alt":
       case "Control":
-        activePiece.current.rotateLeft();
+        p.rotateLeft();
+        props.actionCallback({type: ActionType.ROTATE, text: e.key});
         updatePosition();
         break;
+
       case "Shift":
-        activePiece.current.rotateRight();
+        p.rotateRight();
+        props.actionCallback({type: ActionType.ROTATE, text: e.key});
         updatePosition();
         break;
     }
@@ -716,13 +790,21 @@ const Game = (props: GameProps) => {
     }
   }
 
+  const gameOver = () => {
+    setGameover(true);
+    gameoverRef.current = true;
+    paused.current = true;
+    pauseGame();
+    props.actionCallback({type: ActionType.GAME_OVER});
+  }
+
   const pauseGame = () => {
     if(ticker.current){
       clearInterval(ticker.current);
       ticker.current = null;
     }
     paused.current = true;
-    forceUpdate(1);
+    // forceUpdate(1);
   }
   const resumeGame = () => {
     if(!ticker.current){
@@ -739,6 +821,7 @@ const Game = (props: GameProps) => {
     initRefs();
 
     setGameover(false);
+    gameoverRef.current = false;
     resumeGame();
     
     pieceQueIndexes.current?.push(
@@ -758,7 +841,7 @@ const Game = (props: GameProps) => {
     setTimeout(()=> {
       // activePiece.current = getNextPiece();
       activePiece.current = getPieceFromQue();
-    },TICK_INTERVAL * (0.5 / Math.pow((stats.current?.level || 1), 2)) );
+    },100);
   
     document.addEventListener("keydown", keydownHandler);
 
@@ -846,8 +929,11 @@ const Game = (props: GameProps) => {
             }
           }
           setGameover(false);
+          gameoverRef.current = false;
           resumeGame();
-        }}>Restart</button>
+        }} disabled={
+          paused.current === false && gameover === false
+          }>Restart</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
           style={{paddingTop:"0.7rem"}}
@@ -855,6 +941,7 @@ const Game = (props: GameProps) => {
           onClick={()=>{
           if(!paused.current) {
             pauseGame();
+            forceUpdate(1);
           }
           else {
             resumeGame();

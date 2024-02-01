@@ -40,10 +40,6 @@ body {
     url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
 }
 
-.timer-font {
-  font-family: "SF Digital Medium";
-}
-
 .game-clock {
   margin: 8px;
   margin-bottom: 4px;
