@@ -29,7 +29,7 @@ import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import '../app.css';
 import { StatsPanel } from './StatsPanel';
-import { ActionType, ShapeColors, TETRONIMOS } from '../TetrisConfig';
+import { ActionType, Direction, G, GAME_SPEEDS, ShapeColors, TETRONIMOS } from '../TetrisConfig';
 import { PieceQue } from './PieceQue';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import ControlsMap from './ControlsMap';
@@ -63,31 +63,53 @@ export interface PieceQueItem {
   id: string;
 }
 
+
+
 /**
- * 
- * @param count - number of indexes to generate
- * @param maxIndex - largest value
- * @param minIndex - smallest value
- * @returns 
+ * The algo will not repeat 
+ * @param bagSize - the range; i.e. number of distinct values
+ * @param numBags - number of bags to use in a distribution
+ * @param numDistributions - number of distributions to grab
+ * @param prevDist - when grabbing more indices, 
+ *        pass in the current que to make sure no repeats
+ * @returns number[] of length `bagSize * numBags * numDistributions`
  */
-function evenDistributionRandomIndexes(count: number, maxIndex: number, minIndex: number = 0): number[] {
-  const indexes: number[] = [];
+function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistributions: number=3, prevDist?: number[]){
+  const bag: number[] = [];
+  const dist: number[] = [];
 
-  for (let i = 0; i < count; i++) {
-    
-    const randomIndex = Math.floor(Math.random() * (maxIndex - minIndex + 1));    
-
-    if(i > 2) {
-      if(indexes[i-1] === randomIndex && indexes[i-2] === randomIndex) {
-        i--;
-        continue;
-        // rerun the loop 
-      }
+  for(let j=0; j<numBags; j++) {
+    for(let i=0; i<bagSize; i++) {
+      bag.push(i);
     }
-    indexes.push(randomIndex);
   }
 
-  return indexes;
+  for(let k=0; k<numDistributions; k++) {
+    let _bag = [...bag];
+    while(_bag.length > 0) {
+
+      let index = Math.round(Math.random() * (_bag.length-1));
+
+      if(dist.length > 1 && dist[dist.length - 1] === index && dist[dist.length - 2] === index) {
+        continue;
+      }
+      else if(dist.length === 1 && prevDist && prevDist.length > 0) {
+        if(dist[0] === index && prevDist[prevDist.length - 1] === index) {
+          continue;
+        }
+      }
+      else if(dist.length === 0 && prevDist && prevDist.length > 1) {
+        if(prevDist[prevDist.length - 1] === index && prevDist[prevDist.length - 2] === index) {
+          continue;
+        }
+      }
+      
+      dist.push(_bag.splice(index,1)[0]);
+    }
+  }
+
+  // console.log(dist);
+  return dist;
 }
 
 
@@ -510,7 +532,7 @@ const Game = (props: GameProps) => {
       let points: number = 0;
       if(stats.current && numCleared > 0) {
         stats.current.lines += numCleared;
-        let level: number = Math.floor(stats.current.lines / 10) + 1;
+        let level: number = Math.floor(stats.current.lines / 2) + 1;
         if(stats.current.level !== level){
           stats.current.level = level;
           props.actionCallback({type: ActionType.LEVEL_UP});  
@@ -556,7 +578,8 @@ const Game = (props: GameProps) => {
 
     // replenish que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 5) {
-      pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length-1));
+      // pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length-1));
+      pieceQueIndexes.current?.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
     let index: number = pieceQueIndexes.current?.shift() ?? -1;
@@ -573,7 +596,7 @@ const Game = (props: GameProps) => {
     pieceQue.current.push(getNextPiece());    
     // console.log(pieceQue.current);
     let newPiece = pieceQue.current.shift();
-    let p: ActivePiece = new ActivePiece(newPiece, (Math.round(Math.random() * 3) + 1));
+    let p: ActivePiece = new ActivePiece(newPiece, Direction.N );
     let c: number[][] = [];
     for(let i=0; i<p.height; i++) {
       for(let j=0; j<p.width; j++) {
@@ -606,11 +629,15 @@ const Game = (props: GameProps) => {
 
     const p: ActivePiece | null = activePiece.current || null;
 
-    // only "Escape" (pause control) will be allowed if
-    //  1. no current active piece
-    //  2. current active piece was already "insta dropped" (up arrow)
-    //  3. game is paused
-    //  4. ticker ref is null
+    //
+    // The above "Escape" key handler will be the only input accepted when
+    // any of the following are true:
+    //
+    //    1. no current active piece
+    //    2. current active piece was already "insta dropped" (up arrow)
+    //    3. game is paused
+    //    4. ticker ref is null
+    //
     if(!p || paused.current || !ticker.current || p.lastMoveTrigger === MovementTrigger.INPUT_DROP || p.lastMoveTrigger === MovementTrigger.INPUT_SET) {
       return;
     }
@@ -651,8 +678,8 @@ const Game = (props: GameProps) => {
           
           p.y += 1;
 
-          console.log("y:", p.y);
-          console.log(columnHeights.current?.toString());
+          // console.log("y:", p.y);
+          // console.log(columnHeights.current?.toString());
 
 
           tick.value = tick.value + 1; // optimization?
@@ -718,7 +745,7 @@ const Game = (props: GameProps) => {
         p.yPrev = p.y;
 
         if(minDistance > 0) {
-          console.log(minDistance);
+          // console.log(minDistance);
           updatePosition();
         }
         break;
@@ -825,7 +852,7 @@ const Game = (props: GameProps) => {
     resumeGame();
     
     pieceQueIndexes.current?.push(
-      ...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH + PIECE_QUE_LENGTH, TETRONIMOS.length-1)
+      ...randomBagDistribution(7,2,3)
       );
 
       // console.log(pieceQueIndexes.current);
@@ -868,7 +895,8 @@ const Game = (props: GameProps) => {
   // Controls the game speed by level
   useEffect(() => {
 
-    if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
+    // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
+    if((tick.value * G) % Math.round(G/GAME_SPEEDS[(stats.current?.level || 1)-1]) === 0) {
       updateBoard(activePiece.current);
     }
     
