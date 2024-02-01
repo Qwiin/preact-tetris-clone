@@ -3,13 +3,9 @@ import { useState } from 'preact/hooks'
 // @ts-expect-error
 import {useSound} from 'use-sound';
 
+import audio_t99 from '@sounds/t99-1s-lvl-set-drop-rot-1-2-3-4-ts-hold-nm-ac.mp3'
 import audio_movePiece from '@sounds/mixkit-game-ball-tap-2073.wav';
-import audio_dropPiece from '@sounds/sci-fi-gun-shot-x6-14447.mp3'
-import audio_levelUp from '@sounds/mixkit-bonus-earned-in-video-game-2058.wav';
-import audio_rotate from '@sounds/click-button-140881.mp3'
-import audio_lineClear from '@sounds/game-ui-sounds-14857.mp3'
-import audio_tetris from '@sounds/dark-boom-139891.mp3'
-import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3'
+import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 import { ActionType } from '../TetrisConfig';
 import { Ref } from 'preact';
 
@@ -25,39 +21,26 @@ export function SoundBoard(props:SoundBoardProps) {
     volume: 0.2,
     playbackRate: 1,
   });
-  const [sfx_dropPiece] = useSound(audio_dropPiece, {
+
+  const [sfx_tetris] = useSound(audio_t99, {
     sprite: {
-      drop: [1720, 1800],
-      // click: [1500, 2000],
+      levelUp: [0,950],
+      setPiece: [1000,650],
+      dropPiece: [2000,650],
+      rotatePiece: [3000,200],
+      single: [4000,500],
+      double: [5000,700],
+      triple: [6000,700],
+      tetris: [7000,950],
+      tSpin: [8000,950],
+      holdPiece: [9000,400],
+      moveNotAllowed: [9000,400],
+      allClear: [10000,950],
     },
-    volume: 0.6,
-    playbackRate: 1.3,
-    // interrupt: true
+    volume: 1.0,
+    playbackRate: 1.0
   });
-  const [sfx_levelUp] = useSound(audio_levelUp, {
-    volume: 0.5,
-    playbackRate: 1
-  });
-  const [sfx_rotate] = useSound(audio_rotate, {
-    sprite: {
-      click: [0, 200],
-      // click: [1500, 2000],
-    },
-    volume: 0.2,
-    playbackRate: 2.0
-  });
-  const [sfx_lineClear] = useSound(audio_lineClear, {
-    sprite: {
-      clear: [4900, 6000],
-      // click: [1500, 2000],
-    },
-    volume: 1,
-    playbackRate: 1.3
-  });
-  const [sfx_tetris] = useSound(audio_tetris, {
-    volume: 1.5,
-    playbackRate: 1.5
-  });
+
   const [sfx_gameOver] = useSound(audio_gameOver, {
     volume: 0.4,
     playbackRate: 1.0
@@ -69,27 +52,32 @@ export function SoundBoard(props:SoundBoardProps) {
     }
     switch(e.buttons) {
       case ActionType.MOVE:
+        // sfx_tetris({id:"rotatePiece"});
         sfx_movePiece();
         break;
       case ActionType.DROP:
-        sfx_dropPiece({id:"drop"});
+        sfx_tetris({id:"dropPiece"});
         break;
       case ActionType.ROTATE:
         // sfx_rotate();
-        sfx_rotate({id:"click"});
+        sfx_tetris({id:"rotatePiece"});
         break;
       case ActionType.LEVEL_UP:
         // sfx_rotate();
-        sfx_levelUp();
+        sfx_tetris({id:"levelUp"});
         break;
       case ActionType.SINGLE:
+        sfx_tetris({id:"single"});
+        break;
       case ActionType.DOUBLE:
+        sfx_tetris({id:"double"});
+        break;
       case ActionType.TRIPLE:
         // sfx_rotate();
-        sfx_lineClear({id:'clear'});
+        sfx_tetris({id:"triple"});
         break;
       case ActionType.TETRIS:
-        sfx_tetris();
+        sfx_tetris({id:"tetris"});
         break;
       case ActionType.GAME_OVER:
         sfx_gameOver();
