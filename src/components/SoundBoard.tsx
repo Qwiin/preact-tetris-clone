@@ -1,13 +1,12 @@
 import { useState } from 'preact/hooks'
+import { ActionType } from '../TetrisConfig';
+import { Ref } from 'preact';
 
 // @ts-expect-error
 import {useSound} from 'use-sound';
 
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac.mp3';
-import audio_movePiece from '@sounds/mixkit-game-ball-tap-2073.wav';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
-import { ActionType } from '../TetrisConfig';
-import { Ref } from 'preact';
 
 interface SoundBoardProps {
   eventTargetRef: Ref<HTMLDivElement>;
@@ -17,11 +16,6 @@ interface SoundBoardProps {
 export function SoundBoard(props:SoundBoardProps) {
 
   const [soundEnabled, setSoundEnabled] = useState(false);
-
-  // const [sfx_movePiece] = useSound(audio_movePiece, {
-  //   volume: 0.2,
-  //   playbackRate: 1,
-  // });
 
   const [sfx_tetris] = useSound(audio_t99, {
     sprite: {
