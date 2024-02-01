@@ -87,7 +87,7 @@ export default class ActivePiece {
         this.y = y;
         this.yPrev = y-1;
       }else {
-        this.y = this.height + 4;
+        this.y = this.height + 3;
       }
       if(coords) {
         this.coords = coords;
