@@ -894,8 +894,10 @@ const Game = (props: GameProps) => {
   // Controls the game speed by level
   useEffect(() => {
 
+    let speedIndex = Math.min((stats.current?.level || 1)-1,9);
+
     // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
-    if((tick.value * G) % Math.round(G/GAME_SPEEDS[(stats.current?.level || 1)-1]) === 0) {
+    if((100*tick.value) % Math.round(100/GAME_SPEEDS[speedIndex]) === 0) {
       updateBoard(activePiece.current);
     }
     
