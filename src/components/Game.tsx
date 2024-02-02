@@ -25,7 +25,7 @@ Performance:
 **/
 
 import { Signal, signal } from '@preact/signals';
-import { motion } from 'framer-motion';
+
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
@@ -34,6 +34,7 @@ import '../app.css';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
+import {motion} from 'framer-motion';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 6;
