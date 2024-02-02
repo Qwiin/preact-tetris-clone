@@ -24,15 +24,16 @@ Performance:
 
 **/
 
-import { Ref } from 'preact';
-import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
-import '../app.css';
-import { StatsPanel } from './StatsPanel';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
-import { PieceQue } from './PieceQue';
+
+import { Ref } from 'preact';
+import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
+import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
+import '../app.css';
 import ControlsMap from './ControlsMap';
+import { PieceQue } from './PieceQue';
+import { StatsPanel } from './StatsPanel';
 import {motion} from 'framer-motion';
 
 const TICK_INTERVAL: number = 50;
@@ -1016,7 +1017,9 @@ const Game = (props: GameProps) => {
 
               // @ts-expect-error
               <motion.div key={dropEffectData.current.id} className="drop-effect" 
-                onAnimationComplete={()=>{dropEffectData.current = null;}}
+                onAnimationComplete={
+                    ()=>{dropEffectData.current = null;
+                  }}
                 variants={{
                   show: {
                     opacity: 1
