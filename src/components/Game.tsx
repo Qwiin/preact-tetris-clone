@@ -29,10 +29,11 @@ import { useRef, useEffect, useState, useReducer } from 'preact/hooks';
 import { Signal, signal } from '@preact/signals';
 import '../app.css';
 import { StatsPanel } from './StatsPanel';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOS } from '../TetrisConfig';
+import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
 import { PieceQue } from './PieceQue';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import ControlsMap from './ControlsMap';
+import {motion} from 'framer-motion';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 6;
@@ -58,11 +59,9 @@ interface Scoring {
 }
 
 export interface PieceQueItem {
-  piece: number[][];
+  shapeEnum: TetronimoShape;
   id: string;
 }
-
-
 
 /**
  * The algo will not repeat 
@@ -124,6 +123,7 @@ const Game = (props: GameProps) => {
   const paused = useRef(false);
   const gameoverRef = useRef(false);
   const downArrowPressed = useRef(false);
+  const dropEffectData: Ref<any> = useRef(null);
   const upArrowPressed = useRef(false);
   const [gameover, setGameover] = useState(false);
 
@@ -589,10 +589,9 @@ const Game = (props: GameProps) => {
     }
 
     let index: number = pieceQueIndexes.current?.shift() ?? -1;
-    let shape: number[][] = TETRONIMOS[index];
     return {
-      piece: JSON.parse(JSON.stringify(shape)),
-      id: Math.round(window.performance.now()).toString()
+      shapeEnum: index,
+      id: Math.round(window.performance.now()*1000).toString()
     }
     // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
   }
@@ -601,8 +600,8 @@ const Game = (props: GameProps) => {
     if(pieceQue.current){
     pieceQue.current.push(getNextPiece());    
     // console.log(pieceQue.current);
-    let newPiece = pieceQue.current.shift();
-    let p: ActivePiece = new ActivePiece(newPiece, Direction.N );
+    let newShapeEnum = pieceQue.current.shift();
+    let p: ActivePiece = new ActivePiece(newShapeEnum, Direction.N );
     let c: number[][] = [];
     for(let i=0; i<p.height; i++) {
       for(let j=0; j<p.width; j++) {
@@ -707,7 +706,7 @@ const Game = (props: GameProps) => {
         
         p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
         // p.dropped = true;
-        
+
         const cols: number[][] = getBoardCols();
         let colIndex = p.x;
         let perm: number[][] = p.permutation;
@@ -743,8 +742,20 @@ const Game = (props: GameProps) => {
           }
         }
 
+        dropEffectData.current = {
+          top: `${(p.y - p.height - 4)}rem`,
+          bottom: `${(24 - (p.y + minDistance))}rem`,
+          left: `${p.x}rem`,
+          right: `${(10 - p.x - p.width)}rem`,
+          id: p.id
+        };
+
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
         props.actionCallback({type: ActionType.DROP, text: e.key});
+
+        // setTimeout(()=>{
+        //   dropEffectData.current = null;
+        // }, 350);
 
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
@@ -868,7 +879,8 @@ const Game = (props: GameProps) => {
     let indices = pieceQueIndexes.current || [];
     for(let i=0; i<PIECE_QUE_LENGTH; i++) {
       pieceQue.current?.push({
-        piece: TETRONIMOS[indices[i]],
+        shapeEnum: indices[i],
+        // piece: JSON.parse(TETRONIMOS[indices[i]]),
         id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
       });
     }
@@ -1000,6 +1012,37 @@ const Game = (props: GameProps) => {
           <h5 className="bg-green-100 game-clock tetris-font tw-text-lg">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
           <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"0.6px solid rgba(200,200,200,1)"}}>
             
+            { dropEffectData.current && 
+
+              // @ts-expect-error
+              <motion.div key={dropEffectData.current.id} className="drop-effect" 
+                onAnimationComplete={()=>{dropEffectData.current = null;}}
+                variants={{
+                  show: {
+                    opacity: 1
+                  }, 
+                  hidden: {
+                    opacity: 0
+                  }}}
+                initial="show"
+                animate="hidden"
+                transition={{
+                  duration: 0.25, 
+                  ease:"easeOut"
+                }}
+                // transitionEnd = {{
+                //   display: 'none'
+                // }}
+                
+                style={{
+                  top: dropEffectData.current.top,
+                  left: dropEffectData.current.left,
+                  right: dropEffectData.current.right,
+                  bottom: dropEffectData.current.bottom
+                  }}>
+
+              </motion.div>
+            }
             <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
               {renderBoard()}
             </div>
@@ -1013,7 +1056,7 @@ const Game = (props: GameProps) => {
         {pieceQue.current &&
         <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} 
         pieces={
-          pieceQue?.current || [{id: "123", piece: [[]]},{id: "1", piece: [[]]},{id: "12", piece: [[]]},{id: "124", piece: [[]]},{id: "125", piece: [[]]}]
+          pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
             // ? [{piece: activePiece?.current?.shape || TETRONIMOS[1], id: window.performance.now().toString()}, ...pieceQue?.current] 
             // : [{piece: TETRONIMOS[1], id:"11"}]
         

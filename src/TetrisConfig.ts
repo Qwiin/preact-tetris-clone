@@ -9,7 +9,7 @@ export interface GameAction {
 export const ToastTimeout: number = 1000;
 
 export enum ActionType {
-  SINGLE=1,
+  SINGLE = 1,
   DOUBLE,
   TRIPLE,
   TETRIS,
@@ -56,16 +56,16 @@ export const ShapeColors: string[] = [
 ];
 
 export enum Direction {
-  N=1,
+  N = 1,
   E,
   S,
   W
 }
 
 
-// O, Z, S, J, L, T, I
 export enum TetronimoShape {
-  O=0,
+  NULL=-1,
+  O,
   Z,
   S,
   J,
@@ -74,32 +74,87 @@ export enum TetronimoShape {
   I
 }
 
-export const TETRONIMOS: number[][][] = [
-  [
-    [11, 11],
-    [11, 11]
-  ],
-  [
-    [22, 22, 0 ],
-    [ 0, 22, 22],
-  ],
-  [
-    [ 0, 33, 33],
-    [33, 33,  0]
-  ],
-  [
-    [44,  0,  0],
-    [44, 44, 44]
-  ],
-  [
-    [ 0,  0, 55],
-    [55, 55, 55]
-  ],
-  [
-    [ 0, 66, 0 ],
-    [66, 66, 66]
-  ],
-  [
-    [77, 77, 77, 77]
-  ]
-]
+/*
+  [][]
+  [][]
+*/
+const TETRONIMO_O = `[[11, 11],[11, 11]]`;
+
+/*
+
+[][]
+  [][]
+
+*/
+const TETRONIMO_Z = `[[22, 22, 0],[0, 22, 22]]`;
+
+/*
+ 
+  [][]
+[][]
+
+*/
+const TETRONIMO_S = `[[ 0, 33, 33],[33, 33,  0]]`;
+
+/*
+ 
+[]
+[][][]
+
+*/
+const TETRONIMO_J = `[[44,  0,  0],[44, 44, 44]]`;
+
+/*
+
+    []
+[][][]
+
+*/
+const TETRONIMO_L = `[[0,  0, 55],[55, 55, 55]]`;
+
+/*
+
+  []
+[][][]
+
+*/
+const TETRONIMO_T = `[[0, 66, 0],[66, 66, 66]]`;
+
+/*
+
+[][][][]
+
+*/
+const TETRONIMO_I = `[[77, 77, 77, 77]]`;
+
+
+// more efficient way to copy items is to already have the string form
+//   previously was using JSON.parse(JSON.stringify(arr));
+export const TETRONIMOS_STRINGS: string[] = [
+
+  // O
+  TETRONIMO_O,
+
+  // Z
+  TETRONIMO_Z,
+
+  // S
+  TETRONIMO_S,
+
+  // J
+  TETRONIMO_J,
+
+  // L
+  TETRONIMO_L,
+
+  // T
+  TETRONIMO_T,
+
+  // I
+  TETRONIMO_I
+];
+
+// In the PieceQue, we don't need to copy the Tetronimo Array objects, 
+// we can just reference the actual values, so this avoids a JSON.parse()
+export const TETRONIMOS: number[][][] =
+  TETRONIMOS_STRINGS.map((t: string) => { return JSON.parse(t) as number[][]; });

@@ -12,13 +12,13 @@ const defaultPropsPieceQue: PieceQueProps = {
   title: "Que",
   queLength: 5,
   pieces: [
-    {piece: TETRONIMOS[0], id: "1"},
-    {piece: TETRONIMOS[1], id: "2"},
-    {piece: TETRONIMOS[2], id: "3"},
-    {piece: TETRONIMOS[3], id: "4"},
-    {piece: TETRONIMOS[4], id: "5"},
-    {piece: TETRONIMOS[5], id: "6"},
-    {piece: TETRONIMOS[6], id: "7"},
+    {shapeEnum: 0, id: "1"},
+    {shapeEnum: 0, id: "2"},
+    {shapeEnum: 0, id: "3"},
+    {shapeEnum: 0, id: "4"},
+    {shapeEnum: 0, id: "5"},
+    {shapeEnum: 0, id: "6"},
+    {shapeEnum: 0, id: "7"}
   ]
 }
 
@@ -64,7 +64,7 @@ export function PieceQue(props: PieceQueProps) {
                   }}
                   >
                 {
-                  item.piece.map((row: number[]) => {
+                  TETRONIMOS[item.shapeEnum].map((row: number[]) => {
                     return (
                       <>
                       

@@ -1,6 +1,6 @@
 import { PieceQueItem } from "./components/Game";
 import { rotateMatrix } from "./GameUtils";
-import { Direction } from "./TetrisConfig";
+import { Direction, TETRONIMOS_STRINGS, TetronimoShape } from "./TetrisConfig";
 
 export enum MovementTrigger {
   GRAVITY=1,
@@ -66,13 +66,15 @@ export default class ActivePiece {
 
   readonly id: string = "";
   readonly shape: number[][] = [];
+  readonly shapeEnum: TetronimoShape = TetronimoShape.NULL;
 
   readonly shapeByDirection: number[][][] = [];
 
   constructor(item?: PieceQueItem, rotation?: Direction, coords?: number[][], x?: number, y?: number) {
 
     if(item) {
-      this.shape = item.piece;
+      this.shapeEnum = item.shapeEnum;
+      this.shape = JSON.parse(TETRONIMOS_STRINGS[item.shapeEnum]);
       this.id = item.id;
       this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {
