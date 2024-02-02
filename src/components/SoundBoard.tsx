@@ -1,10 +1,11 @@
-import { useState } from 'preact/hooks'
+import { useEffect, useState } from 'preact/hooks'
 import { ActionType } from '../TetrisConfig';
 import { Ref } from 'preact';
 
 // @ts-expect-error
 import {useSound} from 'use-sound';
 
+import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 
@@ -16,6 +17,28 @@ interface SoundBoardProps {
 export function SoundBoard(props:SoundBoardProps) {
 
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(false);
+
+  const [sfx_t99Music, {stop, pause}] = useSound(audio_t99_music, {
+    volume: (props.volume || 50) / 100,
+    playbackRate: 1
+  });
+
+  useEffect(()=>{
+    if(musicEnabled){
+      // if(!isPlaying()) {
+        sfx_t99Music();
+      // }
+    } else {
+      // if(isPlaying()) {
+        pause();
+      // }
+    }
+
+    return ()=>{
+      pause();
+    }
+  },[musicEnabled]);
 
   const [sfx_tetris] = useSound(audio_t99, {
     sprite: {
@@ -35,7 +58,7 @@ export function SoundBoard(props:SoundBoardProps) {
       moveNotAllowed: [9000,400],
       allClear: [10000,950],
     },
-    volume: (props.volume || 50) / 100,
+    volume: (props.volume || 50) / 150,
     playbackRate: 1.0
   });
 
@@ -92,10 +115,20 @@ export function SoundBoard(props:SoundBoardProps) {
     <>
       <div className="tw-absolute tw-font-mono">
         <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
-        <input id="EnableSounds" type="checkbox" onChange={()=>{
-          setSoundEnabled(!soundEnabled);
-        }} checked={soundEnabled} />
-        <label for="EnableSounds" className="tw-ml-2 tw-text-sm">Game Sound</label>
+        <div className="tw-flex tw-flex-col tw-gap-2 tw-items-start tw-justify-start">
+          <div className="tw-flex tw-flex-row tw-gap-2 tw-items-center tw-justify-start">
+            <input id="EnableSounds" type="checkbox" onChange={()=>{
+              setSoundEnabled(!soundEnabled);
+            }} checked={soundEnabled} />
+            <label for="EnableSounds" className="tw-ml-2 tw-text-sm">SoundFX</label>
+          </div>
+          <div className="tw-flex tw-flex-row tw-gap-2 tw-items-center tw-justify-start">
+            <input id="EnableSounds" type="checkbox" onChange={()=>{
+              setMusicEnabled(!musicEnabled);
+            }} checked={musicEnabled} />
+            <label for="EnableSounds" className="tw-ml-2 tw-text-sm">Music</label>
+          </div>
+        </div>
       </div>
     </>
   );
