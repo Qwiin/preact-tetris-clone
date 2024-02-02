@@ -538,7 +538,7 @@ const Game = (props: GameProps) => {
       let points: number = 0;
       if(stats.current && numCleared > 0) {
         stats.current.lines += numCleared;
-        let level: number = Math.floor(stats.current.lines / 2) + 1;
+        let level: number = Math.floor(stats.current.lines / 10) + 1;
         if(stats.current.level !== level){
           stats.current.level = level;
           props.actionCallback({type: ActionType.LEVEL_UP});  
