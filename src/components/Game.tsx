@@ -123,6 +123,8 @@ const Game = (props: GameProps) => {
   // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
   const gameoverRef = useRef(false);
+  const downArrowPressed = useRef(false);
+  const upArrowPressed = useRef(false);
   const [gameover, setGameover] = useState(false);
 
   const action: Ref<string> = useRef(null);
@@ -337,8 +339,10 @@ const Game = (props: GameProps) => {
     let i_s = h-1;
     
     let canMoveDown = true;
+    let canMoveDownTwice = true;
     if(p.y === p.yPrev && p.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
       canMoveDown = false;
+      canMoveDownTwice = false;
     }
     else {
       for(let i=i_i; i > (i_i - h); i--) {
@@ -347,6 +351,12 @@ const Game = (props: GameProps) => {
           if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
             canMoveDown = false;
             p.y = p.yPrev;
+          }
+          if(i >= board.current.length-1) {
+            canMoveDownTwice = false;
+          }
+          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && board.current[i+1][j] !== 0 && board.current[i+1][j] !== perm[i_s][j_s]) {
+            canMoveDownTwice = false;
           }
           j_s++;
         } 
@@ -384,15 +394,12 @@ const Game = (props: GameProps) => {
       p.coordsPrev = p.coords;
       p.coords = newCoords;
 
-      // board.current = rows;
-    }
-    else {
-      if(p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) {
-        console.log("can't move down...");
+      // this is run before the render, so we need to know if the piece will thud on next paint
+      if((p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) && !canMoveDownTwice ) {
+        console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
     }
-
   }
 
   const updateBoard = (piece?: ActivePiece | null) => {
@@ -469,9 +476,9 @@ const Game = (props: GameProps) => {
         piece.yPrev = piece.y;
         piece.y = Math.min(piece.y + 1, piece.yMax); 
 
-        if(piece.y !== piece.yPrev) {
+        // if(piece.y !== piece.yPrev) {
           piece.lastMoveTrigger = MovementTrigger.GRAVITY;
-        }
+        // }
         
         // console.log({pieceY: piece.y});
         piece.lastTick = tick.value;
@@ -680,7 +687,7 @@ const Game = (props: GameProps) => {
           // console.log("y:", p.y);
           // console.log(columnHeights.current?.toString());
 
-
+          downArrowPressed.current = true;
           // tick.value = tick.value + 1; // optimization?
           p.lastMoveTrigger = MovementTrigger.INPUT_DOWN;
           updatePosition();
@@ -690,6 +697,7 @@ const Game = (props: GameProps) => {
           p.y = Math.min(p.y, p.yMax);
           p.yPrev = p.y
           p.lastMoveTrigger = MovementTrigger.INPUT_SET;
+          downArrowPressed.current = true;
           updateBoard();
         }
         break;
@@ -743,6 +751,7 @@ const Game = (props: GameProps) => {
         p.y += minDistance;
         p.yPrev = p.y;
 
+        upArrowPressed.current = true;
         if(minDistance > 0) {
           // console.log(minDistance);
           updatePosition();
@@ -897,7 +906,12 @@ const Game = (props: GameProps) => {
     let speedIndex = Math.min((stats.current?.level || 1)-1,9);
 
     // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
-    if((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]) === 0) {
+    if((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]) === 0 
+        || upArrowPressed.current   === true
+        || downArrowPressed.current === true) {
+            
+      downArrowPressed.current = false;
+      upArrowPressed.current = false;
       updateBoard(activePiece.current);
     }
     
