@@ -19,7 +19,7 @@ export function SoundBoard(props:SoundBoardProps) {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(false);
 
-  const [sfx_t99Music, {stop, pause}] = useSound(audio_t99_music, {
+  const [sfx_t99Music, {pause}] = useSound(audio_t99_music, {
     volume: (props.volume || 50) / 100,
     playbackRate: 1
   });
