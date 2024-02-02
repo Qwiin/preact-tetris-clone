@@ -93,6 +93,12 @@ body {
   font-family: 'Absolute Empire';
 }
 
+.drop-effect {
+  position: absolute;
+  background-image: linear-gradient(rgba(255,255,255,0),rgba(255,255,255,0.6),rgba(255,255,255,0.8), rgba(255,255,255,0.1) 95%);
+  z-index: 200;
+}
+
 .game-header {
   padding-top: 24px;
   line-height: 40px;
