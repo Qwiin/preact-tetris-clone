@@ -24,6 +24,26 @@ export enum ActionType {
   PAUSE,
 }
 
+export const G: number = 3;  // cells per frame
+export const GAME_SPEEDS = [
+  0.01667 * G,
+  0.021017 * G,
+  0.026977 * G,
+  0.035256 * G,
+  0.04693 * G,
+  0.06361 * G,
+  0.0879 * G,
+  0.1236 * G,
+  0.1775 * G,
+  0.2598 * G,
+  // 0.388 * G,
+  // 0.59 * G,
+  // 0.92 * G,
+  // 1.46 * G,
+  // 2.36 * G,
+]
+
+
 export const ShapeColors: string[] = [
   'transparent',
   'yellow-400',
