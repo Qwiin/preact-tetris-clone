@@ -87,6 +87,23 @@ export function SoundBoard(props:SoundBoardProps) {
       case ActionType.ROTATE:
         sfx_tetris({id:"rotatePiece"});
         break;
+      case ActionType.T_SPIN:
+        sfx_tetris({id:"tSpin"});
+        break;
+      case ActionType.T_SPIN_SINGLE:
+      case ActionType.T_SPIN_MINI_SINGLE:
+        sfx_tetris({id:"tSpin"});
+        sfx_tetris({id:"single"});
+        break;
+      case ActionType.T_SPIN_DOUBLE:
+      case ActionType.T_SPIN_MINI_DOUBLE:
+        sfx_tetris({id:"tSpin"});
+        sfx_tetris({id:"double"});
+        break;
+      case ActionType.T_SPIN_TRIPLE:
+        sfx_tetris({id:"tSpin"});
+        sfx_tetris({id:"single"});
+        break;
       case ActionType.LEVEL_UP:
         sfx_tetris({id:"levelUp"});
         break;

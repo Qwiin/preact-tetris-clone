@@ -21,6 +21,17 @@ const textDivVariants = {
       transitionEnd
     }
 };
+const subtextDivVariants = {
+    show: {
+      transform: "rotateY(90deg)",
+      opacity: 1
+    }, 
+    hidden: {
+      transform: "rotateY(0deg)",
+      opacity: 0,
+      transitionEnd
+    }
+};
 
 const pointsDivVariants = {
   show: {
@@ -68,6 +79,18 @@ export function ActionToast(props: ActionToastProps) {
               ease: "easeOut"
             }}>
             <h2 className="tw-m-0 tw-py-2 tw-font-thin tw-text-green-500">+{action.points}</h2>
+          </motion.div>
+          {/* @ts-expect-error Motion Component */}
+          <motion.div className="tw-absolute tw-right-0 tw-top-0 tw-font-extrabold tw-font-mono tw-w-full tw-flex tw-justify-center tw-items-center tw-opacity-1"
+            key={action.id + 'c'} 
+            variants={subtextDivVariants}
+            initial="show"
+            animate="hidden"
+            transition={{
+              duration: 2.0, 
+              ease: "easeOut"
+            }}>
+            <h2 className="tw-m-0 tw-py-0 tw-font-bold tw-text-blue-500">{action.subtext}</h2>
           </motion.div>
           </>
         );

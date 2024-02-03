@@ -22,12 +22,13 @@ export function App() {
 
   const actionCallback = (a: GameAction) => {
     
-    if (a.type <= 4) {
+    if (a.text || a.subtext) {
 
       if(actionQue.current){
         actionQue.current.push({
           type: a.type,
           text: a.text, 
+          subtext: a.subtext,
           points: a.points, 
           id: Math.round(window.performance.now()).toString(), 
           transitioning: true
