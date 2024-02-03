@@ -124,6 +124,7 @@ const Game = (props: GameProps) => {
   const paused = useRef(false);
   const gameoverRef = useRef(false);
   const downArrowPressed = useRef(false);
+  const tSpun = useRef(false);
   const dropEffectData: Ref<any> = useRef(null);
   const upArrowPressed = useRef(false);
   const [gameover, setGameover] = useState(false);
@@ -252,46 +253,6 @@ const Game = (props: GameProps) => {
             canRotateInPlace = false;
             // canTSpinInPlace = false;
           }
-          // if(canRotateInPlace && !canTSpinInPlace && p.shapeEnum === TetronimoShape.T) { 
-
-          //   let iMin = i_iii + ((p.rotation === Direction.S) ? (-1) : 0);
-          //   let iMax = i_iii - h - 1 + ((p.rotation === Direction.N) ? 1 : 0);
-          //   let jMin = j_iii + ((p.rotation === Direction.E) ? (-1) : 0);
-          //   let jMax = j_iii + w - 1 + ((p.rotation === Direction.W) ? 1 : 0);
-
-          //   // let iMinPerm = 0;
-          //   // let iMaxPerm = h-1;
-          //   // let jMinPerm = 0;
-          //   // let jMaxPerm = w-1;
-
-          //   let cornerCount = 0;
-          //   if(iMin < 0 || jMin < 0 || (rows[iMin][jMin] !== 0 && rows[iMin][jMin] < 10)){
-          //     cornerCount++;
-          //   }
-          //   if(iMin < 0 || jMax >= rows[0].length || (rows[iMin][jMax] !== 0 && rows[iMin][jMax] < 10)){
-          //     cornerCount++;
-          //   }
-          //   if(iMax >= rows.length || jMin < 0 || (rows[iMax][jMin] !== 0 && rows[iMax][jMin] < 10)){
-          //     cornerCount++;
-          //   }
-          //   if(iMax >= rows.length || jMax >= rows[0].length || (rows[iMax][jMax] !== 0 && rows[iMax][jMax] < 10)){
-          //     cornerCount++;
-          //   }
-
-          //   console.log("CornerCount:", cornerCount);
-
-          //   if(cornerCount === 2) {
-          //     isTSpin.current = false;
-          //     isTSpinMini.current = true;
-          //     canTSpinInPlace = true;
-          //   }
-          //   else if (cornerCount > 2){
-          //     isTSpin.current = true;
-          //     isTSpinMini.current = false;
-          //     canTSpinInPlace = true;
-          //   }
-
-          // }
           if(i+dy >= p.yMax){
             canTSpin = false;
             canTSpinLeft = false;
@@ -324,6 +285,10 @@ const Game = (props: GameProps) => {
         // p.coords = [...p.coordsPrev];
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
+
+        if(p.shapeEnum === TetronimoShape.T) {
+          tSpun.current = true;
+        }
       }
       else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
         p.x = p.xPrev;
@@ -357,9 +322,8 @@ const Game = (props: GameProps) => {
         p.rotationPrev = p.rotation;
 
         if(p.shapeEnum === TetronimoShape.T) {
-          isTSpinMini.current = true;
+          tSpun.current = true;
         }
-        
       }
 
       // make sure local values are updated
@@ -372,6 +336,9 @@ const Game = (props: GameProps) => {
 
     // let canMoveLateral = true;
     if (p.x != p.xPrev) {
+      if(p.shapeEnum === TetronimoShape.T) {
+        tSpun.current = false;
+      }
       let coords = p.coords;
       let dx = p.x - p.xPrev;
       if(coords){
@@ -424,7 +391,7 @@ const Game = (props: GameProps) => {
     }
 
     if(canMoveDown) { 
-
+      tSpun.current = false;
       // erase old location
       for(let i=0; i<p.coords.length; i++){
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
@@ -504,7 +471,7 @@ const Game = (props: GameProps) => {
           }
         }
         
-        if(piece.shapeEnum === TetronimoShape.T) {
+        if(piece.shapeEnum === TetronimoShape.T && tSpun.current === true) {
             let iMin = (piece.y - piece.height) + ((piece.rotation === Direction.S) ? (-1) : 0);
             let iMax = (piece.y - 1) + ((piece.rotation === Direction.N) ? 1 : 0);
             let jMin = (piece.x) + ((piece.rotation === Direction.E) ? (-1) : 0);
@@ -572,7 +539,7 @@ const Game = (props: GameProps) => {
         });
         setTimeout(()=>{
           activePiece.current = getPieceFromQue();          
-        }, 300);
+        }, TICK_INTERVAL);
         return;
       }
 
@@ -902,6 +869,9 @@ const Game = (props: GameProps) => {
 
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
+        if(minDistance > 0) {
+          tSpun.current = false;
+        }
         p.y += minDistance;
         p.yPrev = p.y;
 
@@ -1031,6 +1001,7 @@ const Game = (props: GameProps) => {
     setTimeout(()=> {
       // activePiece.current = getNextPiece();
       activePiece.current = getPieceFromQue();
+      tSpun.current = false;
     },100);
   
     document.addEventListener("keydown", keydownHandler);
