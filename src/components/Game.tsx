@@ -335,10 +335,8 @@ const Game = (props: GameProps) => {
     }
 
     // let canMoveLateral = true;
-    if (p.x != p.xPrev) {
-      if(p.shapeEnum === TetronimoShape.T) {
-        tSpun.current = false;
-      }
+    if (p.x !== p.xPrev) {
+      tSpun.current = false;
       let coords = p.coords;
       let dx = p.x - p.xPrev;
       if(coords){
@@ -391,7 +389,9 @@ const Game = (props: GameProps) => {
     }
 
     if(canMoveDown) { 
-      tSpun.current = false;
+      if(canMoveDownTwice){
+        tSpun.current = false;
+      }
       // erase old location
       for(let i=0; i<p.coords.length; i++){
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
