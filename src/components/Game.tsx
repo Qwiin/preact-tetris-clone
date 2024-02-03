@@ -35,7 +35,6 @@ import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
 import {motion} from 'framer-motion';
-import { text } from 'stream/consumers';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 6;
@@ -235,7 +234,6 @@ const Game = (props: GameProps) => {
       let rotatedClockwise = (p.rotation - p.rotationPrev === 1 || p.rotation - p.rotationPrev === -3);
 
       let canRotateInPlace = true;
-      let canTSpinInPlace = false;
       let canTSpin = true;
       let canTSpinLeft = rotatedClockwise;
       let canTSpinRight = !rotatedClockwise;
