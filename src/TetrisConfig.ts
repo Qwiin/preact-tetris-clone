@@ -1,6 +1,7 @@
 export interface GameAction {
   type: ActionType;
-  text: string;
+  text?: string;
+  subtext?: string;
   points?: number;
   id?: string;
   transitioning?: boolean;
@@ -19,6 +20,13 @@ export enum ActionType {
   SET_PIECE,
   DROP,
   ROTATE,
+  T_SPIN,
+  T_SPIN_SINGLE,
+  T_SPIN_DOUBLE,
+  T_SPIN_TRIPLE,
+  T_SPIN_MINI,
+  T_SPIN_MINI_SINGLE,
+  T_SPIN_MINI_DOUBLE,
   LEVEL_UP,
   GAME_OVER,
   PAUSE,
