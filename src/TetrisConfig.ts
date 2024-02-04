@@ -14,6 +14,7 @@ export enum ActionType {
   DOUBLE,
   TRIPLE,
   TETRIS,
+  LINE_CLEAR_DROP,
   MOVE,
   MOVE_DOWN,
   THUD,

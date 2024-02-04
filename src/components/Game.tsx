@@ -126,6 +126,8 @@ const Game = (props: GameProps) => {
   const downArrowPressed = useRef(false);
   const tSpun = useRef(false);
   const dropEffectData: Ref<any> = useRef(null);
+  const clearEffectData: Ref<any> = useRef(null);
+  const clearedRows: Ref<number[]> = useRef(null);
   const upArrowPressed = useRef(false);
   const [gameover, setGameover] = useState(false);
 
@@ -494,6 +496,7 @@ const Game = (props: GameProps) => {
         piece.y = Math.min(piece.y + 1, piece.yMax); 
 
         if(piece.y !== piece.yPrev) {
+
           piece.lastMoveTrigger = MovementTrigger.GRAVITY;
         }
         
@@ -508,6 +511,7 @@ const Game = (props: GameProps) => {
 
       // CLEAR COMPLETE LINES
       // Method 2: find full rows and recycle them
+
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
         let row = rows[i];
@@ -520,6 +524,27 @@ const Game = (props: GameProps) => {
           }
         }
       }
+      clearedRows.current = [...clearedRowIndexesDesc];
+
+      for(let i=0; i<clearedRowIndexesDesc.length; i++) {
+        if(!clearEffectData.current){
+          clearEffectData.current = []
+        }
+        if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
+          clearEffectData.current[clearEffectData.current.length - 1].top = `${(clearedRowIndexesDesc[i] - 4)}rem`;
+        }
+        else {
+          clearEffectData.current.push(
+            {
+              top: `${(clearedRowIndexesDesc[i] - 4)}rem`,
+              bottom: `${(24 - (clearedRowIndexesDesc[i] + 1))}rem`,
+              left: `${-1}rem`,
+              right: `${-1}rem`,
+              id: (Math.round(performance.now()*1000).toString() + '.' + i.toString()),
+            }
+          );
+        }
+      }
       
       // Dear Future Self...
       // clearedRowIndexesDesc needs to (and should already) be sorted descending
@@ -527,19 +552,23 @@ const Game = (props: GameProps) => {
       // loop to work properly
 
       // This should be a memory optimized operation
-      let emptyRowCache: number[][] | null = [];
-      if(emptyRowCache !== null) {
-        for(let j=0; j<numCleared; j++) {
-          emptyRowCache.push(
-            rows.splice(clearedRowIndexesDesc[j],1)[0]
-          );
+      setTimeout(()=>{
+        let emptyRowCache: number[][] | null = [];
+        if(emptyRowCache !== null) {
+          for(let j=0; j<numCleared; j++) {
+            emptyRowCache.push(
+              rows.splice(clearedRowIndexesDesc[j],1)[0]
+            );
+          }
+          for(let j=0; j<numCleared; j++) {
+            rows.unshift(emptyRowCache.pop() as number[]);
+          }
+          emptyRowCache = null;
         }
-        for(let j=0; j<numCleared; j++) {
-          rows.unshift(emptyRowCache.pop() as number[]);
-        }
-        emptyRowCache = null;
-      }
+      }, 200);
       
+      
+
       // Check for and clear full rows 
       // let nNewRows = newRows.length;
 
@@ -614,6 +643,11 @@ const Game = (props: GameProps) => {
         }
 
         props.actionCallback({type: actionEnum, text: action.current, subtext: subtext, points: points} || null);
+
+        if(clearEffectData.current && clearEffectData.current.length > 0) {
+          console.log(clearEffectData.current.toString())
+          pauseGame(true, true);
+        }
       }
     }
   };
@@ -881,13 +915,17 @@ const Game = (props: GameProps) => {
     props.actionCallback({type: ActionType.GAME_OVER});
   }
 
-  const pauseGame = () => {
+  const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
     if(ticker.current){
       clearInterval(ticker.current);
       ticker.current = null;
     }
-    paused.current = true;
-    // forceUpdate(1);
+    if(!discrete) {
+      paused.current = true;
+    }
+    if(forceRender){
+      forceUpdate(1);
+    }
   }
   const resumeGame = () => {
     if(!ticker.current){
@@ -972,9 +1010,9 @@ const Game = (props: GameProps) => {
 
     const rows = board.current;
     
-    return rows.map((row) => {
+    return rows.map((row, index) => {
       return (
-        <div className="tw-flex tw-flex-row tw-gap-0 tw-box-border">
+        <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
           
           { 
             row.map((cellValue) => {
@@ -1031,8 +1069,7 @@ const Game = (props: GameProps) => {
           disabled={gameover} 
           onClick={()=>{
           if(!paused.current) {
-            pauseGame();
-            forceUpdate(1);
+            pauseGame(false, true);
           }
           else {
             resumeGame();
@@ -1081,6 +1118,58 @@ const Game = (props: GameProps) => {
 
               </motion.div>
             }
+            { clearEffectData.current &&
+              clearEffectData.current.map((effect: any)=>{
+                return  (
+              // @ts-expect-error
+                <motion.div key={effect.id} className="clear-effect" 
+                  onAnimationComplete={
+                    () => {
+                      // make sure sound effect is only played once
+                      // in the event that multiple effects are needed
+                      if(clearEffectData.current !== null) {
+                        clearEffectData.current = null;
+                        props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
+                      }
+                      clearedRows.current = null;
+                      resumeGame();
+                    }
+                  }
+                  onUpdate={()=>{
+                    console.log("clear effect update");
+                  }}
+                  variants={{
+                    show: {
+                      opacity: 1,
+                      transform: 'rotateX(0) scaleX(100%)'
+                    }, 
+                    hidden: {
+                      opacity: 0,
+                      transform: 'rotateX(90deg) scaleX(120%)'
+                    }}}
+                  initial="show"
+                  animate="hidden"
+                  transition={{
+                    duration: 0.4, 
+                    ease:"easeOut",
+                    delay: 0.1,
+                  }}
+                  // transitionEnd = {{
+                  //   display: 'none'
+                  // }}
+                  
+                  style={{
+                    top: effect.top,
+                    left: effect.left,
+                    right: effect.right,
+                    bottom: effect.bottom
+                    }}>
+
+                </motion.div>
+                );
+              })
+            }
+            
             <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
               {renderBoard()}
             </div>
