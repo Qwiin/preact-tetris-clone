@@ -7,14 +7,14 @@ Gameplay:
   1. (done) Implement GameOver State
   2. (done) Fix Collision Detection with left/right moves and rotation against set blocks
   3. (done) Implement Que (as a stack)
-  4. Balance the distribution of pieces (native RNG does not feel like Tetris, lol)
+  4. (done) Balance the distribution of pieces (native RNG does not feel like Tetris, lol)
     a. There should be a more normal distribution considering a game to 100 lines is only 250-300 pieces
 
 UI/UX:
   
   1. Styleize UI
-  2. Add Sound
-  3. Break this out into multiple components
+  2. (done) Add Sound
+  3. (done) Break this out into multiple components
 
 Performance:
 
@@ -143,11 +143,7 @@ const Game = (props: GameProps) => {
   // TODO: flatten array for performance
   const board: Ref<number[][]> = useRef(null);
 
-
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
-
-  //const boardCols: Ref<number[][]> = useRef([]);
-
   const getBoardCols = (): number[][] => {
     if(!board.current){
       return [];
@@ -173,59 +169,18 @@ const Game = (props: GameProps) => {
     const rows = board.current;
     const p: ActivePiece = activePiece.current;
     let perm: number[][] = p.permutation;
-    // const permPrev: number[][] = p.permutationPrev;
     let h: number = p.height;
-    // const hPrev: number = p.heightPrev;
     let w: number = p.width;
-    // const wPrev: number = p.widthPrev;
-
-    // isTSpin.current = false;
-    // isTSpinMini.current = false;
+    
+    let rotationAttempted = false;
+    let failedRotation = false;
 
     // let canMoveLateral = true;
     if (p.rotation !== p.rotationPrev) {
-      // let coords = p.coords;
-      // let dx = p.x - p.xPrev;
-      // let dy = p.y - p.yPrev;
-      // let canRotateInPlace = true;
-      // let canTSpin = true;
-      // if(coords){
-      //   for(let i=0;i<coords.length; i++){
-      //     let y = coords[i][0];
-      //     let x = coords[i][1];
-      //     let cellValue = rows[y][x + dx];
-      //     if(cellValue !== 0 && cellValue < 10){
-      //       canRotateInPlace = false;
-      //       // p.x = p.xPrev;
-      //       // console.log("can't move laterally");
-      //     }
-      //     let cellValue2 = rows[y+dy][x + dx];
-      //     if(cellValue2 !== 0 && cellValue2 < 10){
-      //       canTSpin = false;
-      //       // p.x = p.xPrev;
-      //       // console.log("can't move laterally");
-      //     }  
-      //   }
-      //   if(canRotateInPlace) {
-      //     console.log("rotate in place");
-      //     p.coords = [...p.coordsPrev];
-      //   }  
-      //   else if(!canRotateInPlace && !canTSpin) {
-      //     p.x = p.xPrev
-      //     console.log("can't rotate nor t-spin");
-      //     p.coords = [...p.coordsPrev];
-      //   }
-      //   else if(!canRotateInPlace && canTSpin) {
-      //     console.log("can t-spin");
-      //     p.xPrev = p.x;
-      //     p.y += 1;
-      //     p.yPrev = p.y - 1;
-      //   }
-      // }
-
+      rotationAttempted = true;
+    
       let j_iii = p.x;
       let i_iii = p.y - 1;
-
       let i_sss = h-1;
       
 
@@ -238,7 +193,6 @@ const Game = (props: GameProps) => {
       let canTSpin = true;
       let canTSpinLeft = rotatedClockwise;
       let canTSpinRight = !rotatedClockwise;
-
 
       // let canMoveDown = true;
       for(let i=i_iii; i > (i_iii - h); i--) {
@@ -292,7 +246,9 @@ const Game = (props: GameProps) => {
       }
       else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
         p.x = p.xPrev;
-        p.yPrev = p.y - 1;
+
+        // cache rotation, because rotateLeft/Right() will modify prevRotation
+        let prevRotation = p.rotationPrev;
         console.log("can't rotate nor t-spin");
         // p.coords = [...p.coordsPrev];
         if(p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
@@ -301,8 +257,10 @@ const Game = (props: GameProps) => {
         else if(p.rotation < p.rotationPrev || (p.rotation === 4 && p.rotationPrev === 1)) {
           p.rotateRight();
         }
-        // p.rotation = p.rotationPrev;
-        
+        tSpun.current = false;
+        p.rotationPrev = prevRotation;
+        p.lastMoveTrigger = MovementTrigger.GRAVITY;
+        failedRotation = true;
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
         console.log("can t-spin");
@@ -330,11 +288,8 @@ const Game = (props: GameProps) => {
       perm = p.permutation;
       w = p.width;
       h = p.height;
-      // canMoveLateral = false;
-      // p.yPrev = p.y - 1;
     }
 
-    // let canMoveLateral = true;
     if (p.x !== p.xPrev) {
       tSpun.current = false;
       let coords = p.coords;
@@ -346,16 +301,17 @@ const Game = (props: GameProps) => {
           let cellValue = rows[y][x + dx];
           if(cellValue !== 0 && cellValue < 10){
             p.x = p.xPrev;
-            // console.log("can't move laterally");
           }   
         }
       }
-      // canMoveLateral = false;
       if(p.x !== p.xPrev){
         p.yPrev = p.y - 1;
       }
     }
 
+    if(!failedRotation && rotationAttempted) {
+      props.actionCallback({type: ActionType.ROTATE});
+    }
 
     let j_i = p.x;
     let i_i = p.y - 1;
@@ -379,7 +335,7 @@ const Game = (props: GameProps) => {
           if(i >= rows.length-1) {
             canMoveDownTwice = false;
           }
-          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] !== 0 && rows[i+1][j] !== perm[i_s][j_s]) {
+          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] !== 0 && rows[i+1][j] !== perm[i_s][j_s]) {            
             canMoveDownTwice = false;
           }
           j_s++;
@@ -391,6 +347,10 @@ const Game = (props: GameProps) => {
     if(canMoveDown) { 
       if(canMoveDownTwice){
         tSpun.current = false;
+      } else {
+        if(failedRotation) {
+          p.yPrev = p.y;
+        }
       }
       // erase old location
       for(let i=0; i<p.coords.length; i++){
@@ -421,7 +381,8 @@ const Game = (props: GameProps) => {
       p.coords = newCoords;
 
       // this is run before the render, so we need to know if the piece will thud on next paint
-      if((p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) && !canMoveDownTwice ) {
+      if(
+        (p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) && !canMoveDownTwice && !failedRotation) {
         console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
@@ -439,18 +400,8 @@ const Game = (props: GameProps) => {
 
     if(piece) {
 
-
       // set piece in place
-
       if((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
-        // for(let i=0;  i<board.current.length; i++) {
-        //   for(let j=0;  j<board.current[0].length; j++) {
-        //     if(board.current[i][j] > 10) {
-        //       board.current[i][j] = board.current[i][j] / 11; 
-        //     }
-        //   }
-        // }
-
         
         let coords = piece.coords;
         let colHeights = columnHeights.current;
@@ -471,16 +422,12 @@ const Game = (props: GameProps) => {
           }
         }
         
+        // Verify and complete T-SPIN
         if(piece.shapeEnum === TetronimoShape.T && tSpun.current === true) {
             let iMin = (piece.y - piece.height) + ((piece.rotation === Direction.S) ? (-1) : 0);
             let iMax = (piece.y - 1) + ((piece.rotation === Direction.N) ? 1 : 0);
             let jMin = (piece.x) + ((piece.rotation === Direction.E) ? (-1) : 0);
             let jMax = (piece.x + piece.width - 1) + ((piece.rotation === Direction.W) ? 1 : 0);
-
-            // let iMinPerm = 0;
-            // let iMaxPerm = h-1;
-            // let jMinPerm = 0;
-            // let jMaxPerm = w-1;
 
             let cornerCount = 0;
             if(iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] !== 0 && rows[iMin][jMin] < 10)){
@@ -498,9 +445,6 @@ const Game = (props: GameProps) => {
 
             // still a t-spin if at bottom of board and have only one corner
             if(cornerCount > 0) {
-              // if(jMax >= rows[0].length || jMin < 0) {
-              //   cornerCount++;
-              // }
               if(iMax >= rows.length) {
                 cornerCount++;
               }
@@ -560,16 +504,9 @@ const Game = (props: GameProps) => {
     }
     else  
     {
-      // Method 1: clear empty rows
-      // const newRows = rows.filter((row) => {
-      //   if (row.includes(0)) {
-      //     return true;
-      //   }
-      //   return false;
-      // });
-
       let numCleared = 0;
 
+      // CLEAR COMPLETE LINES
       // Method 2: find full rows and recycle them
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
@@ -612,34 +549,25 @@ const Game = (props: GameProps) => {
       // console.log("updateBoard");
 
       if(numCleared > 0 || isTSpin.current || isTSpinMini.current) {
-      if(stats.current) {
-        // console.log("updatePoints");
-        stats.current.lines += numCleared;
-        let level: number = Math.floor(stats.current.lines / 10) + 1;
-        if(stats.current.level !== level){
-          stats.current.level = level;
-          props.actionCallback({type: ActionType.LEVEL_UP});  
-        }
-        points = (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
-        if(isTSpinMini.current) {
-          points += ((numCleared > 0) ? (numCleared * 200) : 100); 
-        }
-        else if(isTSpin.current) {
-          points += (400 + (numCleared * 400)); 
-        }
-        stats.current.score += points;
-      }
 
-      // for (let i = 0; i < numCleared; i++) {
-      //   newRows.unshift([...emptyRow]);
-      // }
+        if(stats.current) {
+          // console.log("updatePoints");
+          stats.current.lines += numCleared;
+          let level: number = Math.floor(stats.current.lines / 10) + 1;
+          if(stats.current.level !== level){
+            stats.current.level = level;
+            props.actionCallback({type: ActionType.LEVEL_UP});  
+          }
+          points = (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+          if(isTSpinMini.current) {
+            points += ((numCleared > 0) ? (numCleared * 200) : 100); 
+          }
+          else if(isTSpin.current) {
+            points += (400 + (numCleared * 400)); 
+          }
+          stats.current.score += points;
+        }
 
-      // // updateRef
-      // for (let i = 0; i < nRows; i++) {
-      //   board.current[i] = newRows[i];
-      // }
-
-      
         let actionEnum = numCleared;
         let subtext: string | undefined = undefined;
         switch(numCleared) {
@@ -863,10 +791,6 @@ const Game = (props: GameProps) => {
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
         props.actionCallback({type: ActionType.DROP, data: e.key});
 
-        // setTimeout(()=>{
-        //   dropEffectData.current = null;
-        // }, 350);
-
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
         if(minDistance > 0) {
@@ -885,13 +809,13 @@ const Game = (props: GameProps) => {
       case "Alt":
       case "Control":
         p.rotateLeft();
-        props.actionCallback({type: ActionType.ROTATE, data: e.key});
+        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         updatePosition();
         break;
 
       case "Shift":
         p.rotateRight();
-        props.actionCallback({type: ActionType.ROTATE, data: e.key});
+        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         updatePosition();
         break;
     }
@@ -993,13 +917,11 @@ const Game = (props: GameProps) => {
     for(let i=0; i<PIECE_QUE_LENGTH; i++) {
       pieceQue.current?.push({
         shapeEnum: indices[i],
-        // piece: JSON.parse(TETRONIMOS[indices[i]]),
         id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
       });
     }
 
     setTimeout(()=> {
-      // activePiece.current = getNextPiece();
       activePiece.current = getPieceFromQue();
       tSpun.current = false;
     },100);
@@ -1173,9 +1095,6 @@ const Game = (props: GameProps) => {
         <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} 
         pieces={
           pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
-            // ? [{piece: activePiece?.current?.shape || TETRONIMOS[1], id: window.performance.now().toString()}, ...pieceQue?.current] 
-            // : [{piece: TETRONIMOS[1], id:"11"}]
-        
         }/>
       }
       </div>
