@@ -23,6 +23,7 @@ export default class ActivePiece {
   readonly xMin: number = 0;
   readonly yMax: number = 24;
   readonly yMin: number = 0;
+  wasInHold: boolean = false;
 
   private _coordsPrev: number[][] = [];
   public set coordsPrev(value: number[][]) {

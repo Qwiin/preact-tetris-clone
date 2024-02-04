@@ -40,7 +40,12 @@ body {
     url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
 }
 
+.que-item {
+  transform: scale(60%);
+}
+
 .game-clock {
+  display: none;
   margin: 8px;
   margin-bottom: 4px;
   font-family: 'SF Digital Heavy';

@@ -126,6 +126,12 @@ export function SoundBoard(props:SoundBoardProps) {
       case ActionType.SET_PIECE:
         sfx_tetris({id:"setPiece"});
         break;
+      case ActionType.MOVE_NOT_ALLOWED:
+        sfx_tetris({id:"moveNotAllowed"});
+        break;
+      case ActionType.HOLD_PIECE:
+        sfx_tetris({id:"holdPiece"});
+        break;
       case ActionType.GAME_OVER:
         sfx_gameOver();
         break;

@@ -6,9 +6,15 @@ interface PieceQueProps {
   title: string;
   queLength: number;
   pieces: PieceQueItem[];
+  position: "left" | "right";
+  disabled: boolean;
+  animation: "slideUp" | "flipHorizontal";
 }
 
 const defaultPropsPieceQue: PieceQueProps = {
+  animation: "slideUp",
+  disabled: false,
+  position: "right",
   title: "Que",
   queLength: 5,
   pieces: [
@@ -38,9 +44,21 @@ export function PieceQue(props: PieceQueProps) {
 
   return (
     <>
-      <div className="tw-overflow-y-hidden tw-flex tw-relative tw-flex-col tw-w-20 tw-items-center tw-justify-start tw-gap-0 tw-mt-3 tw-h-80 tw-bg-black tw-rounded-xl tw-pt-4 tw-pb-2 tw-pr-2 tw-pl-3" 
-      style={{transform: "translateX(-33%) translateY(1.13px) scale(60%)", zIndex:"-1", border:"1px solid rgba(255,255,255,0.8)", borderTopLeftRadius:"0", borderBottomLeftRadius:"0"}}>
-      <h5 className="tw-flex-none tw-relative tw-top-1 tw-h-0 tw-p-0 tw-mb-6" style={{marginTop: "-12px"}}>{props.title}</h5>
+      <div className={`tw-overflow-y-hidden tw-box-border tw-flex tw-relative tw-flex-col tw-w-24 tw-items-center tw-justify-start tw-gap-0 tw-mt-0 tw-bg-black tw-rounded-xl tw-pt-4 tw-pb-8"}`} 
+      style={{
+        transform: `translateX(${props.position === "left" ? 25 : -25}%) translateY(-20%) scale(60%)`, 
+        zIndex:"-1", 
+        border:"1.67px solid rgba(255,255,255,0.8)", 
+        height: (props.position === "left" ? "6rem" : "22rem"), 
+        paddingRight: (props.position === "right" ? "0.5rem" : "0.75rem"), 
+        paddingLeft: (props.position === "right" ? "0.75rem" : "0.5rem"), 
+        borderTopLeftRadius: (props.position === "right" ? "0" : undefined), 
+        borderBottomLeftRadius: (props.position === "right" ? "0" : undefined),
+        borderTopRightRadius: (props.position === "left" ? "0" : undefined), 
+        borderBottomRightRadius: (props.position === "left" ? "0" : undefined),
+        marginBottom: props.position === "left" ? `${16}rem` : `${0}rem`
+      }}>
+      <h5 className="tw-flex-none tw-relative tw-top-0 tw-h-0 tw-p-0 tw-mb-4 tw-w-full" style={{marginTop: "-0.5rem"}}>{props.title}</h5>
         {
           props.pieces &&
           props.pieces.slice(0,5).map((item: PieceQueItem)=>{
@@ -49,12 +67,21 @@ export function PieceQue(props: PieceQueProps) {
               <>
               {/* @ts-expect-error Motion Component */}
                 <motion.div key={item.id} className={`que-item tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16 tw-m-0`}
+                style={{filter: props.disabled ? 'grayscale(1)' : undefined}}
                 variants={{
                   show: {
-                    transform: "translateY(0)"
+                    transform: props.animation === "slideUp" 
+                      ? "translateY(0)" 
+                      : props.animation === "flipHorizontal" 
+                        ? "rotateY(0deg)"
+                        : "none"
                   }, 
                   hidden: {
-                    transform: "translateY(3.84rem)"
+                    transform: props.animation === "slideUp" 
+                    ? "translateY(3.84rem)" 
+                    : props.animation === "flipHorizontal" 
+                      ? "rotateY(90deg)"
+                      : "none"
                   }}}
                   initial="hidden"
                   animate="show"
