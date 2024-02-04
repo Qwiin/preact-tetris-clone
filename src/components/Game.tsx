@@ -29,7 +29,7 @@ import { Signal, signal } from '@preact/signals';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
+import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOS, TetronimoShape } from '../TetrisConfig';
 import '../app.css';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
@@ -434,6 +434,8 @@ const Game = (props: GameProps) => {
           let x = coords[i][1];
           let newCellVal = rows[coords[i][0]][coords[i][1]] / 11;
           rows[coords[i][0]][coords[i][1]] = newCellVal;
+
+          // update column heights
           if(colHeights) {
             colHeights[x] = Math.max((nRows - y), colHeights[x]);
             // console.log(colHeights.toString());
@@ -511,6 +513,13 @@ const Game = (props: GameProps) => {
           }
         }
       }
+
+      if(numCleared > 0) {
+        let colHeights = columnHeights.current || [];
+        for(let i=0; i<colHeights.length; i++){
+          colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
+        }
+      }
       
       // Dear Future Self...
       // clearedRowIndexesDesc needs to (and should already) be sorted descending
@@ -530,6 +539,8 @@ const Game = (props: GameProps) => {
         }
         emptyRowCache = null;
       }
+
+      
       
       // Check for and clear full rows 
       // let nNewRows = newRows.length;
@@ -601,8 +612,23 @@ const Game = (props: GameProps) => {
     if(pieceQue.current){
     pieceQue.current.push(getNextPiece());    
     // console.log(pieceQue.current);
-    let newShapeEnum = pieceQue.current.shift();
-    let p: ActivePiece = new ActivePiece(newShapeEnum, Direction.N );
+    let pieceItem = pieceQue.current.shift();
+    let xStart: number = Math.floor((10 - TETRONIMOS[pieceItem?.shapeEnum || 0][0].length)/2);
+    let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart);
+    let maxColumnHeightUnderNewPiece = 0;
+    if(columnHeights.current) {
+      for(let i=xStart; i<(xStart + p.width); i++) {
+        if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
+          maxColumnHeightUnderNewPiece = columnHeights.current[i];
+        }
+      }
+    }
+    // adjust starting y position if board is stacked higher than starting height projection of piece
+    if(maxColumnHeightUnderNewPiece > 18){
+      p.y = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+      p.yPrev = p.y-1;
+    }
+
     let c: number[][] = [];
     for(let i=0; i<p.height; i++) {
       for(let j=0; j<p.width; j++) {
