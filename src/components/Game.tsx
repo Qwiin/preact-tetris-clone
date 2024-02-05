@@ -1127,7 +1127,7 @@ const Game = (props: GameProps) => {
     <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
       
       <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-start tw-pb-4">
-        <button className="tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md" 
+        <button className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md ${(paused.current === false || gameover === true) ? 'disabled': ''}`} 
           style={{paddingTop:"0.7rem"}}
           onClick={()=>{
           
@@ -1140,7 +1140,7 @@ const Game = (props: GameProps) => {
           setGameover(false);
           resumeGame();
         }} disabled={
-          paused.current === false && gameover === false
+          paused.current === false || gameover === true
           }>{gameoverRef.current === false ? "Restart" : "New Game"}</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
@@ -1260,7 +1260,7 @@ const Game = (props: GameProps) => {
                 {renderBoard()}
               </div>
               { (gameover || paused.current) &&
-                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
+                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40  tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
