@@ -29,7 +29,7 @@ import { Signal, signal } from '@preact/signals';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
+import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOES, TetronimoShape } from '../TetrisConfig';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
@@ -418,6 +418,8 @@ const Game = (props: GameProps) => {
           let x = coords[i][1];
           let newCellVal = rows[coords[i][0]][coords[i][1]] / 11;
           rows[coords[i][0]][coords[i][1]] = newCellVal;
+
+          // update column heights
           if(colHeights) {
             colHeights[x] = Math.max((nRows - y), colHeights[x]);
             // console.log(colHeights.toString());
@@ -530,48 +532,59 @@ const Game = (props: GameProps) => {
           }
         }
       }
-      clearedRows.current = [...clearedRowIndexesDesc];
 
-      for(let i=0; i<clearedRowIndexesDesc.length; i++) {
-        if(!clearEffectData.current){
-          clearEffectData.current = []
-        }
-        if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
-          clearEffectData.current[clearEffectData.current.length - 1].top = `${(clearedRowIndexesDesc[i] - 4)}rem`;
-        }
-        else {
-          clearEffectData.current.push(
-            {
-              top: `${(clearedRowIndexesDesc[i] - 4)}rem`,
-              bottom: `${(24 - (clearedRowIndexesDesc[i] + 1))}rem`,
-              left: `${-1}rem`,
-              right: `${-1}rem`,
-              id: (Math.round(performance.now()*1000).toString() + '.' + i.toString()),
-            }
-          );
-        }
-      }
-      
-      // Dear Future Self...
-      // clearedRowIndexesDesc needs to (and should already) be sorted descending
-      // no need to sort this array here, but remember that is required for this splice 
-      // loop to work properly
+      if(numCleared > 0) {
 
-      // This should be a memory optimized operation
-      setTimeout(()=>{
-        let emptyRowCache: number[][] | null = [];
-        if(emptyRowCache !== null) {
-          for(let j=0; j<numCleared; j++) {
-            emptyRowCache.push(
-              rows.splice(clearedRowIndexesDesc[j],1)[0]
+        clearedRows.current = [...clearedRowIndexesDesc];
+
+        for(let i=0; i<clearedRowIndexesDesc.length; i++) {
+          if(!clearEffectData.current){
+            clearEffectData.current = []
+          }
+          if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
+            clearEffectData.current[clearEffectData.current.length - 1].top = `${(clearedRowIndexesDesc[i] - 4)}rem`;
+          }
+          else {
+            clearEffectData.current.push(
+              {
+                top: `${(clearedRowIndexesDesc[i] - 4)}rem`,
+                bottom: `${(24 - (clearedRowIndexesDesc[i] + 1))}rem`,
+                left: `${-1}rem`,
+                right: `${-1}rem`,
+                id: (Math.round(performance.now()*1000).toString() + '.' + i.toString()),
+              }
             );
           }
-          for(let j=0; j<numCleared; j++) {
-            rows.unshift(emptyRowCache.pop() as number[]);
-          }
-          emptyRowCache = null;
         }
-      }, 200);
+      
+        // Dear Future Self...
+        // clearedRowIndexesDesc needs to (and should already) be sorted descending
+        // no need to sort this array here, but remember that is required for this splice 
+        // loop to work properly
+
+        // This should be a memory optimized operation
+        setTimeout(()=>{
+          let emptyRowCache: number[][] | null = [];
+          if(emptyRowCache !== null) {
+            for(let j=0; j<numCleared; j++) {
+              emptyRowCache.push(
+                rows.splice(clearedRowIndexesDesc[j],1)[0]
+              );
+            }
+            for(let j=0; j<numCleared; j++) {
+              rows.unshift(emptyRowCache.pop() as number[]);
+            }
+
+            emptyRowCache = null;
+
+            let colHeights = columnHeights.current || [];
+            for(let i=0; i<colHeights.length; i++){
+              colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
+              emptyRowCache = null;
+            }
+          }
+        }, 200);
+      }
       
 
       // Check for and clear full rows 
@@ -677,8 +690,23 @@ const Game = (props: GameProps) => {
     if(pieceQue.current){
     pieceQue.current.push(getNextPiece());    
     // console.log(pieceQue.current);
-    let newShapeEnum = pieceQue.current.shift();
-    let p: ActivePiece = new ActivePiece(newShapeEnum, Direction.N );
+    let pieceItem = pieceQue.current.shift();
+    let xStart: number = Math.floor((10 - TETRONIMOES[pieceItem?.shapeEnum || 0][0].length)/2);
+    let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart);
+    let maxColumnHeightUnderNewPiece = 0;
+    if(columnHeights.current) {
+      for(let i=xStart; i<(xStart + p.width); i++) {
+        if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
+          maxColumnHeightUnderNewPiece = columnHeights.current[i];
+        }
+      }
+    }
+    // adjust starting y position if board is stacked higher than starting height projection of piece
+    if(maxColumnHeightUnderNewPiece > 18){
+      p.y = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+      p.yPrev = p.y-1;
+    }
+
     let c: number[][] = [];
     for(let i=0; i<p.height; i++) {
       for(let j=0; j<p.width; j++) {
@@ -1099,7 +1127,7 @@ const Game = (props: GameProps) => {
     <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
       
       <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-start tw-pb-4">
-        <button className="tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md" 
+        <button className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md ${(paused.current === false && gameoverRef.current === false) ? 'disabled': ''}`} 
           style={{paddingTop:"0.7rem"}}
           onClick={()=>{
           
@@ -1112,7 +1140,7 @@ const Game = (props: GameProps) => {
           setGameover(false);
           resumeGame();
         }} disabled={
-          paused.current === false && gameover === false
+          paused.current === false && gameoverRef.current === false
           }>{gameoverRef.current === false ? "Restart" : "New Game"}</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
@@ -1232,7 +1260,7 @@ const Game = (props: GameProps) => {
                 {renderBoard()}
               </div>
               { (gameover || paused.current) &&
-                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
+                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40  tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
