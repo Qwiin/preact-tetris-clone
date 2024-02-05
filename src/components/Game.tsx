@@ -1017,7 +1017,7 @@ const Game = (props: GameProps) => {
     },100);
   
     let gamepadInterval: any;
-    
+
     window.addEventListener("keydown", keydownHandler);
 
     // window.addEventListener("gamepadconnected", (e) => {
@@ -1143,7 +1143,7 @@ const Game = (props: GameProps) => {
         debounceRight();
       }
 
-      gameLoopStart = requestAnimationFrame(()=>gameLoop(gpIndex));
+      requestAnimationFrame(()=>gameLoop(gpIndex));
     }
     
     return () => {
