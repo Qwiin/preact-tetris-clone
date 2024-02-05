@@ -660,7 +660,7 @@ const Game = (props: GameProps) => {
 
     // replenish que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
-      // pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length-1));
+      // pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOES.length-1));
       pieceQueIndexes.current?.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 

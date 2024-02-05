@@ -148,7 +148,7 @@ const TETRONIMO_NULL = `[[0,0],[0,0]]`;
 
 // more efficient way to copy items is to already have the string form
 //   previously was using JSON.parse(JSON.stringify(arr));
-export const TETRONIMOS_STRINGS: string[] = [
+export const TETRONIMO_STRINGS: string[] = [
 
   // O
   TETRONIMO_O,
@@ -177,5 +177,5 @@ export const TETRONIMOS_STRINGS: string[] = [
 
 // In the PieceQue, we don't need to copy the Tetronimo Array objects, 
 // we can just reference the actual values, so this avoids a JSON.parse()
-export const TETRONIMOS: number[][][] =
-  TETRONIMOS_STRINGS.map((t: string) => { return JSON.parse(t) as number[][]; });
+export const TETRONIMOES: number[][][] =
+  TETRONIMO_STRINGS.map((t: string) => { return JSON.parse(t) as number[][]; });

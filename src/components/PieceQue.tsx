@@ -1,4 +1,4 @@
-import { TETRONIMOS, ShapeColors } from "../TetrisConfig";
+import { TETRONIMOES, ShapeColors } from "../TetrisConfig";
 import { PieceQueItem } from "./Game";
 import {motion} from 'framer-motion';
 
@@ -91,7 +91,7 @@ export function PieceQue(props: PieceQueProps) {
                   }}
                   >
                 {
-                  TETRONIMOS[item.shapeEnum].map((row: number[]) => {
+                  TETRONIMOES[item.shapeEnum].map((row: number[]) => {
                     return (
                       <>
                       
