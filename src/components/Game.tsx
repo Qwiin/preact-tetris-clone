@@ -1017,9 +1017,7 @@ const Game = (props: GameProps) => {
     },100);
   
     let gamepadInterval: any;
-    let gameLoopStart: number = NaN;
-    let gamepadIndex: number = -1;
-
+    
     window.addEventListener("keydown", keydownHandler);
 
     // window.addEventListener("gamepadconnected", (e) => {
