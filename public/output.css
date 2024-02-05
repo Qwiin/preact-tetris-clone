@@ -118,10 +118,6 @@
   top: 0px
 }
 
-.tw-top-1 {
-  top: 0.25rem
-}
-
 .tw-z-10 {
   z-index: 10
 }
@@ -156,10 +152,6 @@
 
 .tw-mt-24 {
   margin-top: 6rem
-}
-
-.tw-mt-8 {
-  margin-top: 2rem
 }
 
 .tw-box-border {
@@ -9124,16 +9116,16 @@
   --tw-bg-opacity: 0.3
 }
 
-.tw-bg-opacity-40 {
-  --tw-bg-opacity: 0.4
-}
-
 .tw-bg-opacity-50 {
   --tw-bg-opacity: 0.5
 }
 
 .tw-bg-opacity-70 {
   --tw-bg-opacity: 0.7
+}
+
+.tw-bg-opacity-20 {
+  --tw-bg-opacity: 0.2
 }
 
 .tw-p-0 {
@@ -9319,24 +9311,8 @@
   padding-top: 20rem
 }
 
-.tw-pl-2 {
-  padding-left: 0.5rem
-}
-
-.tw-pl-4 {
-  padding-left: 1rem
-}
-
-.tw-text-left {
-  text-align: left
-}
-
 .tw-text-center {
   text-align: center
-}
-
-.tw-text-right {
-  text-align: right
 }
 
 .tw-font-mono {
@@ -9408,11 +9384,6 @@
 .tw-shadow-slate-400 {
   --tw-shadow-color: #94a3b8;
   --tw-shadow: var(--tw-shadow-colored)
-}
-
-.tw-grayscale-0 {
-  --tw-grayscale: grayscale(0);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)
 }
 
 .\[ui\:JW\FFFD\FFFD\FFFD\2c G\FFFDm\FFFD\] {

@@ -1176,9 +1176,9 @@ const Game = (props: GameProps) => {
                         resumeGame();
                       }
                     }
-                    onUpdate={()=>{
-                      console.log("clear effect update");
-                    }}
+                    // onUpdate={()=>{
+                    //   console.log("clear effect update");
+                    // }}
                     variants={{
                       show: {
                         opacity: 1,
