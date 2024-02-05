@@ -572,7 +572,6 @@ const Game = (props: GameProps) => {
         }
       }, 200);
       
-      
 
       // Check for and clear full rows 
       let points: number = 0;
@@ -588,14 +587,20 @@ const Game = (props: GameProps) => {
             stats.current.level = level;
             props.actionCallback({type: ActionType.LEVEL_UP});  
           }
-          points = (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
+    
           if(isTSpinMini.current) {
-            points += ((numCleared > 0) ? (numCleared * 200) : 100); 
+            points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
           }
           else if(isTSpin.current) {
-            points += (400 + (numCleared * 400)); 
+            points += (400 + (numCleared * 400)) * level; 
           }
+          else {
+            points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
+          }
+          
           stats.current.score += points;
+
+          //TODO: implement all clear, combo, and back-to-back bonuses
         }
 
         let actionEnum = numCleared;
