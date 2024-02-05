@@ -14,7 +14,7 @@ export function StatsPanel(props: StatsPanelProps) {
 
   return (
     <>
-      <div className={"tw-flex tw-flex-col tw-h-80 tw-w-60 stats-board tw-gap-4 tw-mt-6 " + (props.className || "")}>
+      <div className={"tw-flex tw-flex-col tw-h-80 tw-w-60 stats-board tw-gap-8 tw-mt-8 " + (props.className || "")}>
 
         {props.fields && 
           props.fields.map((field: StatField)=>{

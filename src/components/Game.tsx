@@ -30,7 +30,6 @@ import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
-import '../app.css';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
@@ -1099,8 +1098,8 @@ const Game = (props: GameProps) => {
   return (
     <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center tw-pb-6">
-        <button className="tetris-font tw-border-slate-200 tw-w-32 tw-m-6 tw-p-2 tw-text-md" 
+      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-start tw-pb-4">
+        <button className="tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md" 
           style={{paddingTop:"0.7rem"}}
           onClick={()=>{
           
@@ -1133,7 +1132,7 @@ const Game = (props: GameProps) => {
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
         <div
         className="tw-flex tw-flex-row tw-gap-0 tw-items-start tw-justify-center tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-0 tw-pb-0"
-        style={{paddingTop: "2rem"}}>
+        style={{paddingTop: "2rem", marginLeft: "-1rem", marginRight:"-1rem"}}>
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
           
           <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}

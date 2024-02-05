@@ -34,7 +34,7 @@ export function ControlsMap(props: ControlsMapProps) {
 
   return (
     <>
-      <div className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-mt-8 tw-rounded-lg tw-px-1">
+      <div className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-rounded-lg tw-px-1">
 
         <div className="tw-flex tw-gap-2 tw-flex-row tw-justify-center tw-items-center">
           <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0 tw-mt-4" 

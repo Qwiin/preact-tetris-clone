@@ -130,6 +130,14 @@
   margin: 1.5rem
 }
 
+.tw-m-4 {
+  margin: 1rem
+}
+
+.tw-m-2 {
+  margin: 0.5rem
+}
+
 .tw-mb-4 {
   margin-bottom: 1rem
 }
@@ -176,6 +184,22 @@
 
 .tw-mt-6 {
   margin-top: 1.5rem
+}
+
+.tw-mt-7 {
+  margin-top: 1.75rem
+}
+
+.tw-mt-1 {
+  margin-top: 0.25rem
+}
+
+.tw-mt-16 {
+  margin-top: 4rem
+}
+
+.tw-mt-20 {
+  margin-top: 5rem
 }
 
 .tw-box-border {
@@ -250,6 +274,10 @@
   height: 100%
 }
 
+.tw-h-12 {
+  height: 3rem
+}
+
 .tw-w-16 {
   width: 4rem
 }
@@ -300,6 +328,18 @@
 
 .tw-max-w-80 {
   max-width: 20rem
+}
+
+.tw-max-w-52 {
+  max-width: 13rem
+}
+
+.tw-max-w-60 {
+  max-width: 15rem
+}
+
+.tw-max-w-72 {
+  max-width: 18rem
 }
 
 .tw-flex-none {
@@ -360,6 +400,14 @@
   gap: 0.25rem
 }
 
+.tw-gap-6 {
+  gap: 1.5rem
+}
+
+.tw-gap-8 {
+  gap: 2rem
+}
+
 .tw-overflow-hidden {
   overflow: hidden
 }
@@ -382,6 +430,10 @@
 
 .tw-border {
   border-width: 1px
+}
+
+.tw-border-2 {
+  border-width: 2px
 }
 
 .tw-border-blue-300 {
@@ -9400,6 +9452,10 @@
 
 .tw-font-thin {
   font-weight: 100
+}
+
+.tw-font-light {
+  font-weight: 300
 }
 
 .tw-text-amber-600 {
