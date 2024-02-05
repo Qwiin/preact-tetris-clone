@@ -570,7 +570,7 @@ const Game = (props: GameProps) => {
           }
           emptyRowCache = null;
         }
-      }, 200);
+      }, 400);
       
 
       // Check for and clear full rows 
@@ -597,7 +597,7 @@ const Game = (props: GameProps) => {
           else {
             points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
           }
-          
+
           stats.current.score += points;
 
           //TODO: implement all clear, combo, and back-to-back bonuses
@@ -1114,7 +1114,7 @@ const Game = (props: GameProps) => {
           resumeGame();
         }} disabled={
           paused.current === false && gameover === false
-          }>{gameoverRef.current === true ? "Restart" : "New Game"}</button>
+          }>{gameoverRef.current === false ? "Restart" : "New Game"}</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
           style={{paddingTop:"0.7rem"}}
