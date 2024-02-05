@@ -86,8 +86,8 @@ export function PieceQue(props: PieceQueProps) {
                   initial="hidden"
                   animate="show"
                   transition={{
-                    duration: 0.3, 
-                    ease:"easeIn"
+                    duration: props.animation === "slideUp" ? 0.3 : 0.2,
+                    ease: "easeIn"
                   }}
                   >
                 {

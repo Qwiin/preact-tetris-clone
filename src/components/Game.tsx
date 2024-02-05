@@ -29,13 +29,15 @@ import { Signal, signal } from '@preact/signals';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
+import { ActionType, Direction, GAMEPAD_MAP, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
 import '../app.css';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
 import {motion} from 'framer-motion';
+import { debounce } from '../utils/Debounce';
 
+const GAMEPAD_DEBOUNCE_TIMEOUT: number = 33;
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
@@ -692,6 +694,8 @@ const Game = (props: GameProps) => {
 
   const keydownHandler = (e:any) => {
     
+    console.log(e.key);
+
     if(gameoverRef.current === true || !board.current) {
       // currently, no keyboard input should be processed if gameover (or board ref is null)
       return;
@@ -725,7 +729,9 @@ const Game = (props: GameProps) => {
     
     switch(e.key) {
       
-      case "/":
+      case "Shift":
+      case "GamepadLS":
+      case "GamepadRS":
         if(holdQue.current) {
           if(holdQue.current.length > 0 && !p.wasInHold) {
             let heldPieceItem = holdQue.current.pop() as PieceQueItem;
@@ -756,6 +762,8 @@ const Game = (props: GameProps) => {
         }
         break;
       case "ArrowRight":
+      case "GamepadRight":
+      case "d":
         if((p.x + p.width) < board.current[0].length) {
           
           // sfx_movePiece();
@@ -769,6 +777,8 @@ const Game = (props: GameProps) => {
         }
         break;
       case "ArrowLeft":
+      case "GamepadLeft":
+      case "a":
         if(p.x > 0) {
           props.actionCallback({type: ActionType.MOVE, data: e.key});
           // sfx_movePiece();
@@ -780,6 +790,8 @@ const Game = (props: GameProps) => {
         }
         break;
       case "ArrowDown":
+      case "GamepadDown":
+      case "s":
         if(p.yPrev !== p.y && p.y < p.yMax ) {
           p.lastTick = tick.value;
           props.actionCallback({type: ActionType.MOVE_DOWN, data: e.key});
@@ -809,6 +821,8 @@ const Game = (props: GameProps) => {
 
       // insta-drop the piece
       case "ArrowUp":
+      case "GamepadUp":
+      case "w":
         
         p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
         // p.dropped = true;
@@ -874,14 +888,18 @@ const Game = (props: GameProps) => {
         }
         break;
 
-      case "Alt":
       case "Control":
+      case "Meta":
+      case "GamepadB":
+      case "GamepadX":
         p.rotateLeft();
         // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         updatePosition();
         break;
-
-      case "Shift":
+          
+      case "Alt":
+      case "GamepadA":
+      case "GamepadY":
         p.rotateRight();
         // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         updatePosition();
@@ -998,8 +1016,138 @@ const Game = (props: GameProps) => {
       tSpun.current = false;
     },100);
   
-    document.addEventListener("keydown", keydownHandler);
+    let gamepadInterval: any;
+    let gameLoopStart: number = NaN;
+    let gamepadIndex: number = -1;
 
+    window.addEventListener("keydown", keydownHandler);
+
+    // window.addEventListener("gamepadconnected", (e) => {
+    //   const gp = navigator.getGamepads()[e.gamepad.index];
+    //   if(gp){
+    //     console.log(
+    //       "Gamepad connected at index %d: %s. %d buttons, %d axes.",
+    //       gp.index,
+    //       gp.id,
+    //       gp.buttons.length,
+    //       gp.axes.length,
+    //     );
+    //     console.log(JSON.stringify(gp.buttons));
+    //     gamepadIndex = gp.index
+    //     // gamepadInterval = setInterval(pollGamepads, 500);
+    //   }
+    //   else {
+    //     console.warn("no game pad detected");
+    //   }
+    // });
+
+    window.addEventListener("gamepaddisconnected", (e) => {
+      console.log(
+        "Gamepad disconnected from index %d: %s",
+        e.gamepad.index,
+        e.gamepad.id,
+      );
+    });
+
+    // const pollGamepads = () => {
+    //   const gamepad = navigator.getGamepads()[gamepadIndex] as Gamepad;
+    //   gameLoop();
+    //   clearInterval(gamepadInterval);
+    // }
+
+
+    
+
+    const pollGamepads = () => {
+      const gamepads: (Gamepad | null)[] = navigator.getGamepads() ?? [];
+      
+      for (const gp of gamepads) {
+        // console.log(`Gamepad connected at index ${gp?.index}: ${gp?.id}. It has ${gp?.buttons.length} buttons and ${gp?.axes.length} axes.`);
+        if(gp && gp.index >= 0){
+          gameLoop(gp?.index);
+          console.log("gameLoop started", gp?.index);
+          clearInterval(gamepadInterval);
+        }
+      }
+    }
+
+    if (!("ongamepadconnected" in window)) {
+      // No gamepad events available, poll instead.
+      gamepadInterval = setInterval(pollGamepads, 500);
+    }
+    
+    // let gameplayButtons = [];
+
+    const gpButtonPressed = (b:GamepadButton, name?:string) => {
+      if (typeof b === "object") {
+        if(b.pressed) {
+          console.log(`"${name}" button pressed; value: ${b.value}`);
+        }
+        return b.pressed;
+      }
+      return b === 1.0;
+    }
+
+    const gameLoop = (gpIndex: number=0) => {
+      navigator.getGamepads()
+      const gamepads = navigator.getGamepads();
+      if (!gamepads) {
+        console.warn("Gamepad Loop Ended!");
+        return;
+      }
+
+      const gp = gamepads[gpIndex] as Gamepad;
+
+      // ROTATE RIGHT
+      
+
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.A], "A")) {
+        debounceA();
+      }
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.Y], "Y")) {
+        debounceY();
+      }
+
+      // ROTATE LEFT
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.B], "B")) {
+        debounceB();
+      }
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.X], "X")) {
+        debounceX();
+      }
+      
+      // HOLD
+      // gpButtonPressed(gp.buttons[GAMEPAD_MAP.L], "L");
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.L], "GamepadLS")) {
+        debounceLS();
+      }
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.R], "GamepadRS")) {
+        debounceRS();
+      }
+
+    // DPAD Controls
+
+      // HARD DROP
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.UP], "GamepadUp")) {
+        debounceUp();
+      }
+
+      // SOFT DROP
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.DOWN], "GamepadDown")) {
+        debounceDown();
+      }
+
+      // MOVE LEFT/RIGHT
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.LEFT], "GamepadLeft")) {
+        debounceLeft();
+      }
+      if( gpButtonPressed(gp.buttons[GAMEPAD_MAP.RIGHT], "GamepadRight")) {
+        debounceRight();
+      }
+
+      gameLoopStart = requestAnimationFrame(()=>gameLoop(gpIndex));
+    }
+    
     return () => {
       // null out references for GC
       pieceQue.current = null;
@@ -1018,6 +1166,39 @@ const Game = (props: GameProps) => {
       document.removeEventListener("keydown", keydownHandler);
     }
   },[]);
+
+  const debounceA = debounce(()=>{
+    keydownHandler({key: "GamepadA"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true);
+  const debounceY = debounce(()=>{
+    keydownHandler({key: "GamepadY"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true);
+  const debounceB = debounce(()=>{
+    keydownHandler({key: "GamepadB"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true);
+  const debounceX = debounce(()=>{
+    keydownHandler({key: "GamepadX"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true);
+
+  const debounceUp = debounce(()=>{
+    keydownHandler({key: "GamepadUp"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true);
+  const debounceDown = debounce(()=>{
+    keydownHandler({key: "GamepadDown"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true, true);
+  const debounceLeft = debounce(()=>{
+    keydownHandler({key: "GamepadLeft"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true, true);
+  const debounceRight = debounce(()=>{
+    keydownHandler({key: "GamepadRight"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true, true);
+
+  const debounceRS = debounce(()=>{
+    keydownHandler({key: "GamepadRS"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true);
+  const debounceLS = debounce(()=>{
+    keydownHandler({key: "GamepadLS"})
+  },GAMEPAD_DEBOUNCE_TIMEOUT, true);
 
 
   // Controls the game speed by level

@@ -179,3 +179,23 @@ export const TETRONIMOS_STRINGS: string[] = [
 // we can just reference the actual values, so this avoids a JSON.parse()
 export const TETRONIMOS: number[][][] =
   TETRONIMOS_STRINGS.map((t: string) => { return JSON.parse(t) as number[][]; });
+
+
+export enum GAMEPAD_MAP {
+  B=0,
+  A,
+  Y,
+  X,
+  L,
+  R,
+  ZL,
+  ZR,
+  SELECT,
+  START,
+  L_C, // 10
+  R_C, // 11
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+}
