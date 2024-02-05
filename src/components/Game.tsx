@@ -84,25 +84,40 @@ function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistribu
 
   for(let k=0; k<numDistributions; k++) {
     let _bag = [...bag];
+
     while(_bag.length > 0) {
 
       let index = Math.round(Math.random() * (_bag.length-1));
+
+      let _continue = false;
 
       if(dist.length > 1 
         && dist[dist.length - 1] === index 
         && dist[dist.length - 2] === index) 
       {
-        continue;
+        _continue = true;
       }
       else if(dist.length === 1 && prevDist && prevDist.length > 0) {
         if(dist[0] === index && prevDist[prevDist.length - 1] === index) {
-          continue;
+          _continue = true;
         }
       }
       else if(dist.length === 0 && prevDist && prevDist.length > 1) {
         if(prevDist[prevDist.length - 1] === index && prevDist[prevDist.length - 2] === index) {
-          continue;
+          _continue = true;
         }
+      }
+
+      // infinite loop fix
+      if(_continue === true){
+        if(_bag.length === 2 && _bag[0] === _bag[1]) {
+          _bag[0] = Math.round(Math.random() * (bagSize-1));
+          _bag[1] = Math.round(Math.random() * (bagSize-1));
+        }
+        else if(_bag.length === 1) {
+          _bag[0] = Math.round(Math.random() * (bagSize-1));
+        }
+        continue;
       }
       
       dist.push(_bag.splice(index,1)[0]);
@@ -676,7 +691,7 @@ const Game = (props: GameProps) => {
 
     // replenish que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
-      pieceQueIndexes.current?.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
+      pieceQueIndexes.current.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
     let index: number = pieceQueIndexes.current?.shift() ?? -1;
