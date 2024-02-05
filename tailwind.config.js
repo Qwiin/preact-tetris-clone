@@ -13,6 +13,12 @@ export default {
     },
     {
       pattern: /tw-(bg|border)-(blue|sky|green|pink|yellow|orange|violet)-(300|400|500|600|700|800|900)/
+    },
+    {
+      pattern: /tw-(h|w)-(20|24|28|32|36|40)/
+    },
+    {
+      pattern: /tw-p(b|t)-(2|4|6|8|10|12|16)/
     }
   ],
   corePlugins: {

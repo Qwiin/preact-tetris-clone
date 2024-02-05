@@ -1,6 +1,6 @@
 import { PieceQueItem } from "./components/Game";
 import { rotateMatrix } from "./GameUtils";
-import { Direction, TETRONIMOS_STRINGS, TetronimoShape } from "./TetrisConfig";
+import { Direction, TETRONIMO_STRINGS, TetronimoShape } from "./TetrisConfig";
 
 export enum MovementTrigger {
   GRAVITY=1,
@@ -23,6 +23,7 @@ export default class ActivePiece {
   readonly xMin: number = 0;
   readonly yMax: number = 24;
   readonly yMin: number = 0;
+  wasInHold: boolean = false;
 
   private _coordsPrev: number[][] = [];
   public set coordsPrev(value: number[][]) {
@@ -74,7 +75,7 @@ export default class ActivePiece {
 
     if(item) {
       this.shapeEnum = item.shapeEnum;
-      this.shape = JSON.parse(TETRONIMOS_STRINGS[item.shapeEnum]);
+      this.shape = JSON.parse(TETRONIMO_STRINGS[item.shapeEnum]);
       this.id = item.id;
       this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {

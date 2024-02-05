@@ -31,6 +31,8 @@ export enum ActionType {
   LEVEL_UP,
   GAME_OVER,
   PAUSE,
+  HOLD_PIECE,
+  MOVE_NOT_ALLOWED
 }
 
 export const G: number = 3;  // cells per frame
@@ -42,9 +44,9 @@ export const GAME_SPEEDS = [
   0.04693 * G,
   0.06361 * G,
   0.0879 * G,
-  0.1236 * G,
-  0.1775 * G,
-  0.2598 * G,
+  0.1236 * G/1.3,
+  0.1775 * G/1.4,
+  0.2598 * G/1.5,
   // 0.388 * G,
   // 0.59 * G,
   // 0.92 * G,
@@ -73,14 +75,14 @@ export enum Direction {
 
 
 export enum TetronimoShape {
-  NULL=-1,
-  O,
+  O = 0,
   Z,
   S,
   J,
   L,
   T,
-  I
+  I,
+  NULL
 }
 
 /*
@@ -136,10 +138,17 @@ const TETRONIMO_T = `[[0, 66, 0],[66, 66, 66]]`;
 */
 const TETRONIMO_I = `[[77, 77, 77, 77]]`;
 
+/* 
+
+  empty
+
+*/
+const TETRONIMO_NULL = `[[0,0],[0,0]]`;
+
 
 // more efficient way to copy items is to already have the string form
 //   previously was using JSON.parse(JSON.stringify(arr));
-export const TETRONIMOS_STRINGS: string[] = [
+export const TETRONIMO_STRINGS: string[] = [
 
   // O
   TETRONIMO_O,
@@ -160,10 +169,13 @@ export const TETRONIMOS_STRINGS: string[] = [
   TETRONIMO_T,
 
   // I
-  TETRONIMO_I
+  TETRONIMO_I,
+
+  // NULL
+  TETRONIMO_NULL
 ];
 
 // In the PieceQue, we don't need to copy the Tetronimo Array objects, 
 // we can just reference the actual values, so this avoids a JSON.parse()
-export const TETRONIMOS: number[][][] =
-  TETRONIMOS_STRINGS.map((t: string) => { return JSON.parse(t) as number[][]; });
+export const TETRONIMOES: number[][][] =
+  TETRONIMO_STRINGS.map((t: string) => { return JSON.parse(t) as number[][]; });

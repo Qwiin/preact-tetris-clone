@@ -126,6 +126,12 @@ export function SoundBoard(props:SoundBoardProps) {
       case ActionType.SET_PIECE:
         sfx_tetris({id:"setPiece"});
         break;
+      case ActionType.MOVE_NOT_ALLOWED:
+        sfx_tetris({id:"moveNotAllowed"});
+        break;
+      case ActionType.HOLD_PIECE:
+        sfx_tetris({id:"holdPiece"});
+        break;
       case ActionType.GAME_OVER:
         sfx_gameOver();
         break;
@@ -134,22 +140,30 @@ export function SoundBoard(props:SoundBoardProps) {
 
   return (
     <>
-      <div className="tw-absolute tw-font-mono">
+      <div className="tw-absolute tw-font-mono game-sounds tw-rounded-lg tw-gap-2 tw-w-32 tw-h-16 tw-flex tw-flex-col tw-justify-center tw-items-center tw-box-border"
+        style={{border: "1px solid rgba(226,232,240,0.6)"}}>
         <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
-        <div className="tw-flex tw-flex-col tw-gap-2 tw-items-start tw-justify-start">
-          <div className="tw-flex tw-flex-row tw-gap-2 tw-items-center tw-justify-start">
-            <input id="EnableSounds" type="checkbox" onChange={()=>{
-              setSoundEnabled(!soundEnabled);
-            }} checked={soundEnabled} />
-            <label for="EnableSounds" className="tw-ml-2 tw-text-sm">SoundFX</label>
+          <div className="tw-flex tw-flex-row tw-justify-between tw-w-24">
+            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>SoundFX</label>
+            <div class="toggle-switch">
+              <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={()=>{
+                setSoundEnabled(!soundEnabled);
+              }} checked={soundEnabled} />
+              <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableSoundFX"></label>
+            </div>
           </div>
-          <div className="tw-flex tw-flex-row tw-gap-2 tw-items-center tw-justify-start">
-            <input id="EnableSounds" type="checkbox" onChange={()=>{
-              setMusicEnabled(!musicEnabled);
-            }} checked={musicEnabled} />
-            <label for="EnableSounds" className="tw-ml-2 tw-text-sm">Music</label>
+          <div className="tw-flex tw-gap-2 tw-justify-between tw-w-24">
+            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>Music</label>
+            <div class="toggle-switch">
+              <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
+              onChange={()=>{
+                  setMusicEnabled(!musicEnabled);
+                }} checked={musicEnabled} 
+              />
+              <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableMusic"></label>
+            </div>
           </div>
-        </div>
+        {/* </div> */}
       </div>
     </>
   );

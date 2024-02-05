@@ -1,0 +1,90 @@
+  .toggle-switch .toggle {
+    display: none;
+  }
+  .toggle-switch .toggle::selection,
+  .toggle-switch .toggle:after::selection,
+  .toggle-switch .toggle:before::selection,
+  .toggle-switch .toggle *::selection,
+  .toggle-switch .toggle *:after::selection,
+  .toggle-switch .toggle *:before::selection,
+  .toggle-switch .toggle + .toggle-btn::selection {
+    background: none;
+  }
+  .toggle-switch .toggle + .toggle-btn {
+    outline: 0;
+    display: block;
+    width: 4em;
+    height: 2em;
+    position: relative;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .toggle-switch .toggle + .toggle-btn:after,
+  .toggle-switch .toggle + .toggle-btn:before {
+    position: relative;
+    display: block;
+    content: "";
+    width: 50%;
+    height: 100%;
+  }
+  .toggle-switch .toggle + .toggle-btn:after {
+    left: 0;
+  }
+  .toggle-switch .toggle + .toggle-btn:before {
+    display: none;
+  }
+  .toggle-switch .toggle:checked + .toggle-btn:after {
+    left: 50%;
+  }
+
+  .toggle-switch .toggle-skewed + .toggle-btn {
+    overflow: hidden;
+    transform: skew(-10deg);
+    -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+    transition: all 0.2s ease;
+    font-family: sans-serif;
+    /* background: #888; */
+    background: rgb(39, 52, 65, 1);
+  }
+  .toggle-switch .toggle-skewed + .toggle-btn:after,
+  .toggle-switch .toggle-skewed + .toggle-btn:before {
+    transform: skew(10deg);
+    display: inline-block;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    line-height: 1.6em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  }
+  .toggle-switch .toggle-skewed + .toggle-btn:after {
+    left: -100%;
+    content: attr(data-label-on);
+  }
+  .toggle-switch .toggle-skewed + .toggle-btn:before {
+    left: 0;
+    content: attr(data-label-off);
+  }
+  .toggle-switch .toggle-skewed + .toggle-btn:active {
+    /* background: #888; */
+    background: rgb(39, 39, 39, 0.8);
+  }
+  .toggle-switch .toggle-skewed + .toggle-btn:active:before {
+    left: -10%;
+  }
+  .toggle-switch .toggle-skewed:checked + .toggle-btn {
+    background: rgba(0,108,208,0.8);
+  }
+  .toggle-switch .toggle-skewed:checked + .toggle-btn:before {
+    left: 100%;
+  }
+  .toggle-switch .toggle-skewed:checked + .toggle-btn:after {
+    left: 0;
+  }
+  .toggle-switch .toggle-skewed:checked + .toggle-btn:active:after {
+    left: 10%;
+  }

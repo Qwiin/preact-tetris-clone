@@ -1,10 +1,10 @@
 body {
-  min-width: 1073px;
+  min-width: 1004px;
   background: 
-    url(https://static.vecteezy.com/system/resources/previews/009/359/035/original/tetris-shape-illustration-seamless-pattern-design-template-dark-blue-and-white-color-theme-vector.jpg), 
-    url(https://img.freepik.com/free-photo/dark-black-abstract-background-with-wood-chips_24972-208.jpg);
+    url("/src/assets/tetris_bg_intergalactic09.webp"), 
+    url("/src/assets/radial_bg_blend.avif");
   /* background-repeat: repeat; */
-  background-size: 300px, 100vw 100vh;
+  background-size: 100vw auto, 100vw 100vh;
   background-position: 0,0;
   
   /* background-blend-mode: color-dodge; */
@@ -40,7 +40,12 @@ body {
     url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
 }
 
+.que-item {
+  transform: scale(60%);
+}
+
 .game-clock {
+  display: none;
   margin: 8px;
   margin-bottom: 4px;
   font-family: 'SF Digital Heavy';
@@ -50,12 +55,22 @@ body {
 
 .stats-board {
   font-family: 'SF Digital Heavy';
-  font-size: 48px;
+  font-size: 3rem;
   padding: 0;
 }
 
 .stats-field {
   line-height: 40px;
+}
+.stats-field-name {
+  color:aliceblue;
+  text-shadow: rgba(0,128,196,0.9) 0rem 0.1rem 0.7rem;
+  letter-spacing: 0.15em;
+  opacity: 0.85;
+}
+.stats-field-value-bg {
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .digital {
@@ -105,6 +120,21 @@ body {
   z-index: 300;
 }
 
+.game-sounds {
+  top: 13rem;
+  left: 3.5rem;
+  background-color: rgb(26, 26, 26, 0.8);
+}
+
+.game-sounds label {
+  font-family: 'Absolute Empire';
+  font-size: 0.6rem;
+  padding-top: 0.15rem;
+  color: aliceblue;
+  opacity: 0.8;
+  text-shadow: rgba(0,128,196,0.7) 0rem 0.1rem 0.5rem;
+}
+
 .game-header {
   padding-top: 24px;
   line-height: 40px;
@@ -118,15 +148,28 @@ body {
 }
 
 .game-control-map {
+  margin-top: 6.20rem;
   background-color: rgb(26, 26, 26, 0.8);
-  border: 1px rgba(148, 163, 184, 0.8) solid;
+  /* border: 1px rgba(148, 163, 184, 0.8) solid; */
+  border: 1px solid rgba(226,232,240,0.6);
+  padding-top: 0.1rem;
+  padding-bottom: 0.5rem;
+
+  /* filter: drop-shadow(0 0 0.25rem rgba(104, 104, 104, 0.6)); */
 }
 
 .game-control-button {
-  border: 1px white solid;
+  /* border: 1px rgba(255,255,255,0.6) solid; */
+  border: 1px rgba(148, 163, 184, 0.8) solid;
   background-color: rgb(26, 26, 26, 1);
+  color: rgba(255,255,255,0.8)
 }
 
+.menu-button {
+  color: aliceblue;
+  text-shadow: rgba(0,128,196,0.9) 0rem 0.1rem 0.7rem;
+  opacity: 0.8;
+}
 .menu-button.disabled {
   border: 1px rgba(255,255,255,0.4) solid;
 }

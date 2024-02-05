@@ -5,7 +5,7 @@ import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
-
+import './checkbox.css';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
@@ -53,7 +53,7 @@ export function App() {
 
   return (
     <>
-      <div className="tw-bg-slate-700 tw-scale-125 tw-bg-opacity-40">
+      <div className="tw-bg-slate-700 tw-scale-125 tw-bg-opacity-30">
         <div className={`tw-opacity-1`}>
           <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header">TETRIS</h1>
         </div>

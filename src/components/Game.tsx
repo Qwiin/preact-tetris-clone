@@ -30,14 +30,13 @@ import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TetronimoShape } from '../TetrisConfig';
-import '../app.css';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
 import {motion} from 'framer-motion';
 
 const TICK_INTERVAL: number = 50;
-const PIECE_QUE_LENGTH: number = 6;
+const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
 const tick: Signal<number> = signal(0);
@@ -89,7 +88,10 @@ function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistribu
 
       let index = Math.round(Math.random() * (_bag.length-1));
 
-      if(dist.length > 1 && dist[dist.length - 1] === index && dist[dist.length - 2] === index) {
+      if(dist.length > 1 
+        && dist[dist.length - 1] === index 
+        && dist[dist.length - 2] === index) 
+      {
         continue;
       }
       else if(dist.length === 1 && prevDist && prevDist.length > 0) {
@@ -123,27 +125,30 @@ const Game = (props: GameProps) => {
   // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
   const gameoverRef = useRef(false);
-  const downArrowPressed = useRef(false);
-  const tSpun = useRef(false);
-  const dropEffectData: Ref<any> = useRef(null);
-  const clearEffectData: Ref<any> = useRef(null);
-  const clearedRows: Ref<number[]> = useRef(null);
-  const upArrowPressed = useRef(false);
   const [gameover, setGameover] = useState(false);
 
-  const action: Ref<string> = useRef(null);
+  const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  
+  const clearedRows: Ref<number[]> = useRef(null);
+  const clearEffectData: Ref<any> = useRef(null);
+  const dropEffectData: Ref<any> = useRef(null);
+
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
   const pieceQue: Ref<PieceQueItem[]> = useRef(null);
+  const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
+
+  const action: Ref<string> = useRef(null);
   const stats: Ref<Scoring> = useRef(null);
-  const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  
+  const downArrowPressed = useRef(false);
+  const upArrowPressed = useRef(false);
   const isTSpin: Ref<boolean> = useRef(null);
   const isTSpinMini: Ref<boolean> = useRef(null);
+  const tSpun = useRef(false);
 
-  const columnHeights: Ref<Int8Array> = useRef(null);
-
-  // TODO: flatten array for performance
   const board: Ref<number[][]> = useRef(null);
+  const columnHeights: Ref<Int8Array> = useRef(null);
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
   const getBoardCols = (): number[][] => {
@@ -166,7 +171,9 @@ const Game = (props: GameProps) => {
   };
 
   const updatePosition = () => {
-    if(!board.current || !activePiece.current) {return}
+    if(!board.current || !activePiece.current || clearEffectData.current) {
+      return
+    }
 
     const rows = board.current;
     const p: ActivePiece = activePiece.current;
@@ -185,7 +192,6 @@ const Game = (props: GameProps) => {
       let i_iii = p.y - 1;
       let i_sss = h-1;
       
-
       // let dx = p.x - p.xPrev;
       let dy = p.y - p.yPrev;
 
@@ -567,13 +573,8 @@ const Game = (props: GameProps) => {
         }
       }, 200);
       
-      
 
       // Check for and clear full rows 
-      // let nNewRows = newRows.length;
-
-      //let numCleared = nRows - nNewRows;
-
       let points: number = 0;
       // console.log("updateBoard");
 
@@ -587,14 +588,20 @@ const Game = (props: GameProps) => {
             stats.current.level = level;
             props.actionCallback({type: ActionType.LEVEL_UP});  
           }
-          points = (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+    
           if(isTSpinMini.current) {
-            points += ((numCleared > 0) ? (numCleared * 200) : 100); 
+            points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
           }
           else if(isTSpin.current) {
-            points += (400 + (numCleared * 400)); 
+            points += (400 + (numCleared * 400)) * level; 
           }
+          else {
+            points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
+          }
+
           stats.current.score += points;
+
+          //TODO: implement all clear, combo, and back-to-back bonuses
         }
 
         let actionEnum = numCleared;
@@ -655,8 +662,7 @@ const Game = (props: GameProps) => {
   const getNextPiece = (): PieceQueItem => {
 
     // replenish que
-    if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 5) {
-      // pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length-1));
+    if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
       pieceQueIndexes.current?.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
@@ -665,7 +671,6 @@ const Game = (props: GameProps) => {
       shapeEnum: index,
       id: Math.round(window.performance.now()*1000).toString()
     }
-    // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
   }
 
   const getPieceFromQue = () => {
@@ -704,7 +709,7 @@ const Game = (props: GameProps) => {
       }
     }
 
-    const p: ActivePiece | null = activePiece.current || null;
+    let p: ActivePiece | null = activePiece.current || null;
 
     //
     // The above "Escape" key handler will be the only input accepted when
@@ -721,6 +726,36 @@ const Game = (props: GameProps) => {
     
     switch(e.key) {
       
+      case "/":
+        if(holdQue.current) {
+          if(holdQue.current.length > 0 && !p.wasInHold) {
+            let heldPieceItem = holdQue.current.pop() as PieceQueItem;
+
+            // erase active piece from board
+            for(let i=0; i<p.coords.length;i++) {
+              let y = p.coords[i][0];
+              let x = p.coords[i][1];
+              board.current[y][x] = 0;
+            }
+
+            if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
+              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
+              activePiece.current = new ActivePiece(heldPieceItem, Direction.N );  
+              activePiece.current.wasInHold = true; 
+            }
+            else {
+              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
+              activePiece.current = getPieceFromQue();
+            }
+
+            p = activePiece.current;
+            props.actionCallback({type: ActionType.HOLD_PIECE})
+          }
+          else if(p.wasInHold) {
+            props.actionCallback({type: ActionType.MOVE_NOT_ALLOWED})
+          }
+        }
+        break;
       case "ArrowRight":
         if((p.x + p.width) < board.current[0].length) {
           
@@ -856,16 +891,31 @@ const Game = (props: GameProps) => {
   }
 
   const initRefs = () => {
-    if(!pieceQue.current){
-      pieceQue.current = [];
+
+    
+    pieceQueIndexes.current = [];
+    pieceQueIndexes.current?.push(
+      ...randomBagDistribution(7,2,3)
+    );
+    holdQue.current = [{id:"-1",shapeEnum: TetronimoShape.NULL}];
+
+    let indices = pieceQueIndexes.current;
+    pieceQue.current = [];
+    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
+      pieceQue.current.push({
+        shapeEnum: indices[i],
+        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
+      });
     }
-    if(!pieceQueIndexes.current){
-      pieceQueIndexes.current = [];
-    }
-    if(!columnHeights.current) {
+
+    if(columnHeights.current === null) {
       columnHeights.current = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     }
-    if(!board.current) {
+    else {
+      columnHeights.current.fill(0);
+    }
+    
+    if(board.current === null) { 
       board.current = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -893,18 +943,36 @@ const Game = (props: GameProps) => {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       ];
     }
-
-    if(!action.current) {
-      action.current = "Action";
+    else {
+      for(let i=0;  i<board.current.length; i++) {
+        for(let j=0;  j<board.current[0].length; j++) {
+          board.current[i][j] = 0; 
+        }
+      }
     }
-
-    if(!stats.current) {
+    
+    action.current = "Action";
+    
+    if(stats.current === null) {
       stats.current = {
         level: 1,
         lines: 0,
         score: 0,
       }
     }
+    else {
+      stats.current.level = 1;
+      stats.current.lines = 0;
+      stats.current.score = 0;
+    }
+
+    isTSpin.current = false;
+    isTSpinMini.current = false;
+    upArrowPressed.current = false;
+    downArrowPressed.current = false;
+    tSpun.current = false;
+    gameoverRef.current = false;
+    paused.current = false;
   }
 
   const gameOver = () => {
@@ -944,20 +1012,6 @@ const Game = (props: GameProps) => {
     setGameover(false);
     gameoverRef.current = false;
     resumeGame();
-    
-    pieceQueIndexes.current?.push(
-      ...randomBagDistribution(7,2,3)
-      );
-
-      // console.log(pieceQueIndexes.current);
-
-    let indices = pieceQueIndexes.current || [];
-    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
-      pieceQue.current?.push({
-        shapeEnum: indices[i],
-        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
-      });
-    }
 
     setTimeout(()=> {
       activePiece.current = getPieceFromQue();
@@ -975,6 +1029,13 @@ const Game = (props: GameProps) => {
       board.current = null;
       action.current = null;
       columnHeights.current = null;
+      isTSpin.current = null;
+      isTSpinMini.current = null;
+      upArrowPressed.current = false;
+      downArrowPressed.current = false;
+      tSpun.current = false;
+      gameoverRef.current = false;
+      paused.current = false;
 
       if(ticker.current) {
         clearInterval(ticker.current);
@@ -1037,36 +1098,26 @@ const Game = (props: GameProps) => {
   return (
     <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center tw-pb-6">
-        <button className="tetris-font tw-border-slate-200 tw-w-32 tw-m-6 tw-p-2 tw-text-md" 
+      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-start tw-pb-4">
+        <button className="tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md" 
           style={{paddingTop:"0.7rem"}}
           onClick={()=>{
-          tick.value = 0;
-          stats.current = {
-            score: 0,
-            lines: 0,
-            level: 0,
-          };
+          
+          initRefs();
           if(activePiece.current) {
             // activePiece.current = getNextPiece();
             activePiece.current = getPieceFromQue();
           }
-          if(!board.current) { return; }
-          for(let i=0;  i<board.current.length; i++) {
-            for(let j=0;  j<board.current[0].length; j++) {
-              board.current[i][j] = 0; 
-            }
-          }
+          
           setGameover(false);
-          gameoverRef.current = false;
           resumeGame();
         }} disabled={
           paused.current === false && gameover === false
-          }>Restart</button>
+          }>{gameoverRef.current === false ? "Restart" : "New Game"}</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
           style={{paddingTop:"0.7rem"}}
-          disabled={gameover} 
+          disabled={gameoverRef.current} 
           onClick={()=>{
           if(!paused.current) {
             pauseGame(false, true);
@@ -1078,114 +1129,122 @@ const Game = (props: GameProps) => {
 
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
-      <div style={{border: "2px inset rgba(0,0,0,0.5)"}}
-      className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-4 tw-pb-4">
-        <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
-        <div>
-          <h5 className="bg-green-100 game-clock tetris-font tw-text-lg">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
-          <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"0.6px solid rgba(200,200,200,1)"}}>
-            
-            { dropEffectData.current && 
+      <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
+        <div
+        className="tw-flex tw-flex-row tw-gap-0 tw-items-start tw-justify-center tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-0 tw-pb-0"
+        style={{paddingTop: "2rem", marginLeft: "-1rem", marginRight:"-1rem"}}>
+          {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
+          
+          <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
+          pieces={
+            holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
+          }/>
+          <div>
+            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{tick.value}</h5>
+            <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"1px solid rgba(200,200,200,1)"}}>
+              
+              { dropEffectData.current && 
 
-              // @ts-expect-error
-              <motion.div key={dropEffectData.current.id} className="drop-effect" 
-                onAnimationComplete={
-                    ()=>{dropEffectData.current = null;
-                  }}
-                variants={{
-                  show: {
-                    opacity: 1
-                  }, 
-                  hidden: {
-                    opacity: 0
-                  }}}
-                initial="show"
-                animate="hidden"
-                transition={{
-                  duration: 0.25, 
-                  ease:"easeOut"
-                }}
-                // transitionEnd = {{
-                //   display: 'none'
-                // }}
-                
-                style={{
-                  top: dropEffectData.current.top,
-                  left: dropEffectData.current.left,
-                  right: dropEffectData.current.right,
-                  bottom: dropEffectData.current.bottom
-                  }}>
-
-              </motion.div>
-            }
-            { clearEffectData.current &&
-              clearEffectData.current.map((effect: any)=>{
-                return  (
-              // @ts-expect-error
-                <motion.div key={effect.id} className="clear-effect" 
+                // @ts-expect-error
+                <motion.div key={dropEffectData.current.id} className="drop-effect" 
                   onAnimationComplete={
-                    () => {
-                      // make sure sound effect is only played once
-                      // in the event that multiple effects are needed
-                      if(clearEffectData.current !== null) {
-                        clearEffectData.current = null;
-                        props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
-                      }
-                      clearedRows.current = null;
-                      resumeGame();
-                    }
-                  }
-                  onUpdate={()=>{
-                    console.log("clear effect update");
-                  }}
+                      ()=>{dropEffectData.current = null;
+                    }}
                   variants={{
                     show: {
-                      opacity: 1,
-                      transform: 'rotateX(0) scaleX(100%)'
+                      opacity: 1
                     }, 
                     hidden: {
-                      opacity: 0,
-                      transform: 'rotateX(90deg) scaleX(120%)'
+                      opacity: 0
                     }}}
                   initial="show"
                   animate="hidden"
                   transition={{
-                    duration: 0.4, 
-                    ease:"easeOut",
-                    delay: 0.1,
+                    duration: 0.25, 
+                    ease:"easeOut"
                   }}
                   // transitionEnd = {{
                   //   display: 'none'
                   // }}
                   
                   style={{
-                    top: effect.top,
-                    left: effect.left,
-                    right: effect.right,
-                    bottom: effect.bottom
+                    top: dropEffectData.current.top,
+                    left: dropEffectData.current.left,
+                    right: dropEffectData.current.right,
+                    bottom: dropEffectData.current.bottom
                     }}>
 
                 </motion.div>
-                );
-              })
-            }
-            
-            <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
-              {renderBoard()}
-            </div>
-            { (gameover || paused.current) &&
-              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
-                <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
+              }
+              { clearEffectData.current &&
+                clearEffectData.current.map((effect: any)=>{
+                  return  (
+                // @ts-expect-error
+                  <motion.div key={effect.id} className="clear-effect" 
+                    onAnimationComplete={
+                      () => {
+                        // make sure sound effect is only played once
+                        // in the event that multiple effects are needed
+                        if(clearEffectData.current !== null) {
+                          clearEffectData.current = null;
+                          props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
+                        }
+                        clearedRows.current = null;
+                        resumeGame();
+                      }
+                    }
+                    // onUpdate={()=>{
+                    //   console.log("clear effect update");
+                    // }}
+                    variants={{
+                      show: {
+                        opacity: 1,
+                        transform: 'rotateX(0)'
+                      }, 
+                      hidden: {
+                        opacity: 0,
+                        transform: 'rotateX(90deg)'
+                      }}}
+                    initial="show"
+                    animate="hidden"
+                    transition={{
+                      duration: 0.4, 
+                      ease:"easeOut",
+                      delay: 0.1,
+                    }}
+                    // transitionEnd = {{
+                    //   display: 'none'
+                    // }}
+                    
+                    style={{
+                      top: effect.top,
+                      left: effect.left,
+                      right: effect.right,
+                      bottom: effect.bottom
+                      }}>
+
+                  </motion.div>
+                  );
+                })
+              }
+              
+              <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
+                {renderBoard()}
               </div>
-            }
+              { (gameover || paused.current) &&
+                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
+                  <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
+                </div>
+              }
+            </div>
           </div>
+          {pieceQue.current &&
+          <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
+          pieces={
+            pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
+          }/>
+        }
         </div>
-        {pieceQue.current &&
-        <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} 
-        pieces={
-          pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
-        }/>
-      }
       </div>
       <StatsPanel fields={[
         {
