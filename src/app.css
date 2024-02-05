@@ -40,7 +40,12 @@ body {
     url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
 }
 
+.que-item {
+  transform: scale(60%);
+}
+
 .game-clock {
+  display: none;
   margin: 8px;
   margin-bottom: 4px;
   font-family: 'SF Digital Heavy';
@@ -97,6 +102,12 @@ body {
   position: absolute;
   background-image: linear-gradient(rgba(255,255,255,0),rgba(255,255,255,0.6),rgba(255,255,255,0.8), rgba(255,255,255,0.1) 95%);
   z-index: 200;
+}
+.clear-effect {
+  position: absolute;
+  /* background-image: linear-gradient(90deg, rgba(255,255,255,0),rgba(255,255,255,0.75),rgba(255,255,255,1),rgba(255,255,255,0.75),rgba(255,255,255,0)); */
+  background-image: radial-gradient(ellipse at center, rgba(255,255,255,1),rgba(255,255,255,0.75),rgba(255,255,255,0));
+  z-index: 300;
 }
 
 .game-header {

@@ -110,6 +110,10 @@
   left: 0px
 }
 
+.tw-right-0 {
+  right: 0px
+}
+
 .tw-top-0 {
   top: 0px
 }
@@ -130,8 +134,12 @@
   margin: 1.5rem
 }
 
-.tw-mb-6 {
-  margin-bottom: 1.5rem
+.tw-mb-4 {
+  margin-bottom: 1rem
+}
+
+.tw-ml-2 {
+  margin-left: 0.5rem
 }
 
 .tw-mt-0 {
@@ -150,12 +158,8 @@
   margin-top: 6rem
 }
 
-.tw-mt-3 {
-  margin-top: 0.75rem
-}
-
-.tw-ml-2 {
-  margin-left: 0.5rem
+.tw-mt-8 {
+  margin-top: 2rem
 }
 
 .tw-box-border {
@@ -170,6 +174,10 @@
   display: flex
 }
 
+.tw-hidden {
+  display: none
+}
+
 .tw-h-0 {
   height: 0px
 }
@@ -182,8 +190,32 @@
   height: 4rem
 }
 
+.tw-h-20 {
+  height: 5rem
+}
+
+.tw-h-24 {
+  height: 6rem
+}
+
+.tw-h-28 {
+  height: 7rem
+}
+
+.tw-h-32 {
+  height: 8rem
+}
+
+.tw-h-36 {
+  height: 9rem
+}
+
 .tw-h-4 {
   height: 1rem
+}
+
+.tw-h-40 {
+  height: 10rem
 }
 
 .tw-h-8 {
@@ -210,8 +242,20 @@
   width: 5rem
 }
 
+.tw-w-24 {
+  width: 6rem
+}
+
+.tw-w-28 {
+  width: 7rem
+}
+
 .tw-w-32 {
   width: 8rem
+}
+
+.tw-w-36 {
+  width: 9rem
 }
 
 .tw-w-4 {
@@ -9109,6 +9153,11 @@
   padding-right: 0.5rem
 }
 
+.tw-py-0 {
+  padding-top: 0px;
+  padding-bottom: 0px
+}
+
 .tw-py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem
@@ -9118,32 +9167,80 @@
   padding-bottom: 0px
 }
 
+.tw-pb-10 {
+  padding-bottom: 2.5rem
+}
+
+.tw-pb-12 {
+  padding-bottom: 3rem
+}
+
+.tw-pb-16 {
+  padding-bottom: 4rem
+}
+
 .tw-pb-2 {
   padding-bottom: 0.5rem
+}
+
+.tw-pb-2\.5 {
+  padding-bottom: 0.625rem
+}
+
+.tw-pb-20 {
+  padding-bottom: 5rem
+}
+
+.tw-pb-24 {
+  padding-bottom: 6rem
+}
+
+.tw-pb-28 {
+  padding-bottom: 7rem
 }
 
 .tw-pb-4 {
   padding-bottom: 1rem
 }
 
+.tw-pb-40 {
+  padding-bottom: 10rem
+}
+
+.tw-pb-44 {
+  padding-bottom: 11rem
+}
+
+.tw-pb-48 {
+  padding-bottom: 12rem
+}
+
 .tw-pb-6 {
   padding-bottom: 1.5rem
 }
 
+.tw-pb-60 {
+  padding-bottom: 15rem
+}
+
+.tw-pb-64 {
+  padding-bottom: 16rem
+}
+
+.tw-pb-8 {
+  padding-bottom: 2rem
+}
+
+.tw-pb-80 {
+  padding-bottom: 20rem
+}
+
+.tw-pl-0 {
+  padding-left: 0px
+}
+
 .tw-pl-14 {
   padding-left: 3.5rem
-}
-
-.tw-pl-3 {
-  padding-left: 0.75rem
-}
-
-.tw-pl-4 {
-  padding-left: 1rem
-}
-
-.tw-pr-2 {
-  padding-right: 0.5rem
 }
 
 .tw-pt-0 {
@@ -9154,12 +9251,92 @@
   padding-top: 0.25rem
 }
 
+.tw-pt-10 {
+  padding-top: 2.5rem
+}
+
+.tw-pt-12 {
+  padding-top: 3rem
+}
+
+.tw-pt-16 {
+  padding-top: 4rem
+}
+
+.tw-pt-2 {
+  padding-top: 0.5rem
+}
+
+.tw-pt-2\.5 {
+  padding-top: 0.625rem
+}
+
+.tw-pt-20 {
+  padding-top: 5rem
+}
+
+.tw-pt-24 {
+  padding-top: 6rem
+}
+
+.tw-pt-28 {
+  padding-top: 7rem
+}
+
 .tw-pt-4 {
   padding-top: 1rem
 }
 
+.tw-pt-40 {
+  padding-top: 10rem
+}
+
+.tw-pt-44 {
+  padding-top: 11rem
+}
+
+.tw-pt-48 {
+  padding-top: 12rem
+}
+
+.tw-pt-6 {
+  padding-top: 1.5rem
+}
+
+.tw-pt-60 {
+  padding-top: 15rem
+}
+
+.tw-pt-64 {
+  padding-top: 16rem
+}
+
+.tw-pt-8 {
+  padding-top: 2rem
+}
+
+.tw-pt-80 {
+  padding-top: 20rem
+}
+
+.tw-pl-2 {
+  padding-left: 0.5rem
+}
+
+.tw-pl-4 {
+  padding-left: 1rem
+}
+
+.tw-text-left {
+  text-align: left
+}
+
 .tw-text-center {
   text-align: center
+}
+
+.tw-text-right {
+  text-align: right
 }
 
 .tw-font-mono {
@@ -9186,9 +9363,8 @@
   line-height: 1.75rem
 }
 
-.tw-text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem
+.tw-font-bold {
+  font-weight: 700
 }
 
 .tw-font-extrabold {
@@ -9204,6 +9380,11 @@
   color: rgb(217 119 6 / var(--tw-text-opacity))
 }
 
+.tw-text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity))
+}
+
 .tw-text-green-500 {
   --tw-text-opacity: 1;
   color: rgb(34 197 94 / var(--tw-text-opacity))
@@ -9212,6 +9393,10 @@
 .tw-text-yellow-400 {
   --tw-text-opacity: 1;
   color: rgb(250 204 21 / var(--tw-text-opacity))
+}
+
+.tw-opacity-0 {
+  opacity: 0
 }
 
 .tw-shadow-inner {
@@ -9223,4 +9408,13 @@
 .tw-shadow-slate-400 {
   --tw-shadow-color: #94a3b8;
   --tw-shadow: var(--tw-shadow-colored)
+}
+
+.tw-grayscale-0 {
+  --tw-grayscale: grayscale(0);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)
+}
+
+.\[ui\:JW\FFFD\FFFD\FFFD\2c G\FFFDm\FFFD\] {
+  ui: JW���,G�m�
 }
