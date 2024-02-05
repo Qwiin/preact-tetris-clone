@@ -501,7 +501,6 @@ const Game = (props: GameProps) => {
 
         if(piece.y !== piece.yPrev) {
 
-
           piece.lastMoveTrigger = MovementTrigger.GRAVITY;
         }
         
@@ -516,7 +515,6 @@ const Game = (props: GameProps) => {
 
       // CLEAR COMPLETE LINES
       // Method 2: find full rows and recycle them
-
 
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
@@ -551,27 +549,6 @@ const Game = (props: GameProps) => {
           );
         }
       }
-      clearedRows.current = [...clearedRowIndexesDesc];
-
-      for(let i=0; i<clearedRowIndexesDesc.length; i++) {
-        if(!clearEffectData.current){
-          clearEffectData.current = []
-        }
-        if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
-          clearEffectData.current[clearEffectData.current.length - 1].top = `${(clearedRowIndexesDesc[i] - 4)}rem`;
-        }
-        else {
-          clearEffectData.current.push(
-            {
-              top: `${(clearedRowIndexesDesc[i] - 4)}rem`,
-              bottom: `${(24 - (clearedRowIndexesDesc[i] + 1))}rem`,
-              left: `${-1}rem`,
-              right: `${-1}rem`,
-              id: (Math.round(performance.now()*1000).toString() + '.' + i.toString()),
-            }
-          );
-        }
-      }
       
       // Dear Future Self...
       // clearedRowIndexesDesc needs to (and should already) be sorted descending
@@ -579,23 +556,6 @@ const Game = (props: GameProps) => {
       // loop to work properly
 
       // This should be a memory optimized operation
-      setTimeout(()=>{
-        let emptyRowCache: number[][] | null = [];
-        if(emptyRowCache !== null) {
-          for(let j=0; j<numCleared; j++) {
-            emptyRowCache.push(
-              rows.splice(clearedRowIndexesDesc[j],1)[0]
-            );
-          }
-          for(let j=0; j<numCleared; j++) {
-            rows.unshift(emptyRowCache.pop() as number[]);
-          }
-          emptyRowCache = null;
-        }
-      }, 200);
-      
-      
-
       setTimeout(()=>{
         let emptyRowCache: number[][] | null = [];
         if(emptyRowCache !== null) {
@@ -993,12 +953,6 @@ const Game = (props: GameProps) => {
     if(ticker.current){
       clearInterval(ticker.current);
       ticker.current = null;
-    }
-    if(!discrete) {
-      paused.current = true;
-    }
-    if(forceRender){
-      forceUpdate(1);
     }
     if(!discrete) {
       paused.current = true;
