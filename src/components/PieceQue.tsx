@@ -8,7 +8,7 @@ interface PieceQueProps {
   pieces: PieceQueItem[];
   position: "left" | "right";
   disabled: boolean;
-  animation: "slideUp" | "flipHorizontal";
+  animation: "slideUp" | "spinRight";
 }
 
 const defaultPropsPieceQue: PieceQueProps = {
@@ -72,22 +72,22 @@ export function PieceQue(props: PieceQueProps) {
                   show: {
                     transform: props.animation === "slideUp" 
                       ? "translateY(0)" 
-                      : props.animation === "flipHorizontal" 
-                        ? "rotateY(0deg)"
+                      : props.animation === "spinRight" 
+                        ? "rotateZ(0deg)"
                         : "none"
                   }, 
                   hidden: {
                     transform: props.animation === "slideUp" 
                     ? "translateY(3.84rem)" 
-                    : props.animation === "flipHorizontal" 
-                      ? "rotateY(90deg)"
+                    : props.animation === "spinRight" 
+                      ? "rotateZ(-360deg)"
                       : "none"
                   }}}
                   initial="hidden"
                   animate="show"
                   transition={{
                     duration: 0.3, 
-                    ease:"easeIn"
+                    ease:"easeOut"
                   }}
                   >
                 {

@@ -1118,7 +1118,7 @@ const Game = (props: GameProps) => {
         style={{paddingTop: "2rem"}}>
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
           
-          <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='flipHorizontal' disabled={activePiece.current && activePiece.current.wasInHold || false}
+          <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
           pieces={
             holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
           }/>
