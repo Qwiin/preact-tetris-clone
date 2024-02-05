@@ -6,7 +6,7 @@ import { Ref } from 'preact';
 import {useSound} from 'use-sound';
 
 import audio_t99_music from '@sounds/t99-music.mp3'
-import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac.mp3';
+import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 
 interface SoundBoardProps {
@@ -55,8 +55,9 @@ export function SoundBoard(props:SoundBoardProps) {
       tetris: [7000,950],
       tSpin: [8000,950],
       holdPiece: [9000,400],
-      moveNotAllowed: [9000,400],
-      allClear: [10000,950],
+      moveNotAllowed: [10000,400],
+      allClear: [11000,950],
+      lineClearDrop: [12000,600],
     },
     volume: (props.volume || 50) / 150,
     playbackRate: 1.0
@@ -118,6 +119,9 @@ export function SoundBoard(props:SoundBoardProps) {
         break;
       case ActionType.TETRIS:
         sfx_tetris({id:"tetris"});
+        break;
+      case ActionType.LINE_CLEAR_DROP:
+        sfx_tetris({id:"lineClearDrop"});
         break;
       case ActionType.SET_PIECE:
         sfx_tetris({id:"setPiece"});
