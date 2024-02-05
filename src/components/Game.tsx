@@ -126,28 +126,30 @@ const Game = (props: GameProps) => {
   // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
   const gameoverRef = useRef(false);
-  const downArrowPressed = useRef(false);
-  const tSpun = useRef(false);
-  const dropEffectData: Ref<any> = useRef(null);
-  const clearEffectData: Ref<any> = useRef(null);
-  const clearedRows: Ref<number[]> = useRef(null);
-  const upArrowPressed = useRef(false);
   const [gameover, setGameover] = useState(false);
 
-  const action: Ref<string> = useRef(null);
+  const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  
+  const clearedRows: Ref<number[]> = useRef(null);
+  const clearEffectData: Ref<any> = useRef(null);
+  const dropEffectData: Ref<any> = useRef(null);
+
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
   const pieceQue: Ref<PieceQueItem[]> = useRef(null);
   const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
+
+  const action: Ref<string> = useRef(null);
   const stats: Ref<Scoring> = useRef(null);
-  const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  
+  const downArrowPressed = useRef(false);
+  const upArrowPressed = useRef(false);
   const isTSpin: Ref<boolean> = useRef(null);
   const isTSpinMini: Ref<boolean> = useRef(null);
+  const tSpun = useRef(false);
 
-  const columnHeights: Ref<Int8Array> = useRef(null);
-
-  // TODO: flatten array for performance
   const board: Ref<number[][]> = useRef(null);
+  const columnHeights: Ref<Int8Array> = useRef(null);
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
   const getBoardCols = (): number[][] => {
@@ -189,7 +191,6 @@ const Game = (props: GameProps) => {
       let i_iii = p.y - 1;
       let i_sss = h-1;
       
-
       // let dx = p.x - p.xPrev;
       let dy = p.y - p.yPrev;
 
@@ -574,10 +575,6 @@ const Game = (props: GameProps) => {
       
 
       // Check for and clear full rows 
-      // let nNewRows = newRows.length;
-
-      //let numCleared = nRows - nNewRows;
-
       let points: number = 0;
       // console.log("updateBoard");
 
@@ -591,7 +588,7 @@ const Game = (props: GameProps) => {
             stats.current.level = level;
             props.actionCallback({type: ActionType.LEVEL_UP});  
           }
-          points = (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
+          points = (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
           if(isTSpinMini.current) {
             points += ((numCleared > 0) ? (numCleared * 200) : 100); 
           }
@@ -660,7 +657,6 @@ const Game = (props: GameProps) => {
 
     // replenish que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
-      // pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOES.length-1));
       pieceQueIndexes.current?.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
@@ -669,7 +665,6 @@ const Game = (props: GameProps) => {
       shapeEnum: index,
       id: Math.round(window.performance.now()*1000).toString()
     }
-    // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
   }
 
   const getPieceFromQue = () => {
@@ -890,16 +885,19 @@ const Game = (props: GameProps) => {
   }
 
   const initRefs = () => {
-    if(!pieceQue.current){
-      pieceQue.current = [];
-    }
-    if(!pieceQueIndexes.current){
-      pieceQueIndexes.current = [];
-    }
-    if(!columnHeights.current) {
+
+    pieceQue.current = [];
+    pieceQueIndexes.current = [];
+    holdQue.current = [{id:"-1",shapeEnum: TetronimoShape.NULL}];
+
+    if(columnHeights.current === null) {
       columnHeights.current = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     }
-    if(!board.current) {
+    else {
+      columnHeights.current.fill(0);
+    }
+    
+    if(board.current === null) { 
       board.current = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -927,18 +925,36 @@ const Game = (props: GameProps) => {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       ];
     }
-
-    if(!action.current) {
-      action.current = "Action";
+    else {
+      for(let i=0;  i<board.current.length; i++) {
+        for(let j=0;  j<board.current[0].length; j++) {
+          board.current[i][j] = 0; 
+        }
+      }
     }
-
-    if(!stats.current) {
+    
+    action.current = "Action";
+    
+    if(stats.current === null) {
       stats.current = {
         level: 1,
         lines: 0,
         score: 0,
       }
     }
+    else {
+      stats.current.level = 1;
+      stats.current.lines = 0;
+      stats.current.score = 0;
+    }
+
+    isTSpin.current = false;
+    isTSpinMini.current = false;
+    upArrowPressed.current = false;
+    downArrowPressed.current = false;
+    tSpun.current = false;
+    gameoverRef.current = false;
+    paused.current = false;
   }
 
   const gameOver = () => {
@@ -1009,6 +1025,13 @@ const Game = (props: GameProps) => {
       board.current = null;
       action.current = null;
       columnHeights.current = null;
+      isTSpin.current = null;
+      isTSpinMini.current = null;
+      upArrowPressed.current = false;
+      downArrowPressed.current = false;
+      tSpun.current = false;
+      gameoverRef.current = false;
+      paused.current = false;
 
       if(ticker.current) {
         clearInterval(ticker.current);
@@ -1075,32 +1098,22 @@ const Game = (props: GameProps) => {
         <button className="tetris-font tw-border-slate-200 tw-w-32 tw-m-6 tw-p-2 tw-text-md" 
           style={{paddingTop:"0.7rem"}}
           onClick={()=>{
-          tick.value = 0;
-          stats.current = {
-            score: 0,
-            lines: 0,
-            level: 0,
-          };
+          
+          initRefs();
           if(activePiece.current) {
             // activePiece.current = getNextPiece();
             activePiece.current = getPieceFromQue();
           }
-          if(!board.current) { return; }
-          for(let i=0;  i<board.current.length; i++) {
-            for(let j=0;  j<board.current[0].length; j++) {
-              board.current[i][j] = 0; 
-            }
-          }
+          
           setGameover(false);
-          gameoverRef.current = false;
           resumeGame();
         }} disabled={
           paused.current === false && gameover === false
-          }>Restart</button>
+          }>{gameoverRef.current === true ? "Restart" : "New Game"}</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
           style={{paddingTop:"0.7rem"}}
-          disabled={gameover} 
+          disabled={gameoverRef.current} 
           onClick={()=>{
           if(!paused.current) {
             pauseGame(false, true);
