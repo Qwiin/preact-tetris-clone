@@ -1153,7 +1153,7 @@ const Game = (props: GameProps) => {
           else {
             resumeGame();
           }
-        }}>{paused.current ? 'Resume' : 'Pause'}</button>
+        }}>{(paused.current && !gameoverRef.current) ? 'Resume' : 'Pause'}</button>
 
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>

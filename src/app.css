@@ -1,5 +1,6 @@
 body {
-  min-width: 1004px;
+  min-width: 1000px;
+  overflow-x: hidden;
   background: 
     url("/src/assets/tetris_bg_intergalactic09.webp"), 
     url("/src/assets/radial_bg_blend.avif");
@@ -9,6 +10,12 @@ body {
   
   /* background-blend-mode: color-dodge; */
   background-blend-mode: overlay;
+}
+
+@media(max-width: 1000px) {
+  body {
+    background-size: 1000px 1000px, 100vw 100vh;
+  }
 }
 
 @font-face {
