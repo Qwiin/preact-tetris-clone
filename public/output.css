@@ -9112,6 +9112,10 @@
   background-color: rgb(113 63 18 / 0.95)
 }
 
+.tw-bg-opacity-20 {
+  --tw-bg-opacity: 0.2
+}
+
 .tw-bg-opacity-30 {
   --tw-bg-opacity: 0.3
 }
