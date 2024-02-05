@@ -7,14 +7,14 @@ Gameplay:
   1. (done) Implement GameOver State
   2. (done) Fix Collision Detection with left/right moves and rotation against set blocks
   3. (done) Implement Que (as a stack)
-  4. Balance the distribution of pieces (native RNG does not feel like Tetris, lol)
+  4. (done) Balance the distribution of pieces (native RNG does not feel like Tetris, lol)
     a. There should be a more normal distribution considering a game to 100 lines is only 250-300 pieces
 
 UI/UX:
   
   1. Styleize UI
-  2. Add Sound
-  3. Break this out into multiple components
+  2. (done) Add Sound
+  3. (done) Break this out into multiple components
 
 Performance:
 
@@ -29,15 +29,14 @@ import { Signal, signal } from '@preact/signals';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOS, TetronimoShape } from '../TetrisConfig';
-import '../app.css';
+import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOES, TetronimoShape } from '../TetrisConfig';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
 import {motion} from 'framer-motion';
 
 const TICK_INTERVAL: number = 50;
-const PIECE_QUE_LENGTH: number = 6;
+const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
 const tick: Signal<number> = signal(0);
@@ -89,7 +88,10 @@ function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistribu
 
       let index = Math.round(Math.random() * (_bag.length-1));
 
-      if(dist.length > 1 && dist[dist.length - 1] === index && dist[dist.length - 2] === index) {
+      if(dist.length > 1 
+        && dist[dist.length - 1] === index 
+        && dist[dist.length - 2] === index) 
+      {
         continue;
       }
       else if(dist.length === 1 && prevDist && prevDist.length > 0) {
@@ -123,28 +125,32 @@ const Game = (props: GameProps) => {
   // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
   const gameoverRef = useRef(false);
-  const downArrowPressed = useRef(false);
-  const dropEffectData: Ref<any> = useRef(null);
-  const upArrowPressed = useRef(false);
   const [gameover, setGameover] = useState(false);
 
-  const action: Ref<string> = useRef(null);
+  const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  
+  const clearedRows: Ref<number[]> = useRef(null);
+  const clearEffectData: Ref<any> = useRef(null);
+  const dropEffectData: Ref<any> = useRef(null);
+
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
   const pieceQue: Ref<PieceQueItem[]> = useRef(null);
-  const stats: Ref<Scoring> = useRef(null);
-  const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
 
+  const action: Ref<string> = useRef(null);
+  const stats: Ref<Scoring> = useRef(null);
+  
+  const downArrowPressed = useRef(false);
+  const upArrowPressed = useRef(false);
+  const isTSpin: Ref<boolean> = useRef(null);
+  const isTSpinMini: Ref<boolean> = useRef(null);
+  const tSpun = useRef(false);
+
+  const board: Ref<number[][]> = useRef(null);
   const columnHeights: Ref<Int8Array> = useRef(null);
 
-  // TODO: flatten array for performance
-  const board: Ref<number[][]> = useRef(null);
-
-
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
-
-  //const boardCols: Ref<number[][]> = useRef([]);
-
   const getBoardCols = (): number[][] => {
     if(!board.current){
       return [];
@@ -165,83 +171,49 @@ const Game = (props: GameProps) => {
   };
 
   const updatePosition = () => {
-    if(!board.current || !activePiece.current) {return}
+    if(!board.current || !activePiece.current || clearEffectData.current) {
+      return
+    }
 
     const rows = board.current;
     const p: ActivePiece = activePiece.current;
     let perm: number[][] = p.permutation;
-    // const permPrev: number[][] = p.permutationPrev;
     let h: number = p.height;
-    // const hPrev: number = p.heightPrev;
     let w: number = p.width;
-    // const wPrev: number = p.widthPrev;
-
+    
+    let rotationAttempted = false;
+    let failedRotation = false;
 
     // let canMoveLateral = true;
     if (p.rotation !== p.rotationPrev) {
-      // let coords = p.coords;
-      // let dx = p.x - p.xPrev;
-      // let dy = p.y - p.yPrev;
-      // let canRotateInPlace = true;
-      // let canTSpin = true;
-      // if(coords){
-      //   for(let i=0;i<coords.length; i++){
-      //     let y = coords[i][0];
-      //     let x = coords[i][1];
-      //     let cellValue = rows[y][x + dx];
-      //     if(cellValue !== 0 && cellValue < 10){
-      //       canRotateInPlace = false;
-      //       // p.x = p.xPrev;
-      //       // console.log("can't move laterally");
-      //     }
-      //     let cellValue2 = rows[y+dy][x + dx];
-      //     if(cellValue2 !== 0 && cellValue2 < 10){
-      //       canTSpin = false;
-      //       // p.x = p.xPrev;
-      //       // console.log("can't move laterally");
-      //     }  
-      //   }
-      //   if(canRotateInPlace) {
-      //     console.log("rotate in place");
-      //     p.coords = [...p.coordsPrev];
-      //   }
-      //   else if(!canRotateInPlace && !canTSpin) {
-      //     p.x = p.xPrev
-      //     console.log("can't rotate nor t-spin");
-      //     p.coords = [...p.coordsPrev];
-      //   }
-      //   else if(!canRotateInPlace && canTSpin) {
-      //     console.log("can t-spin");
-      //     p.xPrev = p.x;
-      //     p.y += 1;
-      //     p.yPrev = p.y - 1;
-      //   }
-      // }
-
+      rotationAttempted = true;
+    
       let j_iii = p.x;
       let i_iii = p.y - 1;
-
       let i_sss = h-1;
       
-
       // let dx = p.x - p.xPrev;
       let dy = p.y - p.yPrev;
 
+      let rotatedClockwise = (p.rotation - p.rotationPrev === 1 || p.rotation - p.rotationPrev === -3);
+
       let canRotateInPlace = true;
       let canTSpin = true;
-      let canTSpinLeft = true;
-      let canTSpinRight = true;
+      let canTSpinLeft = rotatedClockwise;
+      let canTSpinRight = !rotatedClockwise;
+
       // let canMoveDown = true;
       for(let i=i_iii; i > (i_iii - h); i--) {
         let j_sss = 0;
         for(let j=j_iii; j < (j_iii + w); j++) {
-          if(perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_sss][j_sss]) {
+          if(canRotateInPlace && perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && rows[i][j] !== 0 && rows[i][j] !== perm[i_sss][j_sss]) {
             // if(p.y !== p.yPrev){
             //   canMoveDown = false;
             //   console.log("can't move down...");
             //   p.y = p.yPrev;
             // }
             canRotateInPlace = false;
+            // canTSpinInPlace = false;
           }
           if(i+dy >= p.yMax){
             canTSpin = false;
@@ -249,7 +221,7 @@ const Game = (props: GameProps) => {
             canTSpinRight = false;
           }
           else {
-            if(perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && board.current[i+dy][j] !== 0 && board.current[i+dy][j] !== perm[i_sss][j_sss]) {
+            if(canTSpin && perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && rows[i+dy][j] !== 0 && rows[i+dy][j] !== perm[i_sss][j_sss]) {
               // if(p.y !== p.yPrev){
               //   canMoveDown = false;
               //   console.log("can't move down...");
@@ -257,10 +229,12 @@ const Game = (props: GameProps) => {
               // }
               canTSpin = false;
             }
-            if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && board.current[i+dy][j-1] !== 0 && board.current[i+dy][j-1] !== perm[i_sss][j_sss])) {
-              canTSpinLeft = false;
+            if(canTSpinLeft) {
+              if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && rows[i+dy][j-1] !== 0 && rows[i+dy][j-1] !== perm[i_sss][j_sss])) {
+                canTSpinLeft = false;
+              }
             }
-            if(j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && board.current[i+dy][j+1] !== 0 && board.current[i+dy][j+1] !== perm[i_sss][j_sss])) {
+            if(canTSpinRight && j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] !== 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
               canTSpinRight = false;
             }
           }
@@ -271,12 +245,18 @@ const Game = (props: GameProps) => {
       if(canRotateInPlace) {
         console.log("rotate in place");
         // p.coords = [...p.coordsPrev];
-        // p.xPrev = p.x;
+        p.xPrev = p.x;
         p.rotationPrev = p.rotation;
+
+        if(p.shapeEnum === TetronimoShape.T) {
+          tSpun.current = true;
+        }
       }
       else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
         p.x = p.xPrev;
-        p.yPrev = p.y - 1;
+
+        // cache rotation, because rotateLeft/Right() will modify prevRotation
+        let prevRotation = p.rotationPrev;
         console.log("can't rotate nor t-spin");
         // p.coords = [...p.coordsPrev];
         if(p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
@@ -285,10 +265,10 @@ const Game = (props: GameProps) => {
         else if(p.rotation < p.rotationPrev || (p.rotation === 4 && p.rotationPrev === 1)) {
           p.rotateRight();
         }
-        // p.rotation = p.rotationPrev;
-        perm = p.permutation;
-        w = p.width;
-        h = p.height;
+        tSpun.current = false;
+        p.rotationPrev = prevRotation;
+        p.lastMoveTrigger = MovementTrigger.GRAVITY;
+        failedRotation = true;
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
         console.log("can t-spin");
@@ -306,14 +286,20 @@ const Game = (props: GameProps) => {
         p.y += 1;
         p.yPrev = p.y - 1;
         p.rotationPrev = p.rotation;
+
+        if(p.shapeEnum === TetronimoShape.T) {
+          tSpun.current = true;
+        }
       }
 
-      // canMoveLateral = false;
-      // p.yPrev = p.y - 1;
+      // make sure local values are updated
+      perm = p.permutation;
+      w = p.width;
+      h = p.height;
     }
 
-    // let canMoveLateral = true;
-    if (p.x != p.xPrev) {
+    if (p.x !== p.xPrev) {
+      tSpun.current = false;
       let coords = p.coords;
       let dx = p.x - p.xPrev;
       if(coords){
@@ -323,16 +309,17 @@ const Game = (props: GameProps) => {
           let cellValue = rows[y][x + dx];
           if(cellValue !== 0 && cellValue < 10){
             p.x = p.xPrev;
-            // console.log("can't move laterally");
           }   
         }
       }
-      // canMoveLateral = false;
       if(p.x !== p.xPrev){
         p.yPrev = p.y - 1;
       }
     }
 
+    if(!failedRotation && rotationAttempted) {
+      props.actionCallback({type: ActionType.ROTATE});
+    }
 
     let j_i = p.x;
     let i_i = p.y - 1;
@@ -349,14 +336,14 @@ const Game = (props: GameProps) => {
       for(let i=i_i; i > (i_i - h); i--) {
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] !== 0 && board.current[i][j] !== perm[i_s][j_s]) {
+          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && rows[i][j] !== 0 && rows[i][j] !== perm[i_s][j_s]) {
             canMoveDown = false;
             p.y = p.yPrev;
           }
-          if(i >= board.current.length-1) {
+          if(i >= rows.length-1) {
             canMoveDownTwice = false;
           }
-          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && board.current[i+1][j] !== 0 && board.current[i+1][j] !== perm[i_s][j_s]) {
+          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] !== 0 && rows[i+1][j] !== perm[i_s][j_s]) {            
             canMoveDownTwice = false;
           }
           j_s++;
@@ -366,7 +353,13 @@ const Game = (props: GameProps) => {
     }
 
     if(canMoveDown) { 
-
+      if(canMoveDownTwice){
+        tSpun.current = false;
+      } else {
+        if(failedRotation) {
+          p.yPrev = p.y;
+        }
+      }
       // erase old location
       for(let i=0; i<p.coords.length; i++){
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
@@ -396,7 +389,8 @@ const Game = (props: GameProps) => {
       p.coords = newCoords;
 
       // this is run before the render, so we need to know if the piece will thud on next paint
-      if((p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) && !canMoveDownTwice ) {
+      if(
+        (p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) && !canMoveDownTwice && !failedRotation) {
         console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
@@ -414,18 +408,8 @@ const Game = (props: GameProps) => {
 
     if(piece) {
 
-
       // set piece in place
-
       if((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
-        // for(let i=0;  i<board.current.length; i++) {
-        //   for(let j=0;  j<board.current[0].length; j++) {
-        //     if(board.current[i][j] > 10) {
-        //       board.current[i][j] = board.current[i][j] / 11; 
-        //     }
-        //   }
-        // }
-
         
         let coords = piece.coords;
         let colHeights = columnHeights.current;
@@ -448,6 +432,46 @@ const Game = (props: GameProps) => {
           }
         }
         
+        // Verify and complete T-SPIN
+        if(piece.shapeEnum === TetronimoShape.T && tSpun.current === true) {
+            let iMin = (piece.y - piece.height) + ((piece.rotation === Direction.S) ? (-1) : 0);
+            let iMax = (piece.y - 1) + ((piece.rotation === Direction.N) ? 1 : 0);
+            let jMin = (piece.x) + ((piece.rotation === Direction.E) ? (-1) : 0);
+            let jMax = (piece.x + piece.width - 1) + ((piece.rotation === Direction.W) ? 1 : 0);
+
+            let cornerCount = 0;
+            if(iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] !== 0 && rows[iMin][jMin] < 10)){
+              cornerCount++;
+            }
+            if(iMin >= 0 && jMax < rows[0].length && (rows[iMin][jMax] !== 0 && rows[iMin][jMax] < 10)){
+              cornerCount++;
+            }
+            if(iMax < rows.length && jMin >= 0 && (rows[iMax][jMin] !== 0 && rows[iMax][jMin] < 10)){
+              cornerCount++;
+            }
+            if(iMax < rows.length && jMax < rows[0].length && (rows[iMax][jMax] !== 0 && rows[iMax][jMax] < 10)){
+              cornerCount++;
+            }
+
+            // still a t-spin if at bottom of board and have only one corner
+            if(cornerCount > 0) {
+              if(iMax >= rows.length) {
+                cornerCount++;
+              }
+            }
+
+            console.log("CornerCount:", cornerCount);
+
+            if(cornerCount === 2) {
+              isTSpin.current = false;
+              isTSpinMini.current = true;
+            }
+            else if (cornerCount > 2){
+              isTSpin.current = true;
+              isTSpinMini.current = false;
+            }
+        }
+
         //check for gameover//
         let numBlocksOffscreen = 0;
         for(let i=rows.length - 20; i>=0; i--) {
@@ -479,9 +503,10 @@ const Game = (props: GameProps) => {
         piece.yPrev = piece.y;
         piece.y = Math.min(piece.y + 1, piece.yMax); 
 
-        // if(piece.y !== piece.yPrev) {
+        if(piece.y !== piece.yPrev) {
+
           piece.lastMoveTrigger = MovementTrigger.GRAVITY;
-        // }
+        }
         
         // console.log({pieceY: piece.y});
         piece.lastTick = tick.value;
@@ -490,17 +515,11 @@ const Game = (props: GameProps) => {
     }
     else  
     {
-      // Method 1: clear empty rows
-      // const newRows = rows.filter((row) => {
-      //   if (row.includes(0)) {
-      //     return true;
-      //   }
-      //   return false;
-      // });
-
       let numCleared = 0;
 
+      // CLEAR COMPLETE LINES
       // Method 2: find full rows and recycle them
+
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
         let row = rows[i];
@@ -515,79 +534,140 @@ const Game = (props: GameProps) => {
       }
 
       if(numCleared > 0) {
-        let colHeights = columnHeights.current || [];
-        for(let i=0; i<colHeights.length; i++){
-          colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
+
+        clearedRows.current = [...clearedRowIndexesDesc];
+
+        for(let i=0; i<clearedRowIndexesDesc.length; i++) {
+          if(!clearEffectData.current){
+            clearEffectData.current = []
+          }
+          if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
+            clearEffectData.current[clearEffectData.current.length - 1].top = `${(clearedRowIndexesDesc[i] - 4)}rem`;
+          }
+          else {
+            clearEffectData.current.push(
+              {
+                top: `${(clearedRowIndexesDesc[i] - 4)}rem`,
+                bottom: `${(24 - (clearedRowIndexesDesc[i] + 1))}rem`,
+                left: `${-1}rem`,
+                right: `${-1}rem`,
+                id: (Math.round(performance.now()*1000).toString() + '.' + i.toString()),
+              }
+            );
+          }
         }
+      
+        // Dear Future Self...
+        // clearedRowIndexesDesc needs to (and should already) be sorted descending
+        // no need to sort this array here, but remember that is required for this splice 
+        // loop to work properly
+
+        // This should be a memory optimized operation
+        setTimeout(()=>{
+          let emptyRowCache: number[][] | null = [];
+          if(emptyRowCache !== null) {
+            for(let j=0; j<numCleared; j++) {
+              emptyRowCache.push(
+                rows.splice(clearedRowIndexesDesc[j],1)[0]
+              );
+            }
+            for(let j=0; j<numCleared; j++) {
+              rows.unshift(emptyRowCache.pop() as number[]);
+            }
+
+            emptyRowCache = null;
+
+            let colHeights = columnHeights.current || [];
+            for(let i=0; i<colHeights.length; i++){
+              colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
+              emptyRowCache = null;
+            }
+          }
+        }, 200);
       }
       
-      // Dear Future Self...
-      // clearedRowIndexesDesc needs to (and should already) be sorted descending
-      // no need to sort this array here, but remember that is required for this splice 
-      // loop to work properly
 
-      // This should be a memory optimized operation
-      let emptyRowCache: number[][] | null = [];
-      if(emptyRowCache !== null) {
-        for(let j=0; j<numCleared; j++) {
-          emptyRowCache.push(
-            rows.splice(clearedRowIndexesDesc[j],1)[0]
-          );
-        }
-        for(let j=0; j<numCleared; j++) {
-          rows.unshift(emptyRowCache.pop() as number[]);
-        }
-        emptyRowCache = null;
-      }
-
-      
-      
       // Check for and clear full rows 
-      // let nNewRows = newRows.length;
-
-      //let numCleared = nRows - nNewRows;
-
       let points: number = 0;
-      if(stats.current && numCleared > 0) {
-        stats.current.lines += numCleared;
-        let level: number = Math.floor(stats.current.lines / 10) + 1;
-        if(stats.current.level !== level){
-          stats.current.level = level;
-          props.actionCallback({type: ActionType.LEVEL_UP});  
+      // console.log("updateBoard");
+
+      if(numCleared > 0 || isTSpin.current || isTSpinMini.current) {
+
+        if(stats.current) {
+          // console.log("updatePoints");
+          stats.current.lines += numCleared;
+          let level: number = Math.floor(stats.current.lines / 10) + 1;
+          if(stats.current.level !== level){
+            stats.current.level = level;
+            props.actionCallback({type: ActionType.LEVEL_UP});  
+          }
+    
+          if(isTSpinMini.current) {
+            points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
+          }
+          else if(isTSpin.current) {
+            points += (400 + (numCleared * 400)) * level; 
+          }
+          else {
+            points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
+          }
+
+          stats.current.score += points;
+
+          //TODO: implement all clear, combo, and back-to-back bonuses
         }
-        points = ((((numCleared - 1) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * Math.ceil((stats.current.lines || 1)/10));
-        stats.current.score += points;
-      }
 
-      // for (let i = 0; i < numCleared; i++) {
-      //   newRows.unshift([...emptyRow]);
-      // }
-
-      // // updateRef
-      // for (let i = 0; i < nRows; i++) {
-      //   board.current[i] = newRows[i];
-      // }
-
-      if(numCleared > 0) {
         let actionEnum = numCleared;
+        let subtext: string | undefined = undefined;
         switch(numCleared) {
-          case 1:
-            action.current = "Line Clear!";
+          case 0:
+            actionEnum = isTSpin.current ? ActionType.T_SPIN : ActionType.T_SPIN_MINI;
+            action.current = null;
             break;
-          case 2:
-            action.current = "Double Clear!";
+          case ActionType.SINGLE:
+            action.current = "Single!";
+            if(isTSpin.current) {
+              actionEnum = ActionType.T_SPIN_SINGLE;
+            }
+            else if(isTSpinMini.current) {
+              actionEnum = ActionType.T_SPIN_MINI_SINGLE;
+            }
+            break;
+          case ActionType.DOUBLE:
+            action.current = "Double!";
+            if(isTSpin.current) {
+              actionEnum = ActionType.T_SPIN_DOUBLE;
+            }
+            else if(isTSpinMini.current) {
+              actionEnum = ActionType.T_SPIN_MINI_DOUBLE;
+            }
           break;
-          case 3:
-            action.current = "Triple Clear!";
+          case ActionType.TRIPLE:
+            if(isTSpin.current) {
+              actionEnum = ActionType.T_SPIN_TRIPLE;
+            }
+            action.current = "Triple!";
             break;
-          case 4:
+          case ActionType.TETRIS:
             action.current = "T E T R I S !";
             break;
         }
 
-        props.actionCallback({type: actionEnum, text: action.current, points: points} || null);
+        if(isTSpin.current) {
+          subtext = "T-Spin";
+          isTSpin.current = false;
+        }
+        else if(isTSpinMini.current) {
+          subtext = "T-Spin Mini";
+          isTSpinMini.current = false;
+        }
 
+        props.actionCallback({type: actionEnum, text: action.current, subtext: subtext, points: points} || null);
 
+        if(clearEffectData.current && clearEffectData.current.length > 0) {
+          console.log(clearEffectData.current.toString())
+          pauseGame(true, true);
+        }
       }
     }
   };
@@ -595,8 +675,7 @@ const Game = (props: GameProps) => {
   const getNextPiece = (): PieceQueItem => {
 
     // replenish que
-    if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 5) {
-      // pieceQueIndexes.current?.push(...evenDistributionRandomIndexes(PIECE_INDEXES_QUE_LENGTH, TETRONIMOS.length-1));
+    if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
       pieceQueIndexes.current?.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
@@ -605,7 +684,6 @@ const Game = (props: GameProps) => {
       shapeEnum: index,
       id: Math.round(window.performance.now()*1000).toString()
     }
-    // return new ActivePiece(shape, (Math.round(Math.random() * 3) + 1))
   }
 
   const getPieceFromQue = () => {
@@ -613,7 +691,7 @@ const Game = (props: GameProps) => {
     pieceQue.current.push(getNextPiece());    
     // console.log(pieceQue.current);
     let pieceItem = pieceQue.current.shift();
-    let xStart: number = Math.floor((10 - TETRONIMOS[pieceItem?.shapeEnum || 0][0].length)/2);
+    let xStart: number = Math.floor((10 - TETRONIMOES[pieceItem?.shapeEnum || 0][0].length)/2);
     let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart);
     let maxColumnHeightUnderNewPiece = 0;
     if(columnHeights.current) {
@@ -659,7 +737,7 @@ const Game = (props: GameProps) => {
       }
     }
 
-    const p: ActivePiece | null = activePiece.current || null;
+    let p: ActivePiece | null = activePiece.current || null;
 
     //
     // The above "Escape" key handler will be the only input accepted when
@@ -676,12 +754,42 @@ const Game = (props: GameProps) => {
     
     switch(e.key) {
       
+      case "/":
+        if(holdQue.current) {
+          if(holdQue.current.length > 0 && !p.wasInHold) {
+            let heldPieceItem = holdQue.current.pop() as PieceQueItem;
+
+            // erase active piece from board
+            for(let i=0; i<p.coords.length;i++) {
+              let y = p.coords[i][0];
+              let x = p.coords[i][1];
+              board.current[y][x] = 0;
+            }
+
+            if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
+              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
+              activePiece.current = new ActivePiece(heldPieceItem, Direction.N );  
+              activePiece.current.wasInHold = true; 
+            }
+            else {
+              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
+              activePiece.current = getPieceFromQue();
+            }
+
+            p = activePiece.current;
+            props.actionCallback({type: ActionType.HOLD_PIECE})
+          }
+          else if(p.wasInHold) {
+            props.actionCallback({type: ActionType.MOVE_NOT_ALLOWED})
+          }
+        }
+        break;
       case "ArrowRight":
         if((p.x + p.width) < board.current[0].length) {
           
           // sfx_movePiece();
 
-          props.actionCallback({type: ActionType.MOVE, text: e.key});
+          props.actionCallback({type: ActionType.MOVE, data: e.key});
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
           p.x += 1; 
@@ -691,7 +799,7 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowLeft":
         if(p.x > 0) {
-          props.actionCallback({type: ActionType.MOVE, text: e.key});
+          props.actionCallback({type: ActionType.MOVE, data: e.key});
           // sfx_movePiece();
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
@@ -703,7 +811,7 @@ const Game = (props: GameProps) => {
       case "ArrowDown":
         if(p.yPrev !== p.y && p.y < p.yMax ) {
           p.lastTick = tick.value;
-          props.actionCallback({type: ActionType.MOVE_DOWN, text: e.key});
+          props.actionCallback({type: ActionType.MOVE_DOWN, data: e.key});
           // sfx_movePiece();
           p.yPrev = p.y;
           
@@ -778,14 +886,13 @@ const Game = (props: GameProps) => {
         };
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
-        props.actionCallback({type: ActionType.DROP, text: e.key});
-
-        // setTimeout(()=>{
-        //   dropEffectData.current = null;
-        // }, 350);
+        props.actionCallback({type: ActionType.DROP, data: e.key});
 
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
+        if(minDistance > 0) {
+          tSpun.current = false;
+        }
         p.y += minDistance;
         p.yPrev = p.y;
 
@@ -799,29 +906,44 @@ const Game = (props: GameProps) => {
       case "Alt":
       case "Control":
         p.rotateLeft();
-        props.actionCallback({type: ActionType.ROTATE, text: e.key});
+        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         updatePosition();
         break;
 
       case "Shift":
         p.rotateRight();
-        props.actionCallback({type: ActionType.ROTATE, text: e.key});
+        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         updatePosition();
         break;
     }
   }
 
   const initRefs = () => {
-    if(!pieceQue.current){
-      pieceQue.current = [];
+
+    
+    pieceQueIndexes.current = [];
+    pieceQueIndexes.current?.push(
+      ...randomBagDistribution(7,2,3)
+    );
+    holdQue.current = [{id:"-1",shapeEnum: TetronimoShape.NULL}];
+
+    let indices = pieceQueIndexes.current;
+    pieceQue.current = [];
+    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
+      pieceQue.current.push({
+        shapeEnum: indices[i],
+        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
+      });
     }
-    if(!pieceQueIndexes.current){
-      pieceQueIndexes.current = [];
-    }
-    if(!columnHeights.current) {
+
+    if(columnHeights.current === null) {
       columnHeights.current = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     }
-    if(!board.current) {
+    else {
+      columnHeights.current.fill(0);
+    }
+    
+    if(board.current === null) { 
       board.current = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -849,18 +971,36 @@ const Game = (props: GameProps) => {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       ];
     }
-
-    if(!action.current) {
-      action.current = "Action";
+    else {
+      for(let i=0;  i<board.current.length; i++) {
+        for(let j=0;  j<board.current[0].length; j++) {
+          board.current[i][j] = 0; 
+        }
+      }
     }
-
-    if(!stats.current) {
+    
+    action.current = "Action";
+    
+    if(stats.current === null) {
       stats.current = {
         level: 1,
         lines: 0,
         score: 0,
       }
     }
+    else {
+      stats.current.level = 1;
+      stats.current.lines = 0;
+      stats.current.score = 0;
+    }
+
+    isTSpin.current = false;
+    isTSpinMini.current = false;
+    upArrowPressed.current = false;
+    downArrowPressed.current = false;
+    tSpun.current = false;
+    gameoverRef.current = false;
+    paused.current = false;
   }
 
   const gameOver = () => {
@@ -871,13 +1011,17 @@ const Game = (props: GameProps) => {
     props.actionCallback({type: ActionType.GAME_OVER});
   }
 
-  const pauseGame = () => {
+  const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
     if(ticker.current){
       clearInterval(ticker.current);
       ticker.current = null;
     }
-    paused.current = true;
-    // forceUpdate(1);
+    if(!discrete) {
+      paused.current = true;
+    }
+    if(forceRender){
+      forceUpdate(1);
+    }
   }
   const resumeGame = () => {
     if(!ticker.current){
@@ -896,25 +1040,10 @@ const Game = (props: GameProps) => {
     setGameover(false);
     gameoverRef.current = false;
     resumeGame();
-    
-    pieceQueIndexes.current?.push(
-      ...randomBagDistribution(7,2,3)
-      );
-
-      // console.log(pieceQueIndexes.current);
-
-    let indices = pieceQueIndexes.current || [];
-    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
-      pieceQue.current?.push({
-        shapeEnum: indices[i],
-        // piece: JSON.parse(TETRONIMOS[indices[i]]),
-        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
-      });
-    }
 
     setTimeout(()=> {
-      // activePiece.current = getNextPiece();
       activePiece.current = getPieceFromQue();
+      tSpun.current = false;
     },100);
   
     document.addEventListener("keydown", keydownHandler);
@@ -928,6 +1057,13 @@ const Game = (props: GameProps) => {
       board.current = null;
       action.current = null;
       columnHeights.current = null;
+      isTSpin.current = null;
+      isTSpinMini.current = null;
+      upArrowPressed.current = false;
+      downArrowPressed.current = false;
+      tSpun.current = false;
+      gameoverRef.current = false;
+      paused.current = false;
 
       if(ticker.current) {
         clearInterval(ticker.current);
@@ -963,9 +1099,9 @@ const Game = (props: GameProps) => {
 
     const rows = board.current;
     
-    return rows.map((row) => {
+    return rows.map((row, index) => {
       return (
-        <div className="tw-flex tw-flex-row tw-gap-0 tw-box-border">
+        <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
           
           { 
             row.map((cellValue) => {
@@ -990,40 +1126,29 @@ const Game = (props: GameProps) => {
   return (
     <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-center tw-pb-6">
-        <button className="tetris-font tw-border-slate-200 tw-w-32 tw-m-6 tw-p-2 tw-text-md" 
+      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-start tw-pb-4">
+        <button className="tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md" 
           style={{paddingTop:"0.7rem"}}
           onClick={()=>{
-          tick.value = 0;
-          stats.current = {
-            score: 0,
-            lines: 0,
-            level: 0,
-          };
+          
+          initRefs();
           if(activePiece.current) {
             // activePiece.current = getNextPiece();
             activePiece.current = getPieceFromQue();
           }
-          if(!board.current) { return; }
-          for(let i=0;  i<board.current.length; i++) {
-            for(let j=0;  j<board.current[0].length; j++) {
-              board.current[i][j] = 0; 
-            }
-          }
+          
           setGameover(false);
-          gameoverRef.current = false;
           resumeGame();
         }} disabled={
           paused.current === false && gameover === false
-          }>Restart</button>
+          }>{gameoverRef.current === false ? "Restart" : "New Game"}</button>
         <button 
           className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
           style={{paddingTop:"0.7rem"}}
-          disabled={gameover} 
+          disabled={gameoverRef.current} 
           onClick={()=>{
           if(!paused.current) {
-            pauseGame();
-            forceUpdate(1);
+            pauseGame(false, true);
           }
           else {
             resumeGame();
@@ -1032,65 +1157,122 @@ const Game = (props: GameProps) => {
 
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
-      <div style={{border: "2px inset rgba(0,0,0,0.5)"}}
-      className="tw-flex tw-flex-row tw-gap-2  tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-4 tw-pb-4">
-        <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div>
-        <div>
-          <h5 className="bg-green-100 game-clock tetris-font tw-text-lg">{Math.floor(Math.floor(tick.value / 20) / 60)}'{(Math.floor(tick.value / 25) % 60 + 100).toString().substring(1,3)}"</h5>
-          <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"0.6px solid rgba(200,200,200,1)"}}>
-            
-            { dropEffectData.current && 
+      <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
+        <div
+        className="tw-flex tw-flex-row tw-gap-0 tw-items-start tw-justify-center tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-0 tw-pb-0"
+        style={{paddingTop: "2rem", marginLeft: "-1rem", marginRight:"-1rem"}}>
+          {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
+          
+          <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
+          pieces={
+            holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
+          }/>
+          <div>
+            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{tick.value}</h5>
+            <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"1px solid rgba(200,200,200,1)"}}>
+              
+              { dropEffectData.current && 
 
-              // @ts-expect-error
-              <motion.div key={dropEffectData.current.id} className="drop-effect" 
-                onAnimationComplete={
-                    ()=>{dropEffectData.current = null;
+                // @ts-expect-error
+                <motion.div key={dropEffectData.current.id} className="drop-effect" 
+                  onAnimationComplete={
+                      ()=>{dropEffectData.current = null;
+                    }}
+                  variants={{
+                    show: {
+                      opacity: 1
+                    }, 
+                    hidden: {
+                      opacity: 0
+                    }}}
+                  initial="show"
+                  animate="hidden"
+                  transition={{
+                    duration: 0.25, 
+                    ease:"easeOut"
                   }}
-                variants={{
-                  show: {
-                    opacity: 1
-                  }, 
-                  hidden: {
-                    opacity: 0
-                  }}}
-                initial="show"
-                animate="hidden"
-                transition={{
-                  duration: 0.25, 
-                  ease:"easeOut"
-                }}
-                // transitionEnd = {{
-                //   display: 'none'
-                // }}
-                
-                style={{
-                  top: dropEffectData.current.top,
-                  left: dropEffectData.current.left,
-                  right: dropEffectData.current.right,
-                  bottom: dropEffectData.current.bottom
-                  }}>
+                  // transitionEnd = {{
+                  //   display: 'none'
+                  // }}
+                  
+                  style={{
+                    top: dropEffectData.current.top,
+                    left: dropEffectData.current.left,
+                    right: dropEffectData.current.right,
+                    bottom: dropEffectData.current.bottom
+                    }}>
 
-              </motion.div>
-            }
-            <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
-              {renderBoard()}
-            </div>
-            { (gameover || paused.current) &&
-              <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
-                <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
+                </motion.div>
+              }
+              { clearEffectData.current &&
+                clearEffectData.current.map((effect: any)=>{
+                  return  (
+                // @ts-expect-error
+                  <motion.div key={effect.id} className="clear-effect" 
+                    onAnimationComplete={
+                      () => {
+                        // make sure sound effect is only played once
+                        // in the event that multiple effects are needed
+                        if(clearEffectData.current !== null) {
+                          clearEffectData.current = null;
+                          props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
+                        }
+                        clearedRows.current = null;
+                        resumeGame();
+                      }
+                    }
+                    // onUpdate={()=>{
+                    //   console.log("clear effect update");
+                    // }}
+                    variants={{
+                      show: {
+                        opacity: 1,
+                        transform: 'rotateX(0)'
+                      }, 
+                      hidden: {
+                        opacity: 0,
+                        transform: 'rotateX(90deg)'
+                      }}}
+                    initial="show"
+                    animate="hidden"
+                    transition={{
+                      duration: 0.4, 
+                      ease:"easeOut",
+                      delay: 0.1,
+                    }}
+                    // transitionEnd = {{
+                    //   display: 'none'
+                    // }}
+                    
+                    style={{
+                      top: effect.top,
+                      left: effect.left,
+                      right: effect.right,
+                      bottom: effect.bottom
+                      }}>
+
+                  </motion.div>
+                  );
+                })
+              }
+              
+              <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
+                {renderBoard()}
               </div>
-            }
+              { (gameover || paused.current) &&
+                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-70  tw-z-10 tw-top-0 tw-left-0">
+                  <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
+                </div>
+              }
+            </div>
           </div>
+          {pieceQue.current &&
+          <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
+          pieces={
+            pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
+          }/>
+        }
         </div>
-        {pieceQue.current &&
-        <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} 
-        pieces={
-          pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
-            // ? [{piece: activePiece?.current?.shape || TETRONIMOS[1], id: window.performance.now().toString()}, ...pieceQue?.current] 
-            // : [{piece: TETRONIMOS[1], id:"11"}]
-        
-        }/>
-      }
       </div>
       <StatsPanel fields={[
         {

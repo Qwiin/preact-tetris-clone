@@ -6,7 +6,7 @@ import { Ref } from 'preact';
 import {useSound} from 'use-sound';
 
 import audio_t99_music from '@sounds/t99-music.mp3'
-import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac.mp3';
+import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 
 interface SoundBoardProps {
@@ -55,8 +55,9 @@ export function SoundBoard(props:SoundBoardProps) {
       tetris: [7000,950],
       tSpin: [8000,950],
       holdPiece: [9000,400],
-      moveNotAllowed: [9000,400],
-      allClear: [10000,950],
+      moveNotAllowed: [10000,400],
+      allClear: [11000,950],
+      lineClearDrop: [12000,600],
     },
     volume: (props.volume || 50) / 150,
     playbackRate: 1.0
@@ -87,6 +88,23 @@ export function SoundBoard(props:SoundBoardProps) {
       case ActionType.ROTATE:
         sfx_tetris({id:"rotatePiece"});
         break;
+      case ActionType.T_SPIN:
+        sfx_tetris({id:"tSpin"});
+        break;
+      case ActionType.T_SPIN_SINGLE:
+      case ActionType.T_SPIN_MINI_SINGLE:
+        sfx_tetris({id:"tSpin"});
+        sfx_tetris({id:"single"});
+        break;
+      case ActionType.T_SPIN_DOUBLE:
+      case ActionType.T_SPIN_MINI_DOUBLE:
+        sfx_tetris({id:"tSpin"});
+        sfx_tetris({id:"double"});
+        break;
+      case ActionType.T_SPIN_TRIPLE:
+        sfx_tetris({id:"tSpin"});
+        sfx_tetris({id:"single"});
+        break;
       case ActionType.LEVEL_UP:
         sfx_tetris({id:"levelUp"});
         break;
@@ -102,8 +120,17 @@ export function SoundBoard(props:SoundBoardProps) {
       case ActionType.TETRIS:
         sfx_tetris({id:"tetris"});
         break;
+      case ActionType.LINE_CLEAR_DROP:
+        sfx_tetris({id:"lineClearDrop"});
+        break;
       case ActionType.SET_PIECE:
         sfx_tetris({id:"setPiece"});
+        break;
+      case ActionType.MOVE_NOT_ALLOWED:
+        sfx_tetris({id:"moveNotAllowed"});
+        break;
+      case ActionType.HOLD_PIECE:
+        sfx_tetris({id:"holdPiece"});
         break;
       case ActionType.GAME_OVER:
         sfx_gameOver();
@@ -113,22 +140,30 @@ export function SoundBoard(props:SoundBoardProps) {
 
   return (
     <>
-      <div className="tw-absolute tw-font-mono">
+      <div className="tw-absolute tw-font-mono game-sounds tw-rounded-lg tw-gap-2 tw-w-32 tw-h-16 tw-flex tw-flex-col tw-justify-center tw-items-center tw-box-border"
+        style={{border: "1px solid rgba(226,232,240,0.6)"}}>
         <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
-        <div className="tw-flex tw-flex-col tw-gap-2 tw-items-start tw-justify-start">
-          <div className="tw-flex tw-flex-row tw-gap-2 tw-items-center tw-justify-start">
-            <input id="EnableSounds" type="checkbox" onChange={()=>{
-              setSoundEnabled(!soundEnabled);
-            }} checked={soundEnabled} />
-            <label for="EnableSounds" className="tw-ml-2 tw-text-sm">SoundFX</label>
+          <div className="tw-flex tw-flex-row tw-justify-between tw-w-24">
+            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>SoundFX</label>
+            <div class="toggle-switch">
+              <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={()=>{
+                setSoundEnabled(!soundEnabled);
+              }} checked={soundEnabled} />
+              <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableSoundFX"></label>
+            </div>
           </div>
-          <div className="tw-flex tw-flex-row tw-gap-2 tw-items-center tw-justify-start">
-            <input id="EnableSounds" type="checkbox" onChange={()=>{
-              setMusicEnabled(!musicEnabled);
-            }} checked={musicEnabled} />
-            <label for="EnableSounds" className="tw-ml-2 tw-text-sm">Music</label>
+          <div className="tw-flex tw-gap-2 tw-justify-between tw-w-24">
+            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>Music</label>
+            <div class="toggle-switch">
+              <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
+              onChange={()=>{
+                  setMusicEnabled(!musicEnabled);
+                }} checked={musicEnabled} 
+              />
+              <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableMusic"></label>
+            </div>
           </div>
-        </div>
+        {/* </div> */}
       </div>
     </>
   );
