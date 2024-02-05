@@ -55,12 +55,22 @@ body {
 
 .stats-board {
   font-family: 'SF Digital Heavy';
-  font-size: 48px;
+  font-size: 3rem;
   padding: 0;
 }
 
 .stats-field {
   line-height: 40px;
+}
+.stats-field-name {
+  color:aliceblue;
+  text-shadow: rgba(0,128,196,0.8) 0rem 0.1rem 0.7rem;
+  letter-spacing: 0.15em;
+  opacity: 0.85;
+}
+.stats-field-value-bg {
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .digital {
@@ -124,12 +134,16 @@ body {
 
 .game-control-map {
   background-color: rgb(26, 26, 26, 0.8);
-  border: 1px rgba(148, 163, 184, 0.8) solid;
+  border: 1px rgba(148, 163, 184, 0.4) solid;
+  padding-top: 0.1rem;
+  padding-bottom: 0.5rem;
+  /* filter: drop-shadow(0 0 0.25rem rgba(104, 104, 104, 0.6)); */
 }
 
 .game-control-button {
-  border: 1px white solid;
+  border: 1px rgba(255,255,255,0.6) solid;
   background-color: rgb(26, 26, 26, 1);
+  color: rgba(255,255,255,0.8)
 }
 
 .menu-button.disabled {

@@ -172,7 +172,9 @@ const Game = (props: GameProps) => {
   };
 
   const updatePosition = () => {
-    if(!board.current || !activePiece.current) {return}
+    if(!board.current || !activePiece.current || clearEffectData.current) {
+      return
+    }
 
     const rows = board.current;
     const p: ActivePiece = activePiece.current;
@@ -570,7 +572,7 @@ const Game = (props: GameProps) => {
           }
           emptyRowCache = null;
         }
-      }, 400);
+      }, 200);
       
 
       // Check for and clear full rows 
@@ -891,9 +893,21 @@ const Game = (props: GameProps) => {
 
   const initRefs = () => {
 
-    pieceQue.current = [];
+    
     pieceQueIndexes.current = [];
+    pieceQueIndexes.current?.push(
+      ...randomBagDistribution(7,2,3)
+    );
     holdQue.current = [{id:"-1",shapeEnum: TetronimoShape.NULL}];
+
+    let indices = pieceQueIndexes.current;
+    pieceQue.current = [];
+    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
+      pieceQue.current.push({
+        shapeEnum: indices[i],
+        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
+      });
+    }
 
     if(columnHeights.current === null) {
       columnHeights.current = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -999,20 +1013,6 @@ const Game = (props: GameProps) => {
     setGameover(false);
     gameoverRef.current = false;
     resumeGame();
-    
-    pieceQueIndexes.current?.push(
-      ...randomBagDistribution(7,2,3)
-      );
-
-      // console.log(pieceQueIndexes.current);
-
-    let indices = pieceQueIndexes.current || [];
-    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
-      pieceQue.current?.push({
-        shapeEnum: indices[i],
-        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
-      });
-    }
 
     setTimeout(()=> {
       activePiece.current = getPieceFromQue();
