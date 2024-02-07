@@ -1,11 +1,15 @@
 export interface GameAction {
   type: ActionType;
+  classNames?: string[];
   text?: string;
+  textSequence?: string[];
+  textSequenceJoin?: string;
   subtext?: string;
   points?: number;
   id?: string;
   transitioning?: boolean;
 }
+
 
 export const ToastTimeout: number = 1000;
 
@@ -32,7 +36,8 @@ export enum ActionType {
   GAME_OVER,
   PAUSE,
   HOLD_PIECE,
-  MOVE_NOT_ALLOWED
+  MOVE_NOT_ALLOWED,
+  BACK_TO_BACK,
 }
 
 export const G: number = 3;  // cells per frame
