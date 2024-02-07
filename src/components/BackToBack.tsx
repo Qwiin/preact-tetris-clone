@@ -54,51 +54,62 @@ export default function BackToBack() {
           const animation:AnimationPlaybackControls = animate(backTobackSequence);
           animation.then(()=>{
             animate(
-              ".b2b-grid", 
-              { 
-                gridTemplateColumns: [
-                  "0.375rem 1rem 0.375rem",
-                  "2rem 1rem 2rem"
-                ],
-              }, 
-              { 
-                type: "spring",
-                damping: 10,
-                stiffness: 50, 
-                duration: 0.5,
-                
-              }
-            );
-            animate(
               ".b2b-grid div",
               {
                 scale: [0.5,1.0], 
                 opacity: [1.0,1.0]
               },
               {
-                duration: 0.5
+                duration: 0.3
               }
-            ).then(()=>{
-              animate(
-                ".b2b-grid", 
-                { 
-                  scale: 0
-                }, 
-                { 
-                  ease: "easeIn", 
-                  delay: 0.5,
-                  duration: 0.2,
-                }
-              );
+            );
+            animate(
+              ".b2b-grid", 
+              { 
+                gridTemplateColumns: [
+                  "0.375rem 1.5rem 0.375rem",
+                  "2.2rem 1.5rem 2.275rem"
+                ],
+              }, 
+              { 
+                // type: "spring",
+                // damping: 10,
+                // stiffness: 50, 
+                duration: 0.3,
+                
+              }
+            )
+            .then(()=>{
+
+              // .then(()=>{
+              setTimeout(()=>{
+                document.querySelectorAll('.b2b-grid .hyphen').forEach(el => {
+                  el.classList.add("show");
+                });
+                document.querySelector('.b2b-grid')?.classList.add("flash");
+                
+                animate(
+                  ".b2b-grid", 
+                  { 
+                    scale: 0
+                  }, 
+                  { 
+                    ease: "easeIn", 
+                    delay: 1.0,
+                    duration: 0.2,
+                  }
+                );
+                
+              },0);              
             })
           });
         }
       }
     >
-      <div className="b2b-grid" key="abc">
-          <div className="c1" key="abc1">Back</div>
-          <div className="c2" key="abc2">to</div>
-          <div className="c3" key="abc3">Back</div>  
+      <div className="b2b-grid" key="abc" data-chars="Back-to-Back">
+          <div className="cell c1" key="abc1">Back<span className="hyphen">-</span></div>
+          <div className="cell c2" key="abc2">to</div>
+          <div className="cell c3" key="abc3"><span className="hyphen">-</span>Back</div>  
         </div>
     </div>
   );

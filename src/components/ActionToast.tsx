@@ -1,6 +1,7 @@
 import {GameAction } from "../TetrisConfig";
 import {motion} from "framer-motion";
 import BackToBack from "./BackToBack";
+import TSpin from "../TSpin";
 
 interface ActionToastProps {
   actions: GameAction[];
@@ -52,6 +53,8 @@ export function ActionToast(props: ActionToastProps) {
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
       <div className='tw-relative toast-action-origin'>
+      <BackToBack/>
+      {/* <TSpin type="mini"/> */}
         {(props.actions &&
         (props.actions || [{text: "Action", points: "1,000,000"}]).map((action: GameAction)=>{ return (
           <>
