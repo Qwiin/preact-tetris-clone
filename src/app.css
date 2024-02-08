@@ -1,3 +1,12 @@
+@import 'css/fonts.css';
+@import 'css/root.css';
+@import 'css/animations.css';
+@import 'css/back-to-back.css';
+@import 'css/t-spin.css';
+@import 'css/tool-tip.css';
+@import 'css/checkbox.css';
+
+
 body {
   min-width: 1000px;
   overflow-x: hidden;
@@ -18,37 +27,45 @@ body {
   }
 }
 
-@font-face {
-  font-family: "8DigitPin";   /*Can be any text*/
-  src: local("8DigitPinRegular-d9WRV"),
-    url("/src/font/8DigitPinRegular-d9WRV.ttf") format("truetype");
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
 }
 
-@font-face {
-  font-family: "TimerUlil";   /*Can be any text*/
-  src: local("CursedTimerUlil-Aznm"),
-    url("/src/font/CursedTimerUlil-Aznm.ttf") format("truetype");
-}
+/* .theme-09 {
+  color: rgb(32, 62, 106);
+  color: rgb(39, 17, 26);
+  color: rgb(202, 178, 235);
+  color: rgb(41, 97, 144);
+  color: rgb(61, 8, 64);
+  color: rgb(40, 12, 18);
+  color: rgb(31, 68, 113);
+  color: rgb(30, 17, 60);
+  color: rgb(29, 61, 105);
+  color: rgb(246, 188, 239);
+  background-image: linear-gradient( 
+    #BADBF5
+    #85BEED
+    #47ABFC
+    #A1ED85
+    #77FC47
+    #31F575
+    #F6BCEF
+    #F5BAEE
+    #FC47E7
+    #FCB547
+    #EDC485
+    #9631F5
+    );
+} */
 
-@font-face {
-  font-family: "SF Digital Medium";   /*Can be any text*/
-  src: local("SfDigitalReadoutMedium-q3rq"),
-    url("/src/font/SfDigitalReadoutMedium-q3rq.ttf") format("truetype");
-}
 
-@font-face {
-  font-family: "SF Digital Heavy";   /*Can be any text*/
-  src: local("SfDigitalReadoutHeavy-AwVg"),
-    url("/src/font/SfDigitalReadoutHeavy-AwVg.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Absolute Empire";   /*Can be any text*/
-  src: local("AAbsoluteEmpire-EaXpg"),
-    url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
-}
+
 
 .que-item {
-  transform: scale(60%);
+  transform: var(--piece-que-item-scale);
 }
 
 .game-clock {
@@ -85,12 +102,7 @@ body {
   letter-spacing: 0.15rem;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+
 
 .logo {
   height: 6em;
@@ -117,14 +129,14 @@ body {
 
 .drop-effect {
   position: absolute;
-  background-image: linear-gradient(rgba(255,255,255,0),rgba(255,255,255,0.6),rgba(255,255,255,0.8), rgba(255,255,255,0.1) 95%);
-  z-index: 200;
+  background-image: var(--drop-effect-gradient);
+  z-index: var(--effect-z-index);
 }
 .clear-effect {
   position: absolute;
   /* background-image: linear-gradient(90deg, rgba(255,255,255,0),rgba(255,255,255,0.75),rgba(255,255,255,1),rgba(255,255,255,0.75),rgba(255,255,255,0)); */
-  background-image: radial-gradient(ellipse at center, rgba(255,255,255,1),rgba(255,255,255,0.75),rgba(255,255,255,0));
-  z-index: 300;
+  background-image: var(--clear-effect-gradient);
+  z-index: var(--effect-z-index);
 }
 
 .game-sounds {
@@ -150,28 +162,17 @@ body {
   font-weight: 300;
   font-size: 2.5rem;
   color:aliceblue;
-  text-shadow: rgba(0,128,196,0.9) 0rem 0.2rem 0.7rem;
+  /* text-shadow: rgba(0,128,196,0.9) 0rem 0.2rem 0.7rem; */
+  animation: glow 1s ease-in-out infinite alternate;
+  -webkit-animation: glow 4s ease-in-out infinite alternate;
   opacity: 0.8;
 }
 
-.game-control-map {
-  margin-top: 6.20rem;
-  background-color: rgb(26, 26, 26, 0.8);
-  /* border: 1px rgba(148, 163, 184, 0.8) solid; */
-  border: 1px solid rgba(226,232,240,0.6);
-  padding-top: 0.1rem;
-  padding-bottom: 0.5rem;
+/*
 
-  /* filter: drop-shadow(0 0 0.25rem rgba(104, 104, 104, 0.6)); */
-}
+RESTART, PAUSE, RESUME etc..
 
-.game-control-button {
-  /* border: 1px rgba(255,255,255,0.6) solid; */
-  border: 1px rgba(148, 163, 184, 0.8) solid;
-  background-color: rgb(26, 26, 26, 1);
-  color: rgba(255,255,255,0.8)
-}
-
+*/
 .menu-button {
   color: aliceblue;
   text-shadow: rgba(0,128,196,0.9) 0rem 0.1rem 0.7rem;
@@ -182,51 +183,36 @@ body {
   color: rgba(240,248,255,0.5);
 }
 
-.tooltip-text {
-  /* height: 0;
-  width: 0; */
-  font-size: 12px;
-  visibility: hidden;
-  position: absolute;
-  z-index: 1;
-  width: 100px;
-  color: white;
-  background-color: rgb(26, 39, 51, 0.8);
-  border-radius: 0.25rem;
-  border: 1px rgba(26,26,26,0.8) solid;
-  padding: 2px;
-  cursor: pointer;
-  user-select: none;
+/*
+
+Keyboard Controls Map UI
+
+*/
+.game-control-map {
+  margin-top: 6.20rem;
+  background-color: rgb(26, 26, 26, 0.8);
+  /* border: 1px rgba(148, 163, 184, 0.8) solid; */
+  border: 1px solid rgba(226,232,240,0.6);
+  padding-top: 0.1rem;
+  padding-bottom: 0.5rem;
+
+  /* filter: drop-shadow(0 0 0.25rem rgba(104, 104, 104, 0.6)); */
+}
+.game-control-button {
+  /* border: 1px rgba(255,255,255,0.6) solid; */
+  border: 1px rgba(148, 163, 184, 0.8) solid;
+  background-color: rgb(26, 26, 26, 1);
+  color: rgba(255,255,255,0.8)
 }
 
-.hover-text:hover .tooltip-text {
-  visibility: visible;
-}
+/*
 
-.tooltip-text.top {
-  top: -32px;
-  left: -100%;
-}
+Where toast items are positioned from
 
-.tooltip-text.bottom {
-  top: 36px;
-  left: -100%;
-}
-
-.tooltip-text.left {
-  top: -8px;
-  right: 120%;
-}
-
-.tooltip-text.right {
-  top: -8px;
-  left: 120%;
-}
-
-.hover-text {
+*/
+.toast-action-origin {
   position: relative;
-  display: inline-block;
-  /* margin: 40px; */
-  text-align: center;
-  user-select: none;  
+  width: 22rem;
+  max-width: 22rem;
+  height: 3.5rem;
 }
