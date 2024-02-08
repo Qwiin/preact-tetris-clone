@@ -82,45 +82,41 @@ function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistribu
     }
   }
 
+  let numRetries: number = 0;
+
   for(let k=0; k<numDistributions; k++) {
     let _bag = [...bag];
 
     while(_bag.length > 0) {
 
-      let index = Math.round(Math.random() * (_bag.length-1));
-
-      let _continue = false;
+      let bagIndex = Math.round(Math.random() * (_bag.length-1));
+      let drawnValue = _bag[bagIndex];
+      
+      let _retry = false;
 
       if(dist.length > 1 
-        && dist[dist.length - 1] === index 
-        && dist[dist.length - 2] === index) 
+        && dist[dist.length - 1] === drawnValue 
+        && dist[dist.length - 2] === drawnValue) 
       {
-        _continue = true;
+        _retry = true;
       }
       else if(dist.length === 1 && prevDist && prevDist.length > 0) {
-        if(dist[0] === index && prevDist[prevDist.length - 1] === index) {
-          _continue = true;
+        if(dist[0] === drawnValue && prevDist[prevDist.length - 1] === drawnValue) {
+          _retry = true;
         }
       }
       else if(dist.length === 0 && prevDist && prevDist.length > 1) {
-        if(prevDist[prevDist.length - 1] === index && prevDist[prevDist.length - 2] === index) {
-          _continue = true;
+        if(prevDist[prevDist.length - 1] === drawnValue && prevDist[prevDist.length - 2] === drawnValue) {
+          _retry = true;
         }
       }
 
-      // infinite loop fix
-      if(_continue === true){
-        if(_bag.length === 2 && _bag[0] === _bag[1]) {
-          _bag[0] = Math.round(Math.random() * (bagSize-1));
-          _bag[1] = Math.round(Math.random() * (bagSize-1));
-        }
-        else if(_bag.length === 1) {
-          _bag[0] = Math.round(Math.random() * (bagSize-1));
-        }
+      if(_retry === true){
+        numRetries++;
         continue;
       }
       
-      dist.push(_bag.splice(index,1)[0]);
+      dist.push(_bag.splice(bagIndex,1)[0]);
     }
   }
 
