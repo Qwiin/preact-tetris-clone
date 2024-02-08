@@ -67,16 +67,17 @@ export function App() {
 
         {/* @ts-expect-error Preact Component */}
         <Game init={true} actionCallback={actionCallback}/>
-        <ActionToast actions={actionQue.current || []} toastComplete={(action: GameAction)=>{
-          if(!actionQue.current) {
+        <ActionToast actions={actionQue.current || []} toastComplete={(id?: string)=>{
+          if(!actionQue.current || !id) {
             return;
           }
           for(let i=0; i<actionQue.current.length; i++) {
-            if(actionQue.current[i].id === action.id) {
+            if(id === actionQue.current[i].id) {
               actionQue.current.splice(i,1);
               break;
             }
           }
+
 
         }}/>  
         <SoundBoard eventTargetRef={soundBoardDomRef} volume={50}/>

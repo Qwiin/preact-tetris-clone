@@ -29,7 +29,7 @@ interface TSpinProps {
             | TSType.T_SPIN_TRIPLE;
 
   id: string;
-  animationComplete: () => void;
+  animationComplete: (id: string) => void;
 }
 
 export default function TSpin(props: TSpinProps) {

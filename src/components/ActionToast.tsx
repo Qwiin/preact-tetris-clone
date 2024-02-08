@@ -5,7 +5,7 @@ import TSpin from "../TSpin";
 
 interface ActionToastProps {
   actions: GameAction[];
-  toastComplete: (action: any)=>void;
+  toastComplete: (id?: string)=>void;
 }
 
 const transitionEnd = {
@@ -65,7 +65,7 @@ export function ActionToast(props: ActionToastProps) {
             action.type === ActionType.T_SPIN_DOUBLE ||
             action.type === ActionType.T_SPIN_TRIPLE
             )  &&
-              <TSpin type={action.type} id={action.id || 'no_id'} animationComplete={()=>{ props.toastComplete(action); }}/>
+              <TSpin type={action.type} id={action.id || 'no_id'} animationComplete={(id)=>{ props.toastComplete(id); }}/>
           }
           
           { action.text &&
