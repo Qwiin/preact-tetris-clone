@@ -1,0 +1,78 @@
+@font-face {
+  font-family: "SfTheraminGothicShaded";   /*Can be any text*/
+  src: local("SfTheraminGothicShaded-5pVz"),
+    url("/src/font/SfTheraminGothicShaded-5pVz.ttf") format("truetype");
+}
+@font-face {
+  font-family: "SfTheraminGothicBold";   /*Can be any text*/
+  src: local("SfTheraminGothicBold-VpAy"),
+    url("/src/font/SfTheraminGothicBold-VpAy.ttf") format("truetype");
+}
+@font-face {
+  font-family: "SpitShine";   /*Can be any text*/
+  src: local("SpitShine-y80Y"),
+    url("/src/font/spit-shine-font/SpitShine-y80Y.ttf") format("opentype");
+}
+@font-face {
+  font-family: "Spacetron";   /*Can be any text*/
+  src: local("Spacetron-51nWZ"),
+    url("/src/font/spacetron-font/Spacetron-51nWZ.otf") format("opentype");
+}
+@font-face {
+  font-family: "SDMiniRobot";   /*Can be any text*/
+  src: local("Sdminirobotdemo-RpRpW"),
+    url("/src/font/sd-mini-robot-font/Sdminirobotdemo-RpRpW.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RoundedBlockFat";   /*Can be any text*/
+  src: local("FranxurterTotallyFat-X3G4Z"),
+    url("/src/font/franxurter-totally-font/FranxurterTotallyFat-X3G4Z.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RoundedBlockMedium";   /*Can be any text*/
+  src: local("FranxurterTotallyMedium-gxwjp"),
+    url("/src/font/franxurter-totally-font/FranxurterTotallyMedium-gxwjp.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Agames";   /*Can be any text*/
+  src: local("Agames-z8JPl"),
+    url("/src/font/agoxes-game-font/Agames-z8JPl.otf") format("opentype");
+}
+@font-face {
+  font-family: "Pipedream";   /*Can be any text*/
+  src: local("PipeDream-1Zwg"),
+    url("/src/font/pipe-dream-font/PipeDream-1Zwg.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Brick3DRegular";   /*Can be any text*/
+  src: local("Brick3DRegular-nRJR4"),
+    url("/src/font/brick-3d-font/Brick3DRegular-nRJR4.ttf") format("truetype");
+}
+@font-face {
+  font-family: "8DigitPin";   /*Can be any text*/
+  src: local("8DigitPinRegular-d9WRV"),
+    url("/src/font/8DigitPinRegular-d9WRV.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "TimerUlil";   /*Can be any text*/
+  src: local("CursedTimerUlil-Aznm"),
+    url("/src/font/CursedTimerUlil-Aznm.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "SF Digital Medium";   /*Can be any text*/
+  src: local("SfDigitalReadoutMedium-q3rq"),
+    url("/src/font/SfDigitalReadoutMedium-q3rq.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "SF Digital Heavy";   /*Can be any text*/
+  src: local("SfDigitalReadoutHeavy-AwVg"),
+    url("/src/font/SfDigitalReadoutHeavy-AwVg.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Absolute Empire";   /*Can be any text*/
+  src: local("AAbsoluteEmpire-EaXpg"),
+    url("/src/font/AAbsoluteEmpire-EaXpg.ttf") format("truetype");
+}

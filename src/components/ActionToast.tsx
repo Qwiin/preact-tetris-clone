@@ -41,7 +41,7 @@ export function ActionToast(props: ActionToastProps) {
 
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
-      <div className='tw-relative toast-action-origin'>
+      <div id="ToastOrigin" className='toast-action-origin'>
       {/* <BackToBack/> */}  
       {(props.actions &&
         (props.actions || [{text: "Action", points: "1,000,000"}]).map((action: GameAction)=>{ return (
@@ -75,7 +75,17 @@ export function ActionToast(props: ActionToastProps) {
           }
           { action.points &&
           // @ts-expect-error Motion Component
-          <motion.div className="tw-font-extrabold tw-font-mono tw-w-full tw-flex tw-justify-center tw-items-center tw-absolute tw-top-0 tw-left tw-opacity-1"
+          <motion.div className="
+            tw-font-extrabold 
+            tw-font-mono 
+            tw-w-full 
+            tw-flex 
+            tw-justify-center 
+            tw-items-center 
+            tw-absolute 
+            tw-top-0 
+            tw-left 
+            tw-opacity-1"
             onAnimationComplete={()=>{props.toastComplete(action.id)}}
             key={action.id + 'b'} 
             variants={pointsDivVariants}

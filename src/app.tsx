@@ -5,7 +5,6 @@ import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
-import './checkbox.css';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
