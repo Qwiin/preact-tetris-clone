@@ -68,7 +68,7 @@ export default function BackToBack() {
               { 
                 gridTemplateColumns: [
                   "0.375rem 1.5rem 0.375rem",
-                  "2.2rem 1.5rem 2.275rem"
+                  "1.9rem 1.5rem 1.975rem"
                 ],
               }, 
               { 

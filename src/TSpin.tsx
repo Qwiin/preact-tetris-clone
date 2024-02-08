@@ -1,5 +1,6 @@
 import {AnimationSequence, animate, stagger} from "framer-motion";
 import { useState, useEffect } from "preact/hooks";
+import { ActionType as TSType } from "./TetrisConfig";
 
 const backTobackSequence: AnimationSequence = [
   
@@ -14,22 +15,18 @@ const backTobackSequence: AnimationSequence = [
       delay: stagger(0.1),
       ease: "easeOut",
     }
-  ],
-  [
-    ".t-spin", 
-    { 
-      opacity: 0
-    }, 
-    { 
-      duration: 0.1,
-      ease: "easeOut",
-      delay: 0.4
-    }
   ]
 ]
 
 interface TSpinProps {
-  type: "mini" | "single" | "double" | "triple"
+  // type: "mini" | "single" | "double" | "triple"
+  type:  TSType.T_SPIN_MINI
+            | TSType.T_SPIN_MINI_SINGLE
+            | TSType.T_SPIN_MINI_DOUBLE
+            | TSType.T_SPIN
+            | TSType.T_SPIN_SINGLE
+            | TSType.T_SPIN_DOUBLE
+            | TSType.T_SPIN_TRIPLE
 }
 
 export default function TSpin(props: TSpinProps) {
@@ -53,36 +50,93 @@ export default function TSpin(props: TSpinProps) {
           ease: "easeIn",
         }
     ).then(()=>{
-      animate(backTobackSequence);
+
+      animate(backTobackSequence).then(()=>{
+        document.querySelector('.tspin-type')?.classList.add("flash");
+        document.querySelector('.tspin-flexbox')?.classList.add("flash");
+        document.querySelector('.line-clear-type')?.classList.add("show","flash");
+
+        setTimeout(()=>{
+          animate(
+            ".t-spin", 
+            { 
+              opacity: 0,
+              scale: 0,
+            }, 
+            { 
+              duration: 0.3,
+              ease: "easeOut",
+              delay: 0.5
+            }
+          );
+        },0);
+      });
     });
   }
 
+  const isMini = () => {
+    switch(props.type) {
+      case TSType.T_SPIN_MINI:
+      case TSType.T_SPIN_MINI_SINGLE:
+      case TSType.T_SPIN_MINI_DOUBLE:
+        return true;
+    }
+
+    return false;
+  }
+
+  const getLineClearLabel = (): string => {
+    switch(props.type) {
+      case TSType.T_SPIN_MINI_SINGLE:
+      case TSType.T_SPIN_SINGLE:
+        return "Single";
+        break;
+      case TSType.T_SPIN_MINI_DOUBLE:
+      case TSType.T_SPIN_DOUBLE:
+        return "Double";
+        break;
+      case TSType.T_SPIN_TRIPLE:
+        return "Triple";
+        break;
+      default:
+        return "";
+    }
+  }
+
+  let lineClearLabel = getLineClearLabel();
+  
   return (
 
     <div className="t-spin">
       {
-        props.type && (
-
-          <h3 key="123" className={`tspin-type ${props.type} ${animateType === true ? 'animate' : ''}`} 
+        isMini() && (
+          <h3 key="123" data-chars="Mini" className={`tspin-type mini ${animateType === true ? 'animate' : ''}`} 
           onAnimationEnd={(e)=>{
             console.log(e);
             document.querySelector('.tspin-type')?.classList.add("show");
-          }}>{props.type}</h3>
+          }}>Mini</h3>
         )
-
       }
+
       <div className="tspin-flexbox" data-chars="T-Spin" key="abc">
-          <div className="tspin-char primary" data-char="T" key="abc1">T</div>
-          <div className="tspin-char secondary hyphen" data-char="-" key="abc2"><div className="hyphen-span">-</div></div>
-          <div className="tspin-char secondary" data-char="S" key="abc3">S</div>  
-          <div className="tspin-char secondary" data-char="p" key="abc4">p</div>  
-          <div className="tspin-char secondary" data-char="i" key="abc5">i</div>  
-          <div className="tspin-char secondary" data-char="n" key="abc6">n</div>  
-        </div>
+        <div className="tspin-char primary" data-char="T" key="abc1">T</div>
+        <div className="tspin-char secondary hyphen" data-char="-" key="abc2"><div className="hyphen-span">-</div></div>
+        <div className="tspin-char secondary" data-char="S" key="abc3">S</div>  
+        <div className="tspin-char secondary" data-char="p" key="abc4">p</div>  
+        <div className="tspin-char secondary" data-char="i" key="abc5">i</div>  
+        <div className="tspin-char secondary" data-char="n" key="abc6">n</div>  
+      </div>
+
+      {
+        lineClearLabel && (
+          <h3 key="123" data-chars={lineClearLabel} className={`line-clear-type ${lineClearLabel.toLowerCase()} ${animateType === true ? 'animate' : ''}`} 
+          >{lineClearLabel}</h3>
+        )
+      }
     </div>
   );
 }
 
 TSpin.defaultProps = {
-  type: "mini"
+  type: TSType.T_SPIN_MINI_SINGLE,
 };
