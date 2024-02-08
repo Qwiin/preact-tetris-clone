@@ -1,6 +1,6 @@
 import {ActionType, GameAction } from "../TetrisConfig";
 import {motion} from "framer-motion";
-import BackToBack from "./BackToBack";
+// import BackToBack from "./BackToBack";
 import TSpin from "../TSpin";
 
 interface ActionToastProps {
@@ -19,17 +19,6 @@ const textDivVariants = {
     }, 
     hidden: {
       transform: "translateY(-400%) scale(200%)",
-      opacity: 0,
-      transitionEnd
-    }
-};
-const subtextDivVariants = {
-    show: {
-      transform: "rotateY(90deg)",
-      opacity: 1
-    }, 
-    hidden: {
-      transform: "rotateY(0deg)",
       opacity: 0,
       transitionEnd
     }
@@ -53,7 +42,8 @@ export function ActionToast(props: ActionToastProps) {
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
       <div className='tw-relative toast-action-origin'>
-      {/* <BackToBack/> */}  {(props.actions &&
+      {/* <BackToBack/> */}  
+      {(props.actions &&
         (props.actions || [{text: "Action", points: "1,000,000"}]).map((action: GameAction)=>{ return (
           <>
           { (
