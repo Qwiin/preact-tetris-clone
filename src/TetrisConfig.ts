@@ -1,4 +1,5 @@
 export interface GameAction {
+  toast?: boolean;
   type: ActionType;
   classNames?: string[];
   text?: string;

@@ -26,6 +26,7 @@ Performance:
 
 import { Signal, signal } from '@preact/signals';
 
+import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
@@ -33,7 +34,6 @@ import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOES, Tetronimo
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
-import {motion} from 'framer-motion';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -524,7 +524,7 @@ const Game = (props: GameProps) => {
         }
         
         // console.log({pieceY: piece.y});
-        piece.lastTick = tick.value;
+        piece.lastTick = tick.value;    // This may or may not be the most important
         updatePosition()
       }
     }
@@ -633,7 +633,6 @@ const Game = (props: GameProps) => {
         }
 
         let actionEnum = numCleared;
-        let subtext: string | undefined = undefined;
         switch(numCleared) {
           case 0:
             actionEnum = isTSpin.current ? ActionType.T_SPIN : ActionType.T_SPIN_MINI;
@@ -669,15 +668,15 @@ const Game = (props: GameProps) => {
         }
 
         if(isTSpin.current) {
-          subtext = "T-Spin";
+          // subtext = "T-Spin";
           isTSpin.current = false;
         }
         else if(isTSpinMini.current) {
-          subtext = "T-Spin Mini";
+          // subtext = "T-Spin Mini";
           isTSpinMini.current = false;
         }
 
-        props.actionCallback({type: actionEnum, text: action.current, subtext: subtext, points: points} || null);
+        props.actionCallback({type: actionEnum, text: action.current, points: points, toast: true} || null);
 
         if(clearEffectData.current && clearEffectData.current.length > 0) {
           console.log(clearEffectData.current.toString())

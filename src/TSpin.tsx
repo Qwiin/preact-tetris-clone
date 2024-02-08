@@ -26,7 +26,10 @@ interface TSpinProps {
             | TSType.T_SPIN
             | TSType.T_SPIN_SINGLE
             | TSType.T_SPIN_DOUBLE
-            | TSType.T_SPIN_TRIPLE
+            | TSType.T_SPIN_TRIPLE;
+
+  id: string;
+  animationComplete: () => void;
 }
 
 export default function TSpin(props: TSpinProps) {
@@ -56,7 +59,7 @@ export default function TSpin(props: TSpinProps) {
         document.querySelector('.tspin-flexbox')?.classList.add("flash");
         document.querySelector('.line-clear-type')?.classList.add("show","flash");
 
-        setTimeout(()=>{
+        requestAnimationFrame(()=>{
           animate(
             ".t-spin", 
             { 
@@ -68,8 +71,10 @@ export default function TSpin(props: TSpinProps) {
               ease: "easeOut",
               delay: 0.5
             }
-          );
-        },0);
+          ).then(()=>{
+            props.animationComplete(props.id);
+          })
+        });
       });
     });
   }
@@ -107,7 +112,7 @@ export default function TSpin(props: TSpinProps) {
   
   return (
 
-    <div className="t-spin">
+    <div key={props.id} className="t-spin">
       {
         isMini() && (
           <h3 key="123" data-chars="Mini" className={`tspin-type mini ${animateType === true ? 'animate' : ''}`} 

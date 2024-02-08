@@ -22,7 +22,7 @@ export function App() {
 
   const actionCallback = (a: GameAction) => {
     
-    if (a.text || a.subtext) {
+    if (a.text || a.subtext || a.toast) {
 
       if(actionQue.current){
         actionQue.current.push({
@@ -37,8 +37,15 @@ export function App() {
       }
       setTimeout(()=>{
         // setTransitioning(false);
-        actionQue.current?.shift();
-        forceUpdate(1);
+        if(actionQue.current) {
+          actionQue.current = actionQue.current.filter(action => {
+            if(action === null || action === undefined) {
+              return false;
+            }
+            return true;
+          });
+        }
+        // forceUpdate(1);
       },ToastTimeout);
       requestAnimationFrame(() => {
         forceUpdate(1);
@@ -60,7 +67,18 @@ export function App() {
 
         {/* @ts-expect-error Preact Component */}
         <Game init={true} actionCallback={actionCallback}/>
-        <ActionToast actions={actionQue.current || []}/>  
+        <ActionToast actions={actionQue.current || []} toastComplete={(action: GameAction)=>{
+          if(!actionQue.current) {
+            return;
+          }
+          for(let i=0; i<actionQue.current.length; i++) {
+            if(actionQue.current[i].id === action.id) {
+              actionQue.current.splice(i,1);
+              break;
+            }
+          }
+
+        }}/>  
         <SoundBoard eventTargetRef={soundBoardDomRef} volume={50}/>
       </div>
       
