@@ -396,6 +396,10 @@ const Game = (props: GameProps) => {
         i_ss--;
       }
 
+      if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
+        stats.current.score += 1;
+      }
+
       p.coordsPrev = p.coords;
       p.coords = newCoords;
 
@@ -896,7 +900,7 @@ const Game = (props: GameProps) => {
         };
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
-        props.actionCallback({type: ActionType.DROP, data: e.key});
+        
 
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
@@ -908,6 +912,10 @@ const Game = (props: GameProps) => {
 
         upArrowPressed.current = true;
         if(minDistance > 0) {
+          props.actionCallback({type: ActionType.DROP, data: e.key});
+          if(stats.current?.score) {   
+            stats.current.score += (minDistance * 2);
+          }
           // console.log(minDistance);
           updatePosition();
         }
