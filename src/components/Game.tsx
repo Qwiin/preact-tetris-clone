@@ -443,7 +443,6 @@ const Game = (props: GameProps) => {
 
       // let colHeights = columnHeights.current || [];
       let colHeightsSub = columnHeights.current?.subarray(p.x,p.x+w) || [];
-      let highestSubCol = Math.max(...colHeightsSub);
       let ghostCoords = [];
       // let ghostYX = [];
 
