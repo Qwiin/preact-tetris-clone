@@ -175,12 +175,63 @@ const Game = (props: GameProps) => {
     for (let i = 0; i < rowLen; i++) {
       let col: number[] = [];
       for (let j = 0; j < colLen; j++) {
-        col.push(cells[j * rowLen + i]);
+        let cellValue = cells[j * rowLen + i];
+        if(cellValue >= 0 && cellValue < 10){
+          col.push(cells[j * rowLen + i]);
+        }
+        else {
+          col.push(0);
+        }
       }
       boardCols.push(col);
     }
     return  boardCols;
   };
+
+
+  const getDropDistance = (): number => {
+    const cols = getBoardCols();
+    const p = activePiece.current;
+    if(!p) {
+      return 0;
+    }
+    
+    let colIndex = p.x;
+    let perm: number[][] = p.permutation;
+
+    //
+    // Gets the offsets from the bottoms contour of the piece's current permutation
+    //
+    let bottomOffsets: number[] = [];
+    for(let i=0; i<p.width; i++) {
+      bottomOffsets.push(0);
+      for(let j=p.height-1; j>=0; j--) {
+        if(perm[j][i] > 0) {
+          break;
+        }
+        bottomOffsets[i]++;
+      }
+    }
+    
+    let minDistance: number = p.yMax - p.y;
+    let minDistances = [];
+    for(let i=0; i<p.width; i++) {
+      let colArr: number[] = (cols[i + colIndex]);
+      let dropDistance = bottomOffsets[i];
+      for(let j=p.y; j<colArr.length; j++){
+        if(colArr[j] > 0) {
+          break;
+        }
+        dropDistance++;
+      }
+      minDistances.push(minDistance);
+      if(dropDistance < minDistance) {
+        minDistance = dropDistance;
+      }
+    }
+
+    return minDistance;
+  }
 
   const updatePosition = () => {
     if(!board.current || !activePiece.current || clearEffectData.current) {
@@ -372,7 +423,10 @@ const Game = (props: GameProps) => {
           p.yPrev = p.y;
         }
       }
+
+      //--------------------
       // erase old location
+      //--------------------
       for(let i=0; i<p.coords.length; i++){
         if(p.coordsGhost && p.coordsGhost.length > i) {
           board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] = 0;
@@ -392,19 +446,22 @@ const Game = (props: GameProps) => {
       let highestSubCol = Math.max(...colHeightsSub);
       let ghostCoords = [];
       // let ghostYX = [];
-      let ghostY = 23;
-      for(let j=0; j<w; j++) {
-        let colContourOffset = 0;
-        for(let i=h-1; i>=0; i--){
-          // for(let j=0; j<w; j++){
-            if(perm[i][j] > 0) {
-              ghostY = Math.min(ghostY,23 - colHeightsSub[j] + colContourOffset);
-              // ghostYX[j] = [Math.min(23 - colHeightsSub[j] + colContourOffset, 23),p.x + j];
-              break;
-            }
-            colContourOffset++;
-          } 
-        }
+
+      const dropDistance: number = getDropDistance();
+      let ghostY = Math.min(p.y + dropDistance - 1, 23);
+      // for(let j=0; j<w; j++) {
+      //   let colContourOffset = 0;
+      //   for(let i=h-1; i>=0; i--){
+      //   // for(let j=0; j<w; j++){
+      //     if(perm[i][j] > 0) {
+      //       ghostY = Math.min(ghostY,23 - colHeightsSub[j] + colContourOffset);
+      //       // ghostYX[j] = [Math.min(23 - colHeightsSub[j] + colContourOffset, 23),p.x + j];
+      //       break;
+      //     }
+      //     colContourOffset++;
+      //   } 
+      // }
+      
        
       //--------------------
       // write new location
@@ -422,7 +479,7 @@ const Game = (props: GameProps) => {
 
             newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
             let ghostCellValue = board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]];
-            if( ghostCellValue <= 0 || ghostCellValue > 10) {
+            if( ghostCellValue <= 0 ) {
               board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]] = perm[i_ss][j_s] * -1;
               ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
             }
@@ -477,7 +534,9 @@ const Game = (props: GameProps) => {
         for(let i=0; i<coords.length; i++){
           let y = coords[i][0];
           let x = coords[i][1];
-          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11;
+
+          // take abs value is to overwrite the ghost position
+          let newCellVal = Math.abs(rows[coords[i][0]][coords[i][1]] / 11); 
           rows[coords[i][0]][coords[i][1]] = newCellVal;
 
           // update column heights
@@ -824,6 +883,12 @@ const Game = (props: GameProps) => {
               let y = p.coords[i][0];
               let x = p.coords[i][1];
               board.current[y][x] = 0;
+
+              if(p.coordsGhost.length > i) {
+                let yG = p.coordsGhost[i][0];
+                let xG = p.coordsGhost[i][1];
+                board.current[yG][xG] = 0;
+              }
             }
 
             if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
@@ -902,44 +967,46 @@ const Game = (props: GameProps) => {
         p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
         // p.dropped = true;
 
-        const cols: number[][] = getBoardCols();
-        let colIndex = p.x;
-        let perm: number[][] = p.permutation;
+        // const cols: number[][] = getBoardCols();
+        // let colIndex = p.x;
+        // let perm: number[][] = p.permutation;
 
-        //
-        // Gets the offsets from the bottoms contour of the piece's current permutation
-        //
-        let bottomOffsets: number[] = [];
-        for(let i=0; i<p.width; i++) {
-          bottomOffsets.push(0);
-          for(let j=p.height-1; j>=0; j--) {
-            if(perm[j][i] > 0) {
-              break;
-            }
-            bottomOffsets[i]++;
-          }
-        }
+        // //
+        // // Gets the offsets from the bottoms contour of the piece's current permutation
+        // //
+        // let bottomOffsets: number[] = [];
+        // for(let i=0; i<p.width; i++) {
+        //   bottomOffsets.push(0);
+        //   for(let j=p.height-1; j>=0; j--) {
+        //     if(perm[j][i] > 0) {
+        //       break;
+        //     }
+        //     bottomOffsets[i]++;
+        //   }
+        // }
         
-        let minDistance: number = p.yMax - p.y;
-        let minDistances = [];
-        for(let i=0; i<p.width; i++) {
-          let colArr: number[] = (cols[i + colIndex]);
-          let dropDistance = bottomOffsets[i];
-          for(let j=p.y; j<colArr.length; j++){
-            if(colArr[j] > 0) {
-              break;
-            }
-            dropDistance++;
-          }
-          minDistances.push(minDistance);
-          if(dropDistance < minDistance) {
-            minDistance = dropDistance;
-          }
-        }
+        // let minDistance: number = p.yMax - p.y;
+        // let minDistances = [];
+        // for(let i=0; i<p.width; i++) {
+        //   let colArr: number[] = (cols[i + colIndex]);
+        //   let dropDistance = bottomOffsets[i];
+        //   for(let j=p.y; j<colArr.length; j++){
+        //     if(colArr[j] > 0) {
+        //       break;
+        //     }
+        //     dropDistance++;
+        //   }
+        //   minDistances.push(minDistance);
+        //   if(dropDistance < minDistance) {
+        //     minDistance = dropDistance;
+        //   }
+        // }
+
+        const dropDistance = getDropDistance();
 
         dropEffectData.current = {
           top: `${(p.y - p.height - 4)}rem`,
-          bottom: `${(24 - (p.y + minDistance))}rem`,
+          bottom: `${(24 - (p.y + dropDistance))}rem`,
           left: `${p.x}rem`,
           right: `${(10 - p.x - p.width)}rem`,
           id: p.id
@@ -950,17 +1017,17 @@ const Game = (props: GameProps) => {
 
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
-        if(minDistance > 0) {
+        if(dropDistance > 0) {
           tSpun.current = false;
         }
-        p.y += minDistance;
+        p.y += dropDistance;
         p.yPrev = p.y;
 
         upArrowPressed.current = true;
-        if(minDistance > 0) {
+        if(dropDistance > 0) {
           props.actionCallback({type: ActionType.DROP, data: e.key});
           if(stats.current?.score) {   
-            stats.current.score += (minDistance * 2);
+            stats.current.score += (dropDistance * 2);
           }
           // console.log(minDistance);
           updatePosition();
