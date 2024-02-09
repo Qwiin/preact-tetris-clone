@@ -34,6 +34,7 @@ import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOES, Tetronimo
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
+import { newUID } from '../utils/AppUtil';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -515,6 +516,15 @@ const Game = (props: GameProps) => {
     }
   }
 
+  /**
+   * the purposes of this function are:
+   *   1a. to set the active piece in place on the board
+   *   1b. to set the active piece to null and fetch a new active piece after a delay
+   *   2. to perform line clears
+   *   3.
+   * @param piece 
+   * @returns 
+   */
   const updateBoard = (piece?: ActivePiece | null) => {
 
     if(tick.value < 0 || !board.current) {
@@ -607,11 +617,11 @@ const Game = (props: GameProps) => {
         }
         activePiece.current = null; 
         requestAnimationFrame(()=>{
-          updatePosition();
+          // updatePosition();
           updateBoard(null);
         });
         setTimeout(()=>{
-          activePiece.current = getPieceFromQue();          
+          activePiece.current = getPieceFromQue() || null;          
         }, TICK_INTERVAL);
         return;
       }
@@ -764,10 +774,10 @@ const Game = (props: GameProps) => {
             if(isTSpin.current) {
               actionEnum = ActionType.T_SPIN_TRIPLE;
             }
-            action.current = "Triple!";
+            
             break;
           case ActionType.TETRIS:
-            action.current = "T E T R I S !";
+            actionEnum = ActionType.TETRIS;
             break;
         }
 
@@ -792,62 +802,81 @@ const Game = (props: GameProps) => {
 
   const getNextPiece = (): PieceQueItem => {
 
-    // replenish que
+    // replenish piece que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
       pieceQueIndexes.current.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
+    // 
     let index: number = pieceQueIndexes.current?.shift() ?? -1;
     return {
       shapeEnum: index,
-      id: Math.round(window.performance.now()*1000).toString()
+      id: newUID()
     }
   }
 
   const getPieceFromQue = () => {
     if(pieceQue.current){
-    pieceQue.current.push(getNextPiece());    
-    // console.log(pieceQue.current);
-    let pieceItem = pieceQue.current.shift();
-    if(!pieceItem) {
-      console.error("no piece item in que");
-      return undefined;
-    };
-    
-    let h = TETRONIMOES[pieceItem?.shapeEnum || 0].length;
-    let w = TETRONIMOES[pieceItem?.shapeEnum || 0][0].length;
 
-    let xStart: number = Math.floor((10 - w)/2);
-    let yStart: number = 4 + TETRONIMOES[pieceItem?.shapeEnum || 0].length;
-
-    let maxColumnHeightUnderNewPiece = 0;
-    if(columnHeights.current) {
-      for(let i=xStart; i<(xStart + w); i++) {
-        if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
-          maxColumnHeightUnderNewPiece = columnHeights.current[i];
+      pieceQue.current.push( getNextPiece() );    
+      
+      let pieceItem = pieceQue.current.shift();
+      if(!pieceItem) {
+        console.error("no piece item in que");
+        return undefined;
+      };
+      
+      const {xStart, yStart} = getStartingXY(pieceItem);
+       
+      let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, yStart);
+      
+      let c: number[][] = [];
+      for(let i=0; i<p.height; i++) {
+        for(let j=0; j<p.width; j++) {
+          c.push([p.y-i,p.x+j]);
         }
       }
+      p.coords = c;
+      return p;
     }
-    // adjust starting y position if board is stacked higher than starting height projection of piece
-    if(maxColumnHeightUnderNewPiece > 18){
-      yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
-      // p.y = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
-      // p.yPrev = p.y-1;
-    }
-    
-    let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, yStart);
-    
 
-    let c: number[][] = [];
-    for(let i=0; i<p.height; i++) {
-      for(let j=0; j<p.width; j++) {
-        c.push([p.y-i,p.x+j]);
+    console.error("Game::getPieceFromQue() -- piece que is undefined");
+    return undefined;
+  }
+
+  /**
+   * Utility method to get the starting x,y position for 
+   * a new active piece
+   * @param item 
+   * @returns 
+   */
+  const getStartingXY = (item: PieceQueItem) => {
+
+      if(!item) {
+        console.error("Game::getStartingXY(item) -- 'item' is '" + item + "'");
+        return {};
       }
-    }
-    p.coords = c;
-    return p;
-    }
-    return null;
+
+      let h = TETRONIMOES[item?.shapeEnum || 0].length;
+      let w = TETRONIMOES[item?.shapeEnum || 0][0].length;
+
+      let xStart: number = Math.floor((10 - w)/2);
+      let yStart: number = 4 + h - 1;
+
+      let maxColumnHeightUnderNewPiece = 0;
+      if(columnHeights.current) {
+        for(let i=xStart; i<(xStart + w); i++) {
+          if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
+            maxColumnHeightUnderNewPiece = columnHeights.current[i];
+          }
+        }
+      }
+      // adjust starting y position if board is stacked higher than starting height projection of piece
+      if(maxColumnHeightUnderNewPiece > 18){
+        yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+      }
+
+      return {xStart, yStart};
   }
 
   const keydownHandler = (e:any) => {
@@ -1079,7 +1108,7 @@ const Game = (props: GameProps) => {
     for(let i=0; i<PIECE_QUE_LENGTH; i++) {
       pieceQue.current.push({
         shapeEnum: indices[i],
-        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
+        id: newUID()
       });
     }
 

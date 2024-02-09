@@ -5,6 +5,7 @@ import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
+import { newUID } from './utils/AppUtil';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
@@ -29,7 +30,7 @@ export function App() {
           text: a.text, 
           subtext: a.subtext,
           points: a.points, 
-          id: Math.round(window.performance.now()).toString(), 
+          id: newUID(), 
           transitioning: true
         });
         console.log(JSON.stringify(actionQue.current));

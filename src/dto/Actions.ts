@@ -1,8 +1,9 @@
 import { ActionType, GameAction } from "../TetrisConfig";
+import { newUID } from "../utils/AppUtil";
 
 const BACK_TO_BACK: GameAction = {
   type: ActionType.BACK_TO_BACK,
-
+  classNames: ['back-to-back'],
   textSequence: ["Back", "to", "Back"], // 1,2,3
   textSequenceJoin: "-", // 4
   subtext: "1.5x",
@@ -11,7 +12,7 @@ const BACK_TO_BACK: GameAction = {
 
 export const createByType = (type: ActionType) => {
   
-  const id = Math.round(performance.now() * 1000000).toString();
+  const id = newUID();
 
   let gameAction: GameAction | null = null;
   
