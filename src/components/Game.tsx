@@ -448,9 +448,9 @@ const Game = (props: GameProps) => {
 
       let ghostY = -1;
 
-      let updateGhostCoords = (
+      let updateGhostCoords = ( !tSpun.current && (
           p.lastMoveTrigger !== MovementTrigger.INPUT_DROP || p.coordsGhost.length === 0
-        );
+        ));
 
       if(updateGhostCoords) {
         const dropDistance: number = getDropDistance();
