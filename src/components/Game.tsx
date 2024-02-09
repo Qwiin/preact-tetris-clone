@@ -176,7 +176,7 @@ const Game = (props: GameProps) => {
       let col: number[] = [];
       for (let j = 0; j < colLen; j++) {
         let cellValue = cells[j * rowLen + i];
-        if(cellValue >= 0 && cellValue < 10){
+        if(cellValue >= 0 ){
           col.push(cells[j * rowLen + i]);
         }
         else {
@@ -219,7 +219,7 @@ const Game = (props: GameProps) => {
       let colArr: number[] = (cols[i + colIndex]);
       let dropDistance = bottomOffsets[i];
       for(let j=p.y; j<colArr.length; j++){
-        if(colArr[j] > 0) {
+        if(colArr[j] > 0 && colArr[j] < 10) {
           break;
         }
         dropDistance++;
@@ -428,7 +428,7 @@ const Game = (props: GameProps) => {
       // erase old location
       //--------------------
       for(let i=0; i<p.coords.length; i++){
-        if(p.coordsGhost && p.coordsGhost.length > i) {
+        if(p.coordsGhost && p.coordsGhost.length > i && board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] <= 0) {
           board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] = 0;
         }
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
@@ -436,19 +436,15 @@ const Game = (props: GameProps) => {
 
       p.xPrev = p.x;
 
-      
+
+
       //--------------------
       // getGhost Piece location
       //--------------------
 
-      // let colHeights = columnHeights.current || [];
-      // let colHeightsSub = columnHeights.current?.subarray(p.x,p.x+w) || [];
-      // let ghostCoords = [];
-      // let ghostYX = [];
-
       let ghostY = -1;
 
-      let updateGhostCoords = ( !tSpun.current && (
+      let updateGhostCoords = ( canMoveDown && canMoveDownTwice && !tSpun.current && (
           p.lastMoveTrigger !== MovementTrigger.INPUT_DROP || p.coordsGhost.length === 0
         ));
 
@@ -460,23 +456,11 @@ const Game = (props: GameProps) => {
         }
         ghostY = Math.min(p.y + dropDistance - 1, 23);
       }
-      // for(let j=0; j<w; j++) {
-      //   let colContourOffset = 0;
-      //   for(let i=h-1; i>=0; i--){
-      //   // for(let j=0; j<w; j++){
-      //     if(perm[i][j] > 0) {
-      //       ghostY = Math.min(ghostY,23 - colHeightsSub[j] + colContourOffset);
-      //       // ghostYX[j] = [Math.min(23 - colHeightsSub[j] + colContourOffset, 23),p.x + j];
-      //       break;
-      //     }
-      //     colContourOffset++;
-      //   } 
-      // }
-      
        
       //--------------------
       // write new location
       //--------------------
+
       j_i = p.x;
       i_i = p.y-1;
       let i_ss = h-1;
@@ -498,7 +482,7 @@ const Game = (props: GameProps) => {
             }
 
             board.current[i][j] = perm[i_ss][j_s];
-            newCoords.push([i,j]);
+            newCoords.unshift([i,j]);
           }
           j_s++;
         }
@@ -506,7 +490,8 @@ const Game = (props: GameProps) => {
       }
 
       if(updateGhostCoords) {
-        console.log(JSON.stringify(newCoordsGhost));
+        console.log("gst:" + JSON.stringify(newCoordsGhost));
+        console.log("new: " + JSON.stringify(newCoords));
         // console.log(JSON.stringify(ghostYX));
         console.log({ghostY});
       }
@@ -521,7 +506,9 @@ const Game = (props: GameProps) => {
 
       // this is run before the render, so we need to know if the piece will thud on next paint
       if(
-        (p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) && !canMoveDownTwice && !failedRotation) {
+        (p.lastMoveTrigger === MovementTrigger.GRAVITY 
+          || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) 
+          && !canMoveDownTwice && !failedRotation) {
         console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
@@ -642,7 +629,7 @@ const Game = (props: GameProps) => {
         
         // console.log({pieceY: piece.y});
         piece.lastTick = tick.value;    // This may or may not be the most important
-        updatePosition()
+        updatePosition();
       }
     }
     else  
@@ -655,7 +642,7 @@ const Game = (props: GameProps) => {
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
         let row = rows[i];
-        if(!row.includes(0) && numCleared < 4){
+        if(!row.includes(0) && !row.includes(-activePiece.current?.cellValue) && numCleared < 4){
           row.fill(0);  // overwrite (erase) the row
           clearedRowIndexesDesc.push(i);
           numCleared++;
@@ -822,11 +809,20 @@ const Game = (props: GameProps) => {
     pieceQue.current.push(getNextPiece());    
     // console.log(pieceQue.current);
     let pieceItem = pieceQue.current.shift();
-    let xStart: number = Math.floor((10 - TETRONIMOES[pieceItem?.shapeEnum || 0][0].length)/2);
-    let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart);
+    if(!pieceItem) {
+      console.error("no piece item in que");
+      return undefined;
+    };
+    
+    let h = TETRONIMOES[pieceItem?.shapeEnum || 0].length;
+    let w = TETRONIMOES[pieceItem?.shapeEnum || 0][0].length;
+
+    let xStart: number = Math.floor((10 - w)/2);
+    let yStart: number = 4 + TETRONIMOES[pieceItem?.shapeEnum || 0].length;
+
     let maxColumnHeightUnderNewPiece = 0;
     if(columnHeights.current) {
-      for(let i=xStart; i<(xStart + p.width); i++) {
+      for(let i=xStart; i<(xStart + w); i++) {
         if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
           maxColumnHeightUnderNewPiece = columnHeights.current[i];
         }
@@ -834,9 +830,13 @@ const Game = (props: GameProps) => {
     }
     // adjust starting y position if board is stacked higher than starting height projection of piece
     if(maxColumnHeightUnderNewPiece > 18){
-      p.y = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
-      p.yPrev = p.y-1;
+      yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+      // p.y = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+      // p.yPrev = p.y-1;
     }
+    
+    let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, yStart);
+    
 
     let c: number[][] = [];
     for(let i=0; i<p.height; i++) {
@@ -910,7 +910,7 @@ const Game = (props: GameProps) => {
             }
             else {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
-              activePiece.current = getPieceFromQue();
+              activePiece.current = getPieceFromQue() || null;
             }
 
             p = activePiece.current;
@@ -969,7 +969,9 @@ const Game = (props: GameProps) => {
           p.yPrev = p.y
           p.lastMoveTrigger = MovementTrigger.INPUT_SET;
           downArrowPressed.current = true;
-          updateBoard();
+          // updateBoard();
+          updateBoard(activePiece.current);
+          
         }
         break;
 
@@ -1038,7 +1040,7 @@ const Game = (props: GameProps) => {
         upArrowPressed.current = true;
         if(dropDistance > 0) {
           props.actionCallback({type: ActionType.DROP, data: e.key});
-          if(stats.current?.score) {   
+          if(stats.current) {   
             stats.current.score += (dropDistance * 2);
           }
           // console.log(minDistance);

@@ -70,6 +70,7 @@ export default class ActivePiece {
   readonly id: string = "";
   readonly shape: number[][] = [];
   readonly shapeEnum: TetronimoShape = TetronimoShape.NULL;
+  readonly cellValue: number;
 
   readonly shapeByDirection: number[][][] = [];
 
@@ -78,6 +79,7 @@ export default class ActivePiece {
     if(item) {
       this.shapeEnum = item.shapeEnum;
       this.shape = JSON.parse(TETRONIMO_STRINGS[item.shapeEnum]);
+      this.cellValue = Math.max(...this.shape.flat());
       this.id = item.id;
       this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {
