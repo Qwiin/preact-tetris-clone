@@ -331,7 +331,7 @@ const Game = (props: GameProps) => {
         tSpun.current = false;
         p.rotationPrev = prevRotation;
         p.lastMoveTrigger = MovementTrigger.GRAVITY;
-        failedRotation = true;
+        failedRotation = true;  
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
         console.log("can t-spin");
@@ -442,13 +442,24 @@ const Game = (props: GameProps) => {
       //--------------------
 
       // let colHeights = columnHeights.current || [];
-      let colHeightsSub = columnHeights.current?.subarray(p.x,p.x+w) || [];
-      let ghostCoords = [];
+      // let colHeightsSub = columnHeights.current?.subarray(p.x,p.x+w) || [];
+      // let ghostCoords = [];
       // let ghostYX = [];
 
-      const dropDistance: number = getDropDistance();
-      console.log(dropDistance);
-      let ghostY = Math.min(p.y + dropDistance - 1, 23);
+      let ghostY = -1;
+
+      let updateGhostCoords = (
+          p.lastMoveTrigger !== MovementTrigger.INPUT_DROP || p.coordsGhost.length === 0
+        );
+
+      if(updateGhostCoords) {
+        const dropDistance: number = getDropDistance();
+        console.log(dropDistance);
+        if(dropDistance <= 0) {
+          updateGhostCoords = false;
+        }
+        ghostY = Math.min(p.y + dropDistance - 1, 23);
+      }
       // for(let j=0; j<w; j++) {
       //   let colContourOffset = 0;
       //   for(let i=h-1; i>=0; i--){
@@ -477,28 +488,28 @@ const Game = (props: GameProps) => {
         for(let j=j_i; j < (j_i + w); j++) {
           if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] === 0) {
 
-            if(p.lastMoveTrigger !== MovementTrigger.INPUT_DROP) {
+            if(updateGhostCoords) {
               newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
               let ghostCellValue = board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]];
               if( ghostCellValue <= 0 ) {
                 board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]] = perm[i_ss][j_s] * -1;
-                ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
+                // ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
               }
             }
 
             board.current[i][j] = perm[i_ss][j_s];
             newCoords.push([i,j]);
-
-            
           }
           j_s++;
         }
         i_ss--;
       }
 
-      console.log(JSON.stringify(newCoordsGhost));
-      // console.log(JSON.stringify(ghostYX));
-      console.log({ghostY});
+      if(updateGhostCoords) {
+        console.log(JSON.stringify(newCoordsGhost));
+        // console.log(JSON.stringify(ghostYX));
+        console.log({ghostY});
+      }
 
       if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
         stats.current.score += 1;
@@ -537,8 +548,7 @@ const Game = (props: GameProps) => {
           let y = coords[i][0];
           let x = coords[i][1];
 
-          // take abs value is to overwrite the ghost position
-          let newCellVal = Math.abs(rows[coords[i][0]][coords[i][1]] / 11); 
+          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11; 
           rows[coords[i][0]][coords[i][1]] = newCellVal;
 
           // update column heights
@@ -1040,12 +1050,14 @@ const Game = (props: GameProps) => {
       case "Control":
         p.rotateLeft();
         // props.actionCallback({type: ActionType.ROTATE, data: e.key});
+        p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
 
       case "Shift":
         p.rotateRight();
         // props.actionCallback({type: ActionType.ROTATE, data: e.key});
+        p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
     }

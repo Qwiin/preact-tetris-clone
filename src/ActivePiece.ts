@@ -6,6 +6,7 @@ export enum MovementTrigger {
   GRAVITY=1,
   INPUT_DOWN,
   INPUT_LATERAL,
+  INPUT_ROTATE,
   INPUT_DROP,
   INPUT_SET,  // pressing down arrow when piece can't move down will set it in place
 }
