@@ -447,6 +447,7 @@ const Game = (props: GameProps) => {
       // let ghostYX = [];
 
       const dropDistance: number = getDropDistance();
+      console.log(dropDistance);
       let ghostY = Math.min(p.y + dropDistance - 1, 23);
       // for(let j=0; j<w; j++) {
       //   let colContourOffset = 0;
@@ -476,11 +477,13 @@ const Game = (props: GameProps) => {
         for(let j=j_i; j < (j_i + w); j++) {
           if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] === 0) {
 
-            newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
-            let ghostCellValue = board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]];
-            if( ghostCellValue <= 0 ) {
-              board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]] = perm[i_ss][j_s] * -1;
-              ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
+            if(p.lastMoveTrigger !== MovementTrigger.INPUT_DROP) {
+              newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
+              let ghostCellValue = board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]];
+              if( ghostCellValue <= 0 ) {
+                board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]] = perm[i_ss][j_s] * -1;
+                ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
+              }
             }
 
             board.current[i][j] = perm[i_ss][j_s];
@@ -493,7 +496,7 @@ const Game = (props: GameProps) => {
         i_ss--;
       }
 
-      // console.log(JSON.stringify(ghostCoords));
+      console.log(JSON.stringify(newCoordsGhost));
       // console.log(JSON.stringify(ghostYX));
       console.log({ghostY});
 
