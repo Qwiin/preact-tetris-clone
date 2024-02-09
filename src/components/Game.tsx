@@ -160,6 +160,7 @@ const Game = (props: GameProps) => {
 
   const board: Ref<number[][]> = useRef(null);
   const columnHeights: Ref<Int8Array> = useRef(null);
+  const ghostPieceCoords: Ref<number[][]> = useRef(null); // [[row1,col1],[row2,col2]...]
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
   const getBoardCols = (): number[][] => {
@@ -217,7 +218,7 @@ const Game = (props: GameProps) => {
       for(let i=i_iii; i > (i_iii - h); i--) {
         let j_sss = 0;
         for(let j=j_iii; j < (j_iii + w); j++) {
-          if(canRotateInPlace && perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && rows[i][j] !== 0 && rows[i][j] !== perm[i_sss][j_sss]) {
+          if(canRotateInPlace && perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_sss][j_sss]) {
             // if(p.y !== p.yPrev){
             //   canMoveDown = false;
             //   console.log("can't move down...");
@@ -232,7 +233,7 @@ const Game = (props: GameProps) => {
             canTSpinRight = false;
           }
           else {
-            if(canTSpin && perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && rows[i+dy][j] !== 0 && rows[i+dy][j] !== perm[i_sss][j_sss]) {
+            if(canTSpin && perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && rows[i+dy][j] > 0 && rows[i+dy][j] !== perm[i_sss][j_sss]) {
               // if(p.y !== p.yPrev){
               //   canMoveDown = false;
               //   console.log("can't move down...");
@@ -241,11 +242,11 @@ const Game = (props: GameProps) => {
               canTSpin = false;
             }
             if(canTSpinLeft) {
-              if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && rows[i+dy][j-1] !== 0 && rows[i+dy][j-1] !== perm[i_sss][j_sss])) {
+              if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && rows[i+dy][j-1] > 0 && rows[i+dy][j-1] !== perm[i_sss][j_sss])) {
                 canTSpinLeft = false;
               }
             }
-            if(canTSpinRight && j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] !== 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
+            if(canTSpinRight && j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] > 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
               canTSpinRight = false;
             }
           }
@@ -318,7 +319,7 @@ const Game = (props: GameProps) => {
           let y = coords[i][0];
           let x = coords[i][1];
           let cellValue = rows[y][x + dx];
-          if(cellValue !== 0 && cellValue < 10){
+          if(cellValue > 0 && cellValue < 10){
             p.x = p.xPrev;
           }   
         }
@@ -347,14 +348,14 @@ const Game = (props: GameProps) => {
       for(let i=i_i; i > (i_i - h); i--) {
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && rows[i][j] !== 0 && rows[i][j] !== perm[i_s][j_s]) {
+          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_s][j_s]) {
             canMoveDown = false;
             p.y = p.yPrev;
           }
           if(i >= rows.length-1) {
             canMoveDownTwice = false;
           }
-          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] !== 0 && rows[i+1][j] !== perm[i_s][j_s]) {            
+          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] > 0 && rows[i+1][j] !== perm[i_s][j_s]) {            
             canMoveDownTwice = false;
           }
           j_s++;
@@ -373,28 +374,72 @@ const Game = (props: GameProps) => {
       }
       // erase old location
       for(let i=0; i<p.coords.length; i++){
+        if(p.coordsGhost && p.coordsGhost.length > i) {
+          board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] = 0;
+        }
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
       }
 
       p.xPrev = p.x;
 
+      
+      //--------------------
+      // getGhost Piece location
+      //--------------------
+
+      // let colHeights = columnHeights.current || [];
+      let colHeightsSub = columnHeights.current?.subarray(p.x,p.x+w) || [];
+      let highestSubCol = Math.max(...colHeightsSub);
+      let ghostCoords = [];
+      // let ghostYX = [];
+      let ghostY = 23;
+      for(let j=0; j<w; j++) {
+        let colContourOffset = 0;
+        for(let i=h-1; i>=0; i--){
+          // for(let j=0; j<w; j++){
+            if(perm[i][j] > 0) {
+              ghostY = Math.min(ghostY,23 - colHeightsSub[j] + colContourOffset);
+              // ghostYX[j] = [Math.min(23 - colHeightsSub[j] + colContourOffset, 23),p.x + j];
+              break;
+            }
+            colContourOffset++;
+          } 
+        }
+       
+      //--------------------
       // write new location
+      //--------------------
       j_i = p.x;
       i_i = p.y-1;
-
       let i_ss = h-1;
       let newCoords: number[][] = [];
+      let newCoordsGhost: number[][] = [];
       for(let i=i_i; i > (i_i - h); i--) {
+        
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
           if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] === 0) {
+
+            newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
+            let ghostCellValue = board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]];
+            if( ghostCellValue <= 0 || ghostCellValue > 10) {
+              board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]] = perm[i_ss][j_s] * -1;
+              ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
+            }
+
             board.current[i][j] = perm[i_ss][j_s];
             newCoords.push([i,j]);
+
+            
           }
           j_s++;
         }
         i_ss--;
       }
+
+      // console.log(JSON.stringify(ghostCoords));
+      // console.log(JSON.stringify(ghostYX));
+      console.log({ghostY});
 
       if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
         stats.current.score += 1;
@@ -402,6 +447,7 @@ const Game = (props: GameProps) => {
 
       p.coordsPrev = p.coords;
       p.coords = newCoords;
+      p.coordsGhost = newCoordsGhost;
 
       // this is run before the render, so we need to know if the piece will thud on next paint
       if(
@@ -455,16 +501,16 @@ const Game = (props: GameProps) => {
             let jMax = (piece.x + piece.width - 1) + ((piece.rotation === Direction.W) ? 1 : 0);
 
             let cornerCount = 0;
-            if(iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] !== 0 && rows[iMin][jMin] < 10)){
+            if(iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] > 0 && rows[iMin][jMin] < 10)){
               cornerCount++;
             }
-            if(iMin >= 0 && jMax < rows[0].length && (rows[iMin][jMax] !== 0 && rows[iMin][jMax] < 10)){
+            if(iMin >= 0 && jMax < rows[0].length && (rows[iMin][jMax] > 0 && rows[iMin][jMax] < 10)){
               cornerCount++;
             }
-            if(iMax < rows.length && jMin >= 0 && (rows[iMax][jMin] !== 0 && rows[iMax][jMin] < 10)){
+            if(iMax < rows.length && jMin >= 0 && (rows[iMax][jMin] > 0 && rows[iMax][jMin] < 10)){
               cornerCount++;
             }
-            if(iMax < rows.length && jMax < rows[0].length && (rows[iMax][jMax] !== 0 && rows[iMax][jMax] < 10)){
+            if(iMax < rows.length && jMax < rows[0].length && (rows[iMax][jMax] > 0 && rows[iMax][jMax] < 10)){
               cornerCount++;
             }
 
@@ -867,7 +913,7 @@ const Game = (props: GameProps) => {
         for(let i=0; i<p.width; i++) {
           bottomOffsets.push(0);
           for(let j=p.height-1; j>=0; j--) {
-            if(perm[j][i] !== 0) {
+            if(perm[j][i] > 0) {
               break;
             }
             bottomOffsets[i]++;
@@ -880,7 +926,7 @@ const Game = (props: GameProps) => {
           let colArr: number[] = (cols[i + colIndex]);
           let dropDistance = bottomOffsets[i];
           for(let j=p.y; j<colArr.length; j++){
-            if(colArr[j] !== 0) {
+            if(colArr[j] > 0) {
               break;
             }
             dropDistance++;
@@ -960,6 +1006,8 @@ const Game = (props: GameProps) => {
     else {
       columnHeights.current.fill(0);
     }
+
+    ghostPieceCoords.current = [];
     
     if(board.current === null) { 
       board.current = [
@@ -1119,17 +1167,20 @@ const Game = (props: GameProps) => {
     
     return rows.map((row, index) => {
       return (
-        <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
+        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
           
           { 
-            row.map((cellValue) => {
+            row.map((cellValue, colIndex) => {
+
+            let isGhost = cellValue < -10;
             let ShapeColorsVal = cellValue > 10 ? ShapeColors[cellValue/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
                 ? 'tw-bg-black tw-border tw-border-gray-900'
-                : `tw-border tw-bg-${ShapeColorsVal} tw-border-${ShapeColorsVal} tw-border-outset`;
+                : `tw-border ${!isGhost ? `tw-bg-${ShapeColorsVal}` : ``} tw-border-${ShapeColorsVal} tw-border-outset`;
             return (
               <div
+                key={`c${colIndex}`}
                 className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
                 style={{ borderStyle: (cellValue === 0 ? 'solid' : 'outset') }}
               ></div>

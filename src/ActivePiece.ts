@@ -33,6 +33,7 @@ export default class ActivePiece {
     return this._coordsPrev;
   }
 
+  coordsGhost: number[][] = [];
   private _coords: number[][] = [];
   public set coords(value: number[][]) {
     this._coords = value;
