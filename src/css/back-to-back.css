@@ -1,8 +1,9 @@
 .back-to-back {
+  z-index: 300;
   user-select: none;
   /* background-color: rgba(0, 128, 0, 0.175); */
   position:absolute;
-  top: -6rem;
+  top: -9rem;
   left: -0.25rem;
   font-family: "SfTheraminGothicBold";
   width: 6.5rem;

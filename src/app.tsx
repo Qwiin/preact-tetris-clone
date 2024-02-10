@@ -1,6 +1,6 @@
 import { Ref } from 'preact';
 import { useReducer, useRef } from 'preact/hooks';
-import { GameAction, ToastTimeout } from './TetrisConfig';
+import { GameAction } from './TetrisConfig';
 import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
@@ -25,28 +25,12 @@ export function App() {
     if (a.text || a.subtext || a.toast) {
 
       if(actionQue.current){
-        actionQue.current.push({
-          type: a.type,
-          text: a.text, 
-          subtext: a.subtext,
-          points: a.points, 
-          id: newUID(), 
-          transitioning: true
-        });
+        actionQue.current.unshift(a);
         console.log(JSON.stringify(actionQue.current));
       }
-      setTimeout(()=>{
-        // setTransitioning(false);
-        if(actionQue.current) {
-          actionQue.current = actionQue.current.filter(action => {
-            if(action === null || action === undefined) {
-              return false;
-            }
-            return true;
-          });
-        }
-        // forceUpdate(1);
-      },ToastTimeout);
+      // setTimeout(()=>{
+      //   a.transitioning = false;
+      // },ToastTimeout);
       requestAnimationFrame(() => {
         forceUpdate(1);
       });
@@ -67,7 +51,9 @@ export function App() {
 
         {/* @ts-expect-error Preact Component */}
         <Game init={true} actionCallback={actionCallback}/>
-        <ActionToast actions={actionQue.current || []} toastComplete={(id?: string)=>{
+        <ActionToast 
+        actions={actionQue.current || []} 
+        toastComplete={(id?: string)=>{
           if(!actionQue.current || !id) {
             return;
           }
@@ -77,9 +63,9 @@ export function App() {
               break;
             }
           }
-
-
-        }}/>  
+          console.log("toastComplete");
+        }}
+        />  
         <SoundBoard eventTargetRef={soundBoardDomRef} volume={50}/>
       </div>
       

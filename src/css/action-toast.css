@@ -1,0 +1,30 @@
+.toast-combo {
+  position: absolute;
+  top: 0;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* color: var(--toast-light-blue); */
+  color: var(--toast-pink-300);
+  font-weight: bold;
+  font-family: var(--font-action-toast);
+  font-size: 1.2rem;
+
+  opacity: 1;
+}
+
+.toast-combo.text {
+  color: var(--toast-pink-300);
+  font-weight: bold;
+  font-family: var(--font-action-toast);
+  font-size: 1.2rem;
+} 
+
+.toast-combo.text::before {
+  position: absolute;
+  transform: translate(2px,2px);
+  color:white;
+  text-shadow: var(--toast-white-glow);
+}

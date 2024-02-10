@@ -30,7 +30,7 @@ import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOES, TetronimoShape } from '../TetrisConfig';
+import { ActionType, Direction, GAME_SPEEDS, GameAction, ShapeColors, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
@@ -150,7 +150,6 @@ const Game = (props: GameProps) => {
   const pieceQue: Ref<PieceQueItem[]> = useRef(null);
   const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
 
-  const action: Ref<string> = useRef(null);
   const stats: Ref<Scoring> = useRef(null);
   
   const downArrowPressed = useRef(false);
@@ -158,6 +157,10 @@ const Game = (props: GameProps) => {
   const isTSpin: Ref<boolean> = useRef(null);
   const isTSpinMini: Ref<boolean> = useRef(null);
   const tSpun = useRef(false);
+
+  const comboCount: Ref<number> = useRef(0);
+  const lastPieceAction: Ref<ActionType> = useRef(0);
+  const lastLineClearAction: Ref<ActionType> = useRef(null);
 
   const board: Ref<number[][]> = useRef(null);
   const columnHeights: Ref<Int8Array> = useRef(null);
@@ -652,7 +655,7 @@ const Game = (props: GameProps) => {
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
         let row = rows[i];
-        if(!row.includes(0) && !row.includes(-activePiece.current?.cellValue) && numCleared < 4){
+        if(!row.includes(0) && numCleared < 4){
           row.fill(0);  // overwrite (erase) the row
           clearedRowIndexesDesc.push(i);
           numCleared++;
@@ -722,10 +725,84 @@ const Game = (props: GameProps) => {
 
       if(numCleared > 0 || isTSpin.current || isTSpinMini.current) {
 
+        let actionEnum = numCleared;
+        let actionText: string = "";
+        switch(numCleared) {
+          case 0:
+            actionEnum = isTSpin.current ? ActionType.T_SPIN : ActionType.T_SPIN_MINI;
+            break;
+          case ActionType.SINGLE:
+            actionText = getLabelForActionType(ActionType.SINGLE);
+            if(isTSpin.current) {
+              actionEnum = ActionType.T_SPIN_SINGLE;
+            }
+            else if(isTSpinMini.current) {
+              actionEnum = ActionType.T_SPIN_MINI_SINGLE;
+            }
+            break;
+          case ActionType.DOUBLE:
+            actionText = getLabelForActionType(ActionType.DOUBLE);
+            if(isTSpin.current) {
+              actionEnum = ActionType.T_SPIN_DOUBLE;
+            }
+            else if(isTSpinMini.current) {
+              actionEnum = ActionType.T_SPIN_MINI_DOUBLE;
+            }
+          break;
+          case ActionType.TRIPLE:
+            actionText = getLabelForActionType(ActionType.TRIPLE);
+            if(isTSpin.current) {
+              actionEnum = ActionType.T_SPIN_TRIPLE;
+            }
+            
+            break;
+          case ActionType.TETRIS:
+            actionText = getLabelForActionType(ActionType.TETRIS);
+            actionEnum = ActionType.TETRIS;
+            break;
+        }
+
+
+        let backToBack = false;
+        if((actionEnum === lastLineClearAction.current && actionEnum === ActionType.TETRIS)
+          || (actionEnum === lastPieceAction.current && (
+            actionEnum === ActionType.T_SPIN_MINI_SINGLE 
+            || actionEnum === ActionType.T_SPIN_MINI_DOUBLE 
+            || actionEnum === ActionType.T_SPIN_SINGLE 
+            || actionEnum === ActionType.T_SPIN_DOUBLE 
+            || actionEnum === ActionType.T_SPIN_TRIPLE
+          ))) {
+          backToBack = true;
+        }
+
+        if(isTSpin.current) {
+          // subtext = "T-Spin";
+          isTSpin.current = false;
+        }
+        else if(isTSpinMini.current) {
+          // subtext = "T-Spin Mini";
+          isTSpinMini.current = false;
+        }
+        else {
+          lastLineClearAction.current = numCleared;
+        }
+
+        if(comboCount.current === null){
+          console.error("comboCount ref is null");
+          return;
+        }
+        else {
+          comboCount.current += 1;
+        }
+        
         if(stats.current) {
+
           // console.log("updatePoints");
           stats.current.lines += numCleared;
           let level: number = Math.floor(stats.current.lines / 10) + 1;
+
+          let comboBouns: number = 50 * (comboCount.current) * level;
+
           if(stats.current.level !== level){
             stats.current.level = level;
             props.actionCallback({type: ActionType.LEVEL_UP});  
@@ -741,61 +818,42 @@ const Game = (props: GameProps) => {
             points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
           }
 
-          stats.current.score += points;
+          stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBouns;
 
-          //TODO: implement all clear, combo, and back-to-back bonuses
+          //TODO: implement all clear
+          //DONE: combo, and back-to-back bonuses
         }
 
-        let actionEnum = numCleared;
-        switch(numCleared) {
-          case 0:
-            actionEnum = isTSpin.current ? ActionType.T_SPIN : ActionType.T_SPIN_MINI;
-            action.current = null;
-            break;
-          case ActionType.SINGLE:
-            action.current = "Single!";
-            if(isTSpin.current) {
-              actionEnum = ActionType.T_SPIN_SINGLE;
-            }
-            else if(isTSpinMini.current) {
-              actionEnum = ActionType.T_SPIN_MINI_SINGLE;
-            }
-            break;
-          case ActionType.DOUBLE:
-            action.current = "Double!";
-            if(isTSpin.current) {
-              actionEnum = ActionType.T_SPIN_DOUBLE;
-            }
-            else if(isTSpinMini.current) {
-              actionEnum = ActionType.T_SPIN_MINI_DOUBLE;
-            }
-          break;
-          case ActionType.TRIPLE:
-            if(isTSpin.current) {
-              actionEnum = ActionType.T_SPIN_TRIPLE;
-            }
-            
-            break;
-          case ActionType.TETRIS:
-            actionEnum = ActionType.TETRIS;
-            break;
-        }
+        
 
-        if(isTSpin.current) {
-          // subtext = "T-Spin";
-          isTSpin.current = false;
-        }
-        else if(isTSpinMini.current) {
-          // subtext = "T-Spin Mini";
-          isTSpinMini.current = false;
-        }
 
-        props.actionCallback({type: actionEnum, text: action.current, points: points, toast: true} || null);
+        props.actionCallback({
+          type: actionEnum, 
+          id: newUID(),
+          timestamp: (window.performance.now() / 1000),
+          text: actionText, 
+          points: points, 
+          combo: ((comboCount.current > 0) 
+            ? `Combo x ${comboCount.current})` 
+            : undefined), 
+          toast: true,
+          backToBack: backToBack,
+          transitioning: true,
+        } as GameAction);
+          
 
         if(clearEffectData.current && clearEffectData.current.length > 0) {
           console.log(clearEffectData.current.toString())
           pauseGame(true, true);
         }
+
+      }
+      else {
+        // no scoring move
+        console.log("no scoring move");
+        comboCount.current = -1;
+        lastPieceAction.current = ActionType.NO_LINES_CLEARED;
+        lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
       }
     }
   };
@@ -823,7 +881,7 @@ const Game = (props: GameProps) => {
       let pieceItem = pieceQue.current.shift();
       if(!pieceItem) {
         console.error("no piece item in que");
-        return undefined;
+        return null;
       };
       
       const {xStart, yStart} = getStartingXY(pieceItem);
@@ -841,7 +899,7 @@ const Game = (props: GameProps) => {
     }
 
     console.error("Game::getPieceFromQue() -- piece que is undefined");
-    return undefined;
+    return null;
   }
 
   /**
@@ -1157,7 +1215,8 @@ const Game = (props: GameProps) => {
       }
     }
     
-    action.current = "Action";
+    lastPieceAction.current = ActionType.NONE;
+    lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
     
     if(stats.current === null) {
       stats.current = {
@@ -1174,11 +1233,17 @@ const Game = (props: GameProps) => {
 
     isTSpin.current = false;
     isTSpinMini.current = false;
+    tSpun.current = false;
+
     upArrowPressed.current = false;
     downArrowPressed.current = false;
-    tSpun.current = false;
+
     gameoverRef.current = false;
     paused.current = false;
+
+    comboCount.current = -1;
+    lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
+    lastPieceAction.current = ActionType.NONE;
   }
 
   const gameOver = () => {
@@ -1231,17 +1296,25 @@ const Game = (props: GameProps) => {
       pieceQue.current = null;
       pieceQueIndexes.current = null;
       activePiece.current = null;
-      stats.current = null;
+
       board.current = null;
-      action.current = null;
+      
       columnHeights.current = null;
+      
+      tSpun.current = false;
       isTSpin.current = null;
       isTSpinMini.current = null;
+      
       upArrowPressed.current = false;
       downArrowPressed.current = false;
-      tSpun.current = false;
+      
       gameoverRef.current = false;
       paused.current = false;
+      
+      stats.current = null;
+      comboCount.current = null;
+      lastLineClearAction.current = null;
+      lastPieceAction.current = null;
 
       if(ticker.current) {
         clearInterval(ticker.current);
