@@ -70,7 +70,7 @@ export default class ActivePiece {
   readonly id: string = "";
   readonly shape: number[][] = [];
   readonly shapeEnum: TetronimoShape = TetronimoShape.NULL;
-  readonly cellValue: number;
+  readonly cellValue: number = 0;
 
   readonly shapeByDirection: number[][][] = [];
 
