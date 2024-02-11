@@ -1,0 +1,105 @@
+.toast-combo {
+  position: absolute;
+  width: 100%;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+   
+  font-weight: bold;
+  font-family: var(--font-action-toast);
+  opacity: 1;
+
+  top: -16.5rem;
+  left: -0.25rem;
+  width: 6.5rem;
+}
+
+h2.toast-combo {
+  padding: 0;
+  margin: 0;
+}
+
+.toast-combo .count {  
+  position: absolute;
+  width: 100%;
+  left: -.1rem;
+  text-align: center;
+  /* text-shadow: var(--toast-yellow-highlight); */
+  color: var(--toast-yellow-100);
+  font-weight:900;
+  font-family: var(--font-action-toast);
+  font-size: 1.2rem;
+} 
+.toast-combo .count::before {
+  width: 100%;
+  left: 0;
+  position: absolute;
+  content: attr(data-text);
+  /* color: var(--toast-pink-300); */
+  z-index: -1;
+  font-weight: bold;
+  font-family: var(--font-action-toast);
+  color: var(--toast-yellow-coin);
+  transform: translate(0,-0.05rem);
+  font-size: 1.27rem;
+  text-shadow: var(--toast-yellow-highlight);
+} 
+
+.toast-combo .label {
+  /* background-color: black; */
+  position: absolute;
+  width: 100%;
+  top: -0.2rem;
+  text-align: center;
+  color: var(--toast-pink-200);
+  font-weight: bold;
+  font-family: var(--font-action-toast);
+  font-size: 0.87rem;
+  letter-spacing: 0.09rem;
+  transform: scaleY(1.1);
+  text-shadow: var(--toast-shadow-pink) 0 0.05rem 0.05rem;
+} 
+
+.toast-combo .label::before {
+  /* letter-spacing: 0.03rem; */
+  width: 100%;
+  left: 0rem;
+  /* font-size: 0.93rem; */
+  position: absolute;
+  content: attr(data-text);
+  transform: translate(0,0.02rem);
+  /* color: var(--toast-pink-800); */
+  z-index: -1;
+  text-shadow: var(--toast-white-glow2);
+}
+
+
+.toast-points {
+  display: flex;
+  position: absolute;
+  top: 0;
+  opacity: 1;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-family: var(--font-action-toast);
+  font-size: 1.0rem;
+  width: 100%
+}
+.toast-points .label {
+  color: var(--toast-dark-blue);
+  font-weight: bold;
+  font-family: var(--font-action-toast);
+  font-size: 1.0rem;
+} 
+
+.toast-points .label::before {
+  position: absolute;
+  content: attr(data-text);
+  transform: translate(0 0.05rem);
+  color: var(--toast-purple-700);
+  z-index: -1;
+  text-shadow: var(--toast-white-glow);
+}
+

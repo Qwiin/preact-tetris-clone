@@ -1,13 +1,45 @@
 :root {
 
+  --font-stats-value: 'SF Digital Heavy';
+  --font-action-toast: 'SfTheraminGothicBold';
+
   --effect-z-index: 300;
 
   --piece-que-item-scale: scale(60%);
 
-  --toast-yellow: #e6f14c;
-  --toast-orange: #DF6442;
-  --toast-light-blue: #acb8ec;
-  --toast-dark-blue: #5d5897; 
+  /*
+    galaxy theme 
+  */
+  --toast-pink-200:   #DE8FC9;
+  --toast-pink-300:   #D375BA;
+  --toast-pink-700:   #AE398D;
+  --toast-pink-800:   #4f2b45;
+  --toast-yellow-glow:#F7FB9F;
+
+  --toast-red-100:    #F099C4;
+  --toast-red-200:    #EC5D8B;
+  --toast-red-peony:  #DC4982;
+  --toast-red-mario:  #E83333;
+  --toast-orange:     #DF6442;
+  --toast-yellow-coin:#FCF752;
+  
+  --toast-yellow:     #e6f14c;
+  --toast-yellow-100: #fbf7f4;
+  --toast-green-luigi:#75FB53;
+  --toast-green-yoshi:#6BC569;
+  --toast-green:      #204E19;
+  --toast-cyan:       #74FAFD;
+  --toast-aqua:       #64D8D9;
+  --toast-dark-sky:   #acb8ec;
+  --toast-light-blue: #8DC4FA;
+  --toast-blue:       #2356F4;
+  --toast-purple:     #A221F4;
+  --toast-purple-500: #520f7c;
+  --toast-purple-700: #2b0741;
+  --toast-dark-blue:  #5d5897; 
+  
+
+  --toast-shadow-pink: #4f2b45AA;
 
   --toast-black-shadow: rgba(0,0,0,0.75) 0.5px 0.5px;
   --toast-dark-blue-highlight: 
@@ -22,10 +54,10 @@
     -0.5px  0.5px 0.5px #fff;
 
   --toast-white-glow2:
-     1px  1px 0.5px #fff, 
-    -1px -1px   0px #fff,
-     1px -1px   0px #fff, 
-    -1px  1px 0.5px #fff;
+  0.5px  0.5px 0.5px #fffd, 
+  -0.5px -0.5px   0.5px #fffd,
+   0.5px -0.5px   0.5px #fffd, 
+  -0.5px  0.5px 0.5px #fffd;
 
   --toast-line-clear-highlight:
     0.5px  0.5px 0.5px #ffffffCC, 

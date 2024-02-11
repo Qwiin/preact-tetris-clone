@@ -6,6 +6,7 @@ export enum MovementTrigger {
   GRAVITY=1,
   INPUT_DOWN,
   INPUT_LATERAL,
+  INPUT_ROTATE,
   INPUT_DROP,
   INPUT_SET,  // pressing down arrow when piece can't move down will set it in place
 }
@@ -33,6 +34,7 @@ export default class ActivePiece {
     return this._coordsPrev;
   }
 
+  coordsGhost: number[][] = [];
   private _coords: number[][] = [];
   public set coords(value: number[][]) {
     this._coords = value;
@@ -68,6 +70,7 @@ export default class ActivePiece {
   readonly id: string = "";
   readonly shape: number[][] = [];
   readonly shapeEnum: TetronimoShape = TetronimoShape.NULL;
+  readonly cellValue: number = 0;
 
   readonly shapeByDirection: number[][][] = [];
 
@@ -76,6 +79,7 @@ export default class ActivePiece {
     if(item) {
       this.shapeEnum = item.shapeEnum;
       this.shape = JSON.parse(TETRONIMO_STRINGS[item.shapeEnum]);
+      this.cellValue = Math.max(...this.shape.flat());
       this.id = item.id;
       this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {

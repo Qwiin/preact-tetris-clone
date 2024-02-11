@@ -1,8 +1,8 @@
 import {AnimationSequence, animate, stagger} from "framer-motion";
 import { useState, useEffect } from "preact/hooks";
-import { ActionType as TSType } from "./TetrisConfig";
+import { BaseToastDelay, ActionType as TSType } from "./TetrisConfig";
 
-const backTobackSequence: AnimationSequence = [
+const tSpinCharSequence: AnimationSequence = [
   
   [
     ".tspin-flexbox .tspin-char.secondary", 
@@ -29,6 +29,7 @@ interface TSpinProps {
             | TSType.T_SPIN_TRIPLE;
 
   id: string;
+  timestamp: number;
   animationComplete: (id: string) => void;
 }
 
@@ -38,7 +39,7 @@ export default function TSpin(props: TSpinProps) {
 
   useEffect(()=>{
     playAnimation();
-  },[])
+  },[props.id])
 
   const playAnimation = () => {
     setAnimateType(true);
@@ -49,12 +50,13 @@ export default function TSpin(props: TSpinProps) {
           opacity: [0,1,1,1,1,1,1]
         }, 
         { 
+          delay: BaseToastDelay + (props.timestamp - (performance.now() / 1000)),
           duration: 0.4,
           ease: "easeIn",
         }
     ).then(()=>{
 
-      animate(backTobackSequence).then(()=>{
+      animate(tSpinCharSequence).then(()=>{
         document.querySelector('.tspin-type')?.classList.add("flash");
         document.querySelector('.tspin-flexbox')?.classList.add("flash");
         document.querySelector('.line-clear-type')?.classList.add("show","flash");
@@ -72,6 +74,9 @@ export default function TSpin(props: TSpinProps) {
               delay: 0.5
             }
           ).then(()=>{
+            document.querySelector('.tspin-type')?.classList.remove("flash");
+            document.querySelector('.tspin-flexbox')?.classList.remove("flash");
+            document.querySelector('.line-clear-type')?.classList.remove("show","flash");
             props.animationComplete(props.id);
           })
         });
@@ -115,7 +120,7 @@ export default function TSpin(props: TSpinProps) {
     <div key={props.id} className="t-spin">
       {
         isMini() && (
-          <h3 key="123" data-chars="Mini" className={`tspin-type mini ${animateType === true ? 'animate' : ''}`} 
+          <h3 key={`${props.id + 'a'}`} data-chars="Mini" className={`tspin-type mini ${animateType === true ? 'animate' : ''}`} 
           onAnimationEnd={(e)=>{
             console.log(e);
             document.querySelector('.tspin-type')?.classList.add("show");
@@ -134,7 +139,7 @@ export default function TSpin(props: TSpinProps) {
 
       {
         lineClearLabel && (
-          <h3 key="123" data-chars={lineClearLabel} className={`line-clear-type ${lineClearLabel.toLowerCase()} ${animateType === true ? 'animate' : ''}`} 
+          <h3 key={`${props.id + 'b'}`} data-chars={lineClearLabel} className={`line-clear-type ${lineClearLabel.toLowerCase()} ${animateType === true ? 'animate' : ''}`} 
           >{lineClearLabel}</h3>
         )
       }

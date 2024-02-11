@@ -30,10 +30,11 @@ import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, ShapeColors, TETRONIMOES, TetronimoShape } from '../TetrisConfig';
+import { ActionType, Direction, GAME_SPEEDS, GameAction, ShapeColors, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
+import { newUID } from '../utils/AppUtil';
 
 const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -143,13 +144,13 @@ const Game = (props: GameProps) => {
   const clearedRows: Ref<number[]> = useRef(null);
   const clearEffectData: Ref<any> = useRef(null);
   const dropEffectData: Ref<any> = useRef(null);
+  const pieceWasSet = useRef(false);
 
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
   const pieceQue: Ref<PieceQueItem[]> = useRef(null);
   const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
 
-  const action: Ref<string> = useRef(null);
   const stats: Ref<Scoring> = useRef(null);
   
   const downArrowPressed = useRef(false);
@@ -158,8 +159,13 @@ const Game = (props: GameProps) => {
   const isTSpinMini: Ref<boolean> = useRef(null);
   const tSpun = useRef(false);
 
+  const comboCount: Ref<number> = useRef(0);
+  const lastPieceAction: Ref<ActionType> = useRef(0);
+  const lastLineClearAction: Ref<ActionType> = useRef(null);
+
   const board: Ref<number[][]> = useRef(null);
   const columnHeights: Ref<Int8Array> = useRef(null);
+  const ghostPieceCoords: Ref<number[][]> = useRef(null); // [[row1,col1],[row2,col2]...]
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
   const getBoardCols = (): number[][] => {
@@ -174,12 +180,63 @@ const Game = (props: GameProps) => {
     for (let i = 0; i < rowLen; i++) {
       let col: number[] = [];
       for (let j = 0; j < colLen; j++) {
-        col.push(cells[j * rowLen + i]);
+        let cellValue = cells[j * rowLen + i];
+        if(cellValue >= 0 ){
+          col.push(cells[j * rowLen + i]);
+        }
+        else {
+          col.push(0);
+        }
       }
       boardCols.push(col);
     }
     return  boardCols;
   };
+
+
+  const getDropDistance = (): number => {
+    const cols = getBoardCols();
+    const p = activePiece.current;
+    if(!p) {
+      return 0;
+    }
+    
+    let colIndex = p.x;
+    let perm: number[][] = p.permutation;
+
+    //
+    // Gets the offsets from the bottoms contour of the piece's current permutation
+    //
+    let bottomOffsets: number[] = [];
+    for(let i=0; i<p.width; i++) {
+      bottomOffsets.push(0);
+      for(let j=p.height-1; j>=0; j--) {
+        if(perm[j][i] > 0) {
+          break;
+        }
+        bottomOffsets[i]++;
+      }
+    }
+    
+    let minDistance: number = p.yMax - p.y;
+    let minDistances = [];
+    for(let i=0; i<p.width; i++) {
+      let colArr: number[] = (cols[i + colIndex]);
+      let dropDistance = bottomOffsets[i];
+      for(let j=p.y; j<colArr.length; j++){
+        if(colArr[j] > 0 && colArr[j] < 10) {
+          break;
+        }
+        dropDistance++;
+      }
+      minDistances.push(minDistance);
+      if(dropDistance < minDistance) {
+        minDistance = dropDistance;
+      }
+    }
+
+    return minDistance;
+  }
 
   const updatePosition = () => {
     if(!board.current || !activePiece.current || clearEffectData.current) {
@@ -217,7 +274,7 @@ const Game = (props: GameProps) => {
       for(let i=i_iii; i > (i_iii - h); i--) {
         let j_sss = 0;
         for(let j=j_iii; j < (j_iii + w); j++) {
-          if(canRotateInPlace && perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && rows[i][j] !== 0 && rows[i][j] !== perm[i_sss][j_sss]) {
+          if(canRotateInPlace && perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_sss][j_sss]) {
             // if(p.y !== p.yPrev){
             //   canMoveDown = false;
             //   console.log("can't move down...");
@@ -232,7 +289,7 @@ const Game = (props: GameProps) => {
             canTSpinRight = false;
           }
           else {
-            if(canTSpin && perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && rows[i+dy][j] !== 0 && rows[i+dy][j] !== perm[i_sss][j_sss]) {
+            if(canTSpin && perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && rows[i+dy][j] > 0 && rows[i+dy][j] !== perm[i_sss][j_sss]) {
               // if(p.y !== p.yPrev){
               //   canMoveDown = false;
               //   console.log("can't move down...");
@@ -241,11 +298,11 @@ const Game = (props: GameProps) => {
               canTSpin = false;
             }
             if(canTSpinLeft) {
-              if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && rows[i+dy][j-1] !== 0 && rows[i+dy][j-1] !== perm[i_sss][j_sss])) {
+              if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && rows[i+dy][j-1] > 0 && rows[i+dy][j-1] !== perm[i_sss][j_sss])) {
                 canTSpinLeft = false;
               }
             }
-            if(canTSpinRight && j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] !== 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
+            if(canTSpinRight && j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] > 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
               canTSpinRight = false;
             }
           }
@@ -279,7 +336,7 @@ const Game = (props: GameProps) => {
         tSpun.current = false;
         p.rotationPrev = prevRotation;
         p.lastMoveTrigger = MovementTrigger.GRAVITY;
-        failedRotation = true;
+        failedRotation = true;  
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
         console.log("can t-spin");
@@ -318,7 +375,7 @@ const Game = (props: GameProps) => {
           let y = coords[i][0];
           let x = coords[i][1];
           let cellValue = rows[y][x + dx];
-          if(cellValue !== 0 && cellValue < 10){
+          if(cellValue > 0 && cellValue < 10){
             p.x = p.xPrev;
           }   
         }
@@ -347,14 +404,14 @@ const Game = (props: GameProps) => {
       for(let i=i_i; i > (i_i - h); i--) {
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && rows[i][j] !== 0 && rows[i][j] !== perm[i_s][j_s]) {
+          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_s][j_s]) {
             canMoveDown = false;
             p.y = p.yPrev;
           }
           if(i >= rows.length-1) {
             canMoveDownTwice = false;
           }
-          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] !== 0 && rows[i+1][j] !== perm[i_s][j_s]) {            
+          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] > 0 && rows[i+1][j] !== perm[i_s][j_s]) {            
             canMoveDownTwice = false;
           }
           j_s++;
@@ -371,30 +428,78 @@ const Game = (props: GameProps) => {
           p.yPrev = p.y;
         }
       }
+
+      //--------------------
       // erase old location
+      //--------------------
       for(let i=0; i<p.coords.length; i++){
+        if(p.coordsGhost && p.coordsGhost.length > i && board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] <= 0) {
+          board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] = 0;
+        }
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
       }
 
       p.xPrev = p.x;
 
+
+
+      //--------------------
+      // getGhost Piece location
+      //--------------------
+
+      let ghostY = -1;
+
+      let updateGhostCoords = ( canMoveDown && canMoveDownTwice && !tSpun.current && (
+          p.lastMoveTrigger !== MovementTrigger.INPUT_DROP || p.coordsGhost.length === 0
+        ));
+
+      if(updateGhostCoords) {
+        const dropDistance: number = getDropDistance();
+        // console.log(dropDistance);
+        if(dropDistance <= 0) {
+          updateGhostCoords = false;
+        }
+        ghostY = Math.min(p.y + dropDistance - 1, 23);
+      }
+       
+      //--------------------
       // write new location
+      //--------------------
+
       j_i = p.x;
       i_i = p.y-1;
-
       let i_ss = h-1;
       let newCoords: number[][] = [];
+      let newCoordsGhost: number[][] = [];
       for(let i=i_i; i > (i_i - h); i--) {
+        
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
           if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] === 0) {
+
+            if(updateGhostCoords) {
+              newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
+              let ghostCellValue = board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]];
+              if( ghostCellValue <= 0 ) {
+                board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]] = perm[i_ss][j_s] * -1;
+                // ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
+              }
+            }
+
             board.current[i][j] = perm[i_ss][j_s];
-            newCoords.push([i,j]);
+            newCoords.unshift([i,j]);
           }
           j_s++;
         }
         i_ss--;
       }
+
+      // if(updateGhostCoords) {
+      //   console.log("gst:" + JSON.stringify(newCoordsGhost));
+      //   console.log("new: " + JSON.stringify(newCoords));
+      //   // console.log(JSON.stringify(ghostYX));
+      //   console.log({ghostY});
+      // }
 
       if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
         stats.current.score += 1;
@@ -402,16 +507,28 @@ const Game = (props: GameProps) => {
 
       p.coordsPrev = p.coords;
       p.coords = newCoords;
+      p.coordsGhost = newCoordsGhost;
 
       // this is run before the render, so we need to know if the piece will thud on next paint
       if(
-        (p.lastMoveTrigger === MovementTrigger.GRAVITY || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) && !canMoveDownTwice && !failedRotation) {
+        (p.lastMoveTrigger === MovementTrigger.GRAVITY 
+          || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) 
+          && !canMoveDownTwice && !failedRotation) {
         console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
     }
   }
 
+  /**
+   * the purposes of this function are:
+   *   1a. to set the active piece in place on the board
+   *   1b. to set the active piece to null and fetch a new active piece after a delay
+   *   2. to perform line clears
+   *   3.
+   * @param piece 
+   * @returns 
+   */
   const updateBoard = (piece?: ActivePiece | null) => {
 
     if(tick.value < 0 || !board.current) {
@@ -431,7 +548,8 @@ const Game = (props: GameProps) => {
         for(let i=0; i<coords.length; i++){
           let y = coords[i][0];
           let x = coords[i][1];
-          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11;
+
+          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11; 
           rows[coords[i][0]][coords[i][1]] = newCellVal;
 
           // update column heights
@@ -455,16 +573,16 @@ const Game = (props: GameProps) => {
             let jMax = (piece.x + piece.width - 1) + ((piece.rotation === Direction.W) ? 1 : 0);
 
             let cornerCount = 0;
-            if(iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] !== 0 && rows[iMin][jMin] < 10)){
+            if(iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] > 0 && rows[iMin][jMin] < 10)){
               cornerCount++;
             }
-            if(iMin >= 0 && jMax < rows[0].length && (rows[iMin][jMax] !== 0 && rows[iMin][jMax] < 10)){
+            if(iMin >= 0 && jMax < rows[0].length && (rows[iMin][jMax] > 0 && rows[iMin][jMax] < 10)){
               cornerCount++;
             }
-            if(iMax < rows.length && jMin >= 0 && (rows[iMax][jMin] !== 0 && rows[iMax][jMin] < 10)){
+            if(iMax < rows.length && jMin >= 0 && (rows[iMax][jMin] > 0 && rows[iMax][jMin] < 10)){
               cornerCount++;
             }
-            if(iMax < rows.length && jMax < rows[0].length && (rows[iMax][jMax] !== 0 && rows[iMax][jMax] < 10)){
+            if(iMax < rows.length && jMax < rows[0].length && (rows[iMax][jMax] > 0 && rows[iMax][jMax] < 10)){
               cornerCount++;
             }
 
@@ -475,7 +593,7 @@ const Game = (props: GameProps) => {
               }
             }
 
-            console.log("CornerCount:", cornerCount);
+            // console.log("CornerCount:", cornerCount);
 
             if(cornerCount === 2) {
               isTSpin.current = false;
@@ -503,11 +621,13 @@ const Game = (props: GameProps) => {
         }
         activePiece.current = null; 
         requestAnimationFrame(()=>{
-          updatePosition();
+          // updatePosition();
+          pieceWasSet.current = true;
           updateBoard(null);
         });
         setTimeout(()=>{
-          activePiece.current = getPieceFromQue();          
+          activePiece.current = getPieceFromQue() || null;          
+          updateBoard(activePiece.current);
         }, TICK_INTERVAL);
         return;
       }
@@ -525,11 +645,18 @@ const Game = (props: GameProps) => {
         
         // console.log({pieceY: piece.y});
         piece.lastTick = tick.value;    // This may or may not be the most important
-        updatePosition()
+        updatePosition();
       }
     }
     else  
     {
+      if(!pieceWasSet.current) {
+        console.log("Piece Not Set");
+        return;
+      }
+
+      
+
       let numCleared = 0;
 
       // CLEAR COMPLETE LINES
@@ -608,38 +735,14 @@ const Game = (props: GameProps) => {
 
       if(numCleared > 0 || isTSpin.current || isTSpinMini.current) {
 
-        if(stats.current) {
-          // console.log("updatePoints");
-          stats.current.lines += numCleared;
-          let level: number = Math.floor(stats.current.lines / 10) + 1;
-          if(stats.current.level !== level){
-            stats.current.level = level;
-            props.actionCallback({type: ActionType.LEVEL_UP});  
-          }
-    
-          if(isTSpinMini.current) {
-            points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
-          }
-          else if(isTSpin.current) {
-            points += (400 + (numCleared * 400)) * level; 
-          }
-          else {
-            points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
-          }
-
-          stats.current.score += points;
-
-          //TODO: implement all clear, combo, and back-to-back bonuses
-        }
-
         let actionEnum = numCleared;
+        let actionText: string = "";
         switch(numCleared) {
           case 0:
             actionEnum = isTSpin.current ? ActionType.T_SPIN : ActionType.T_SPIN_MINI;
-            action.current = null;
             break;
           case ActionType.SINGLE:
-            action.current = "Single!";
+            actionText = getLabelForActionType(ActionType.SINGLE);
             if(isTSpin.current) {
               actionEnum = ActionType.T_SPIN_SINGLE;
             }
@@ -648,7 +751,7 @@ const Game = (props: GameProps) => {
             }
             break;
           case ActionType.DOUBLE:
-            action.current = "Double!";
+            actionText = getLabelForActionType(ActionType.DOUBLE);
             if(isTSpin.current) {
               actionEnum = ActionType.T_SPIN_DOUBLE;
             }
@@ -657,14 +760,29 @@ const Game = (props: GameProps) => {
             }
           break;
           case ActionType.TRIPLE:
+            actionText = getLabelForActionType(ActionType.TRIPLE);
             if(isTSpin.current) {
               actionEnum = ActionType.T_SPIN_TRIPLE;
             }
-            action.current = "Triple!";
+            
             break;
           case ActionType.TETRIS:
-            action.current = "T E T R I S !";
+            actionText = getLabelForActionType(ActionType.TETRIS);
+            actionEnum = ActionType.TETRIS;
             break;
+        }
+
+
+        let backToBack = false;
+        if((actionEnum === lastLineClearAction.current && actionEnum === ActionType.TETRIS)
+          || (actionEnum === lastPieceAction.current && (
+            actionEnum === ActionType.T_SPIN_MINI_SINGLE 
+            || actionEnum === ActionType.T_SPIN_MINI_DOUBLE 
+            || actionEnum === ActionType.T_SPIN_SINGLE 
+            || actionEnum === ActionType.T_SPIN_DOUBLE 
+            || actionEnum === ActionType.T_SPIN_TRIPLE
+          ))) {
+          backToBack = true;
         }
 
         if(isTSpin.current) {
@@ -675,62 +793,160 @@ const Game = (props: GameProps) => {
           // subtext = "T-Spin Mini";
           isTSpinMini.current = false;
         }
+        else {
+          lastLineClearAction.current = numCleared;
+        }
 
-        props.actionCallback({type: actionEnum, text: action.current, points: points, toast: true} || null);
+        if(comboCount.current === null || stats.current === null){
+          console.error("comboCount ref is null");
+          return;
+        }
+        
+
+        comboCount.current += 1;
+        console.log("Combo count: " + comboCount.current);
+
+
+        // console.log("updatePoints");
+        stats.current.lines += numCleared;
+
+        const level: number = Math.floor(stats.current.lines / 10) + 1;
+        const comboBouns: number = comboCount.current * level * 50;
+
+        // update level
+        if(stats.current.level !== level){
+          stats.current.level = level;
+          props.actionCallback({type: ActionType.LEVEL_UP});  
+        }
+  
+        if(isTSpinMini.current) {
+          points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
+        }
+        else if(isTSpin.current) {
+          points += (400 + (numCleared * 400)) * level; 
+        }
+        else {
+          points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
+        }
+
+        // add bonuses
+        stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBouns;
+
+
+        //TODO: implement all clear
+        //DONE: combo, and back-to-back bonuses
+        
+
+        props.actionCallback({
+          type: actionEnum, 
+          id: newUID(),
+          timestamp: (window.performance.now() / 1000),
+          text: actionText, 
+          points: `${points}` + (backToBack ? ' x 1.5 ' : ' ') + (comboBouns > 0 ? `+ ${comboBouns}` : ''), 
+          combo: comboCount.current > 0 ? comboCount.current : undefined, 
+          toast: true,
+          backToBack: backToBack,
+          transitioning: true,
+        } as GameAction);
+          
 
         if(clearEffectData.current && clearEffectData.current.length > 0) {
-          console.log(clearEffectData.current.toString())
+          // console.log(clearEffectData.current.toString())
           pauseGame(true, true);
         }
+
+      }
+      else {
+        // no scoring move
+        console.log("no scoring move");
+        console.log("comobo counter reset to -1");
+
+        pieceWasSet.current = false;
+        comboCount.current = -1;
+        lastPieceAction.current = ActionType.NO_LINES_CLEARED;
+        lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
+          
       }
     }
   };
 
   const getNextPiece = (): PieceQueItem => {
 
-    // replenish que
+    // replenish piece que
     if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
       pieceQueIndexes.current.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
+    // 
     let index: number = pieceQueIndexes.current?.shift() ?? -1;
     return {
       shapeEnum: index,
-      id: Math.round(window.performance.now()*1000).toString()
+      id: newUID()
     }
   }
 
   const getPieceFromQue = () => {
     if(pieceQue.current){
-    pieceQue.current.push(getNextPiece());    
-    // console.log(pieceQue.current);
-    let pieceItem = pieceQue.current.shift();
-    let xStart: number = Math.floor((10 - TETRONIMOES[pieceItem?.shapeEnum || 0][0].length)/2);
-    let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart);
-    let maxColumnHeightUnderNewPiece = 0;
-    if(columnHeights.current) {
-      for(let i=xStart; i<(xStart + p.width); i++) {
-        if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
-          maxColumnHeightUnderNewPiece = columnHeights.current[i];
+
+      pieceQue.current.push( getNextPiece() );    
+      
+      let pieceItem = pieceQue.current.shift();
+      if(!pieceItem) {
+        console.error("no piece item in que");
+        return null;
+      };
+      
+      const {xStart, yStart} = getStartingXY(pieceItem);
+       
+      let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, yStart);
+      
+      let c: number[][] = [];
+      for(let i=0; i<p.height; i++) {
+        for(let j=0; j<p.width; j++) {
+          c.push([p.y-i,p.x+j]);
         }
       }
-    }
-    // adjust starting y position if board is stacked higher than starting height projection of piece
-    if(maxColumnHeightUnderNewPiece > 18){
-      p.y = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
-      p.yPrev = p.y-1;
+      p.coords = c;
+      return p;
     }
 
-    let c: number[][] = [];
-    for(let i=0; i<p.height; i++) {
-      for(let j=0; j<p.width; j++) {
-        c.push([p.y-i,p.x+j]);
-      }
-    }
-    p.coords = c;
-    return p;
-    }
+    console.error("Game::getPieceFromQue() -- piece que is undefined");
     return null;
+  }
+
+  /**
+   * Utility method to get the starting x,y position for 
+   * a new active piece
+   * @param item 
+   * @returns 
+   */
+  const getStartingXY = (item: PieceQueItem) => {
+
+      if(!item) {
+        console.error("Game::getStartingXY(item) -- 'item' is '" + item + "'");
+        return {};
+      }
+
+      let h = TETRONIMOES[item?.shapeEnum || 0].length;
+      let w = TETRONIMOES[item?.shapeEnum || 0][0].length;
+
+      let xStart: number = Math.floor((10 - w)/2);
+      let yStart: number = 4 + h - 1;
+
+      let maxColumnHeightUnderNewPiece = 0;
+      if(columnHeights.current) {
+        for(let i=xStart; i<(xStart + w); i++) {
+          if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
+            maxColumnHeightUnderNewPiece = columnHeights.current[i];
+          }
+        }
+      }
+      // adjust starting y position if board is stacked higher than starting height projection of piece
+      if(maxColumnHeightUnderNewPiece > 18){
+        yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+      }
+
+      return {xStart, yStart};
   }
 
   const keydownHandler = (e:any) => {
@@ -778,6 +994,12 @@ const Game = (props: GameProps) => {
               let y = p.coords[i][0];
               let x = p.coords[i][1];
               board.current[y][x] = 0;
+
+              if(p.coordsGhost.length > i) {
+                let yG = p.coordsGhost[i][0];
+                let xG = p.coordsGhost[i][1];
+                board.current[yG][xG] = 0;
+              }
             }
 
             if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
@@ -787,7 +1009,7 @@ const Game = (props: GameProps) => {
             }
             else {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
-              activePiece.current = getPieceFromQue();
+              activePiece.current = getPieceFromQue() || null;
             }
 
             p = activePiece.current;
@@ -846,7 +1068,9 @@ const Game = (props: GameProps) => {
           p.yPrev = p.y
           p.lastMoveTrigger = MovementTrigger.INPUT_SET;
           downArrowPressed.current = true;
-          updateBoard();
+          // updateBoard();
+          updateBoard(activePiece.current);
+          
         }
         break;
 
@@ -856,44 +1080,46 @@ const Game = (props: GameProps) => {
         p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
         // p.dropped = true;
 
-        const cols: number[][] = getBoardCols();
-        let colIndex = p.x;
-        let perm: number[][] = p.permutation;
+        // const cols: number[][] = getBoardCols();
+        // let colIndex = p.x;
+        // let perm: number[][] = p.permutation;
 
-        //
-        // Gets the offsets from the bottoms contour of the piece's current permutation
-        //
-        let bottomOffsets: number[] = [];
-        for(let i=0; i<p.width; i++) {
-          bottomOffsets.push(0);
-          for(let j=p.height-1; j>=0; j--) {
-            if(perm[j][i] !== 0) {
-              break;
-            }
-            bottomOffsets[i]++;
-          }
-        }
+        // //
+        // // Gets the offsets from the bottoms contour of the piece's current permutation
+        // //
+        // let bottomOffsets: number[] = [];
+        // for(let i=0; i<p.width; i++) {
+        //   bottomOffsets.push(0);
+        //   for(let j=p.height-1; j>=0; j--) {
+        //     if(perm[j][i] > 0) {
+        //       break;
+        //     }
+        //     bottomOffsets[i]++;
+        //   }
+        // }
         
-        let minDistance: number = p.yMax - p.y;
-        let minDistances = [];
-        for(let i=0; i<p.width; i++) {
-          let colArr: number[] = (cols[i + colIndex]);
-          let dropDistance = bottomOffsets[i];
-          for(let j=p.y; j<colArr.length; j++){
-            if(colArr[j] !== 0) {
-              break;
-            }
-            dropDistance++;
-          }
-          minDistances.push(minDistance);
-          if(dropDistance < minDistance) {
-            minDistance = dropDistance;
-          }
-        }
+        // let minDistance: number = p.yMax - p.y;
+        // let minDistances = [];
+        // for(let i=0; i<p.width; i++) {
+        //   let colArr: number[] = (cols[i + colIndex]);
+        //   let dropDistance = bottomOffsets[i];
+        //   for(let j=p.y; j<colArr.length; j++){
+        //     if(colArr[j] > 0) {
+        //       break;
+        //     }
+        //     dropDistance++;
+        //   }
+        //   minDistances.push(minDistance);
+        //   if(dropDistance < minDistance) {
+        //     minDistance = dropDistance;
+        //   }
+        // }
+
+        const dropDistance = getDropDistance();
 
         dropEffectData.current = {
           top: `${(p.y - p.height - 4)}rem`,
-          bottom: `${(24 - (p.y + minDistance))}rem`,
+          bottom: `${(24 - (p.y + dropDistance))}rem`,
           left: `${p.x}rem`,
           right: `${(10 - p.x - p.width)}rem`,
           id: p.id
@@ -904,17 +1130,17 @@ const Game = (props: GameProps) => {
 
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
-        if(minDistance > 0) {
+        if(dropDistance > 0) {
           tSpun.current = false;
         }
-        p.y += minDistance;
+        p.y += dropDistance;
         p.yPrev = p.y;
 
         upArrowPressed.current = true;
-        if(minDistance > 0) {
+        if(dropDistance > 0) {
           props.actionCallback({type: ActionType.DROP, data: e.key});
-          if(stats.current?.score) {   
-            stats.current.score += (minDistance * 2);
+          if(stats.current) {   
+            stats.current.score += (dropDistance * 2);
           }
           // console.log(minDistance);
           updatePosition();
@@ -925,12 +1151,14 @@ const Game = (props: GameProps) => {
       case "Control":
         p.rotateLeft();
         // props.actionCallback({type: ActionType.ROTATE, data: e.key});
+        p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
 
       case "Shift":
         p.rotateRight();
         // props.actionCallback({type: ActionType.ROTATE, data: e.key});
+        p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
     }
@@ -950,7 +1178,7 @@ const Game = (props: GameProps) => {
     for(let i=0; i<PIECE_QUE_LENGTH; i++) {
       pieceQue.current.push({
         shapeEnum: indices[i],
-        id: Math.round(window.performance.now() * 1000 - PIECE_QUE_LENGTH + i).toString()
+        id: newUID()
       });
     }
 
@@ -960,6 +1188,8 @@ const Game = (props: GameProps) => {
     else {
       columnHeights.current.fill(0);
     }
+
+    ghostPieceCoords.current = [];
     
     if(board.current === null) { 
       board.current = [
@@ -997,7 +1227,8 @@ const Game = (props: GameProps) => {
       }
     }
     
-    action.current = "Action";
+    lastPieceAction.current = ActionType.NONE;
+    lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
     
     if(stats.current === null) {
       stats.current = {
@@ -1014,11 +1245,17 @@ const Game = (props: GameProps) => {
 
     isTSpin.current = false;
     isTSpinMini.current = false;
+    tSpun.current = false;
+
     upArrowPressed.current = false;
     downArrowPressed.current = false;
-    tSpun.current = false;
+
     gameoverRef.current = false;
     paused.current = false;
+
+    comboCount.current = -1;
+    lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
+    lastPieceAction.current = ActionType.NONE;
   }
 
   const gameOver = () => {
@@ -1071,17 +1308,25 @@ const Game = (props: GameProps) => {
       pieceQue.current = null;
       pieceQueIndexes.current = null;
       activePiece.current = null;
-      stats.current = null;
+
       board.current = null;
-      action.current = null;
+      
       columnHeights.current = null;
+      
+      tSpun.current = false;
       isTSpin.current = null;
       isTSpinMini.current = null;
+      
       upArrowPressed.current = false;
       downArrowPressed.current = false;
-      tSpun.current = false;
+      
       gameoverRef.current = false;
       paused.current = false;
+      
+      stats.current = null;
+      comboCount.current = null;
+      lastLineClearAction.current = null;
+      lastPieceAction.current = null;
 
       if(ticker.current) {
         clearInterval(ticker.current);
@@ -1108,7 +1353,7 @@ const Game = (props: GameProps) => {
       updateBoard(activePiece.current);
     }
     
-  });
+  }, [tick.value]);
 
   const renderBoard = () => {
     if(!board.current){
@@ -1119,17 +1364,20 @@ const Game = (props: GameProps) => {
     
     return rows.map((row, index) => {
       return (
-        <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
+        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
           
           { 
-            row.map((cellValue) => {
+            row.map((cellValue, colIndex) => {
+
+            let isGhost = cellValue < -10;
             let ShapeColorsVal = cellValue > 10 ? ShapeColors[cellValue/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
                 ? 'tw-bg-black tw-border tw-border-gray-900'
-                : `tw-border tw-bg-${ShapeColorsVal} tw-border-${ShapeColorsVal} tw-border-outset`;
+                : `tw-border ${!isGhost ? `tw-bg-${ShapeColorsVal}` : ``} tw-border-${ShapeColorsVal} tw-border-outset`;
             return (
               <div
+                key={`c${colIndex}`}
                 className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
                 style={{ borderStyle: (cellValue === 0 ? 'solid' : 'outset') }}
               ></div>

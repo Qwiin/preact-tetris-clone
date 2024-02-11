@@ -6,16 +6,21 @@ export interface GameAction {
   textSequence?: string[];
   textSequenceJoin?: string;
   subtext?: string;
-  points?: number;
+  points?: number | string;
+  combo?: number;
+  backToBack?: boolean;
   id?: string;
-  transitioning?: boolean;
+  timestamp?: number;
 }
 
 
-export const ToastTimeout: number = 1000;
+export const ToastTimeout: number = 500;
+export const BaseToastDelay: number = 0.05;
 
 export enum ActionType {
-  SINGLE = 1,
+  NO_LINES_CLEARED=-1,
+  NONE,  // 0
+  SINGLE,
   DOUBLE,
   TRIPLE,
   TETRIS,
@@ -39,6 +44,38 @@ export enum ActionType {
   HOLD_PIECE,
   MOVE_NOT_ALLOWED,
   BACK_TO_BACK,
+}
+
+export function getLabelForActionType(action: ActionType): string {
+
+  switch(action) {
+    case ActionType.SINGLE:
+      return "Single";
+    case ActionType.DOUBLE:
+      return "Double";
+    case ActionType.TRIPLE:
+      return "Triple";
+    case ActionType.TETRIS:
+      return "TETRIS";
+    case ActionType.T_SPIN:
+      return "T-Spin";
+    case ActionType.T_SPIN_SINGLE:
+      return "T-Spin Single";
+    case ActionType.T_SPIN_DOUBLE:
+      return "T-Spin Double";
+    case ActionType.T_SPIN_TRIPLE:
+      return "T-Spin Triple";
+    case ActionType.T_SPIN_MINI:
+      return "T-Spin Mini";
+    case ActionType.T_SPIN_MINI_SINGLE:
+      return "T-Spin Mini Single";
+    case ActionType.T_SPIN_MINI_DOUBLE:
+      return "T-Spin Mini Double";
+    case ActionType.GAME_OVER:
+      return "Game Over";
+    default:
+      return action.toString();
+  }
 }
 
 export const G: number = 3;  // cells per frame
