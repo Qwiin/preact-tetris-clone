@@ -11,17 +11,17 @@ const transitionEnd = {
   display: 'none'
 };
 
-const textDivVariants = {
-    show: {
-      transform: "translateY(-10%) scale(100%)",
-      opacity: 1
-    }, 
-    hidden: {
-      transform: "translateY(-30%) scale(80%)",
-      opacity: 0,
-      transitionEnd
-    }
-};
+// const textDivVariants = {
+//     show: {
+//       transform: "translateY(-10%) scale(100%)",
+//       opacity: 1
+//     }, 
+//     hidden: {
+//       transform: "translateY(-30%) scale(80%)",
+//       opacity: 0,
+//       transitionEnd
+//     }
+// };
 
 const pointsDivVariants = {
   show: {
