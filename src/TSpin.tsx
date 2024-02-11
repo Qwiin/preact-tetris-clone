@@ -2,7 +2,7 @@ import {AnimationSequence, animate, stagger} from "framer-motion";
 import { useState, useEffect } from "preact/hooks";
 import { BaseToastDelay, ActionType as TSType } from "./TetrisConfig";
 
-const backTobackSequence: AnimationSequence = [
+const tSpinCharSequence: AnimationSequence = [
   
   [
     ".tspin-flexbox .tspin-char.secondary", 
@@ -56,7 +56,7 @@ export default function TSpin(props: TSpinProps) {
         }
     ).then(()=>{
 
-      animate(backTobackSequence).then(()=>{
+      animate(tSpinCharSequence).then(()=>{
         document.querySelector('.tspin-type')?.classList.add("flash");
         document.querySelector('.tspin-flexbox')?.classList.add("flash");
         document.querySelector('.line-clear-type')?.classList.add("show","flash");

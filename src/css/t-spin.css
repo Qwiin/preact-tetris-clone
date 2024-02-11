@@ -1,4 +1,4 @@
-.t-spin {
+.t-spin, .line-clear-toast {
   user-select: none;
   /* background-color: rgba(0, 128, 0, 0.175); */
   position:absolute;
@@ -11,7 +11,7 @@
   /* text-shadow: #000000 0.0625rem 0.0625rem; */
 }
 
-.tspin-char {
+.tspin-char, .tetris-label {
   padding: 0;
   margin: 0;
   opacity: 0;
@@ -32,43 +32,6 @@
 
 .tspin-type.flash::after {
   opacity: 0;
-  color: white;
-  animation: flash 0.2s ease-out;
-  text-shadow:  var(--toast-flash-highlight);
-}
-
-.tspin-flexbox {
-  width: 6.5rem;
-  position: absolute;
-  font-size: 1.2rem;
-  display: flex;
-  justify-content:center;
-  align-items: center;
-  gap: 0.125rem;
-}
-
-.tspin-flexbox::before {
-  opacity: 0;
-  content: attr(data-chars);
-  position: absolute;
-  color: var(--toast-yellow-100);
-  transform: scale(100%);
-  z-index: 200;
-}
-
-.tspin-flexbox::after {
-  opacity: 0;
-  content: attr(data-chars);
-  position: absolute;
-  transform: translateY(0.04rem) scaleY(1);
-  left:1px;
-  width: 100%;
-  z-index: 100;
-  letter-spacing: 0.0625rem;
-  /* text-shadow: var(--toast-flash-highlight); */
-}
-
-.tspin-flexbox.flash::after {
   color: white;
   animation: flash 0.2s ease-out;
   text-shadow:  var(--toast-flash-highlight);
@@ -101,6 +64,46 @@
   text-align: center;
   position: absolute;
   top: -0.75rem;
+}
+
+.tspin-flexbox, .tetris-flexbox {
+  width: 6.5rem;
+  position: absolute;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content:center;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.tspin-flexbox::before,
+.tetris-flexbox::before {
+  opacity: 0;
+  content: attr(data-chars);
+  position: absolute;
+  color: var(--toast-yellow-100);
+  transform: scale(100%);
+  z-index: 200;
+}
+
+.tspin-flexbox::after,
+.tetris-flexbox::after {
+  opacity: 0;
+  content: attr(data-chars);
+  position: absolute;
+  transform: translateY(0.04rem) scaleY(1);
+  left:1px;
+  width: 100%;
+  z-index: 100;
+  letter-spacing: 0.0625rem;
+  /* text-shadow: var(--toast-flash-highlight); */
+}
+
+.tspin-flexbox.flash::after,
+.tetris-flexbox::after {
+  color: white;
+  animation: flash 0.2s ease-out;
+  text-shadow:  var(--toast-flash-highlight);
 }
 
 .line-clear-type.flash.show::after {

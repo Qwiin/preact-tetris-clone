@@ -2,6 +2,7 @@ import {ActionType, BaseToastDelay, GameAction } from "../TetrisConfig";
 import {motion} from "framer-motion";
 import TSpin from "../TSpin";
 import BackToBack from "./BackToBack";
+import LineClearToast from "./LineClearToast";
 
 const LABEL_COMBO: string = "COMBO";
 
@@ -122,9 +123,9 @@ export function ActionToast(props: ActionToastProps) {
           if(!action) {
             return <></>;
           }
-
+          
           return (
-          <>
+            <>
           { action.backToBack &&
             <>
               <BackToBack animationDelay={getDelayForAction(action)} id={action.id || "12"}/>
@@ -142,24 +143,29 @@ export function ActionToast(props: ActionToastProps) {
               <TSpin type={ActionType.T_SPIN_MINI_DOUBLE} id={action.id || 'no_id'} animationComplete={props.toastComplete} timestamp={action.timestamp || performance.now()/1000}/>
           }
           
-          { action.text &&
-            // @ts-expect-error Motion Component
-            <motion.div className="tw-w-full tw-flex tw-font-mono tw-text-amber-600 tw-justify-center tw-items-center tw-absolute tw-top-0 tw-opacity-1"
-              key={action.id + "a"} 
-              variants={textDivVariants}
-              initial="show"
-              animate="hidden"
-              transition={{
-                delay: getDelayForAction(action),
-                duration: 2.0, 
-                // ease: "easeIn"
-                type: "spring",
-                damping: 30,
-                stiffness: 50,
-              }}
-              >
-              <h2 className="text" data-text={action.text}>{action.text}</h2>
-            </motion.div>
+          { action.text && 
+           (action.type === ActionType.SINGLE ||
+            action.type === ActionType.DOUBLE ||
+            action.type === ActionType.TRIPLE ||
+            action.type === ActionType.TETRIS) &&
+            <LineClearToast  type={action.type} id={action.id || 'no_id'} animationComplete={props.toastComplete} timestamp={action.timestamp || performance.now()/1000}/>
+            // // @ts-expect-error Motion Component
+            // <motion.div className="tw-w-full tw-flex tw-font-mono tw-text-amber-600 tw-justify-center tw-items-center tw-absolute tw-top-0 tw-opacity-1"
+            //   key={action.id + "a"} 
+            //   variants={textDivVariants}
+            //   initial="show"
+            //   animate="hidden"
+            //   transition={{
+            //     delay: getDelayForAction(action),
+            //     duration: 2.0, 
+            //     // ease: "easeIn"
+            //     type: "spring",
+            //     damping: 30,
+            //     stiffness: 50,
+            //   }}
+            //   >
+            //   <h2 className="text" data-text={action.text}>{action.text}</h2>
+            // </motion.div>
           }
           { action.points &&
           // @ts-expect-error Motion Component
