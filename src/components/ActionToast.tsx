@@ -12,11 +12,11 @@ const transitionEnd = {
 
 const textDivVariants = {
     show: {
-      transform: "translateY(-150%) scale(100%)",
+      transform: "translateY(-10%) scale(100%)",
       opacity: 1
     }, 
     hidden: {
-      transform: "translateY(-400%) scale(200%)",
+      transform: "translateY(-20%) scale(80%)",
       opacity: 0,
       transitionEnd
     }
@@ -24,12 +24,12 @@ const textDivVariants = {
 
 const pointsDivVariants = {
   show: {
-    transform: "translateY(0%) scale(80%)",
+    transform: "translateY(-25%) scale(100%)",
     opacity: 1
     
   }, 
   hidden: {
-    transform: "translateY(-150%) scale(120%)",
+    transform: "translateY(-100%) scale(80%)",
     opacity: 0,
     transitionEnd
   }
@@ -76,7 +76,10 @@ export function ActionToast(props: ActionToastProps) {
     return (
       // @ts-expect-error Motion Component
       <motion.div className="toast-combo"
-        onAnimationComplete={()=>{props.toastComplete(id)}}
+        onAnimationComplete={()=>{
+          console.log({action});
+          props.toastComplete(action.id)
+        }}
         key={id + 'c'} 
         variants={{
           show: {
@@ -113,7 +116,7 @@ export function ActionToast(props: ActionToastProps) {
       {/* <TSpin id={props.actions && props.actions[0] ? props.actions[0].id || "123" : "123"}  
         animationComplete={props.toastComplete} 
         timestamp={performance.now()/1000}/>   */}
-      {renderComboToast({id: "123", combo:2} as GameAction)}  
+      {/* {renderComboToast({id: "123", combo:2} as GameAction)}   */}
       {(props.actions &&
         (props.actions || [{text: "Action", points: "1,000,000"}]).map((action: GameAction) =>{ 
           if(!action) {
@@ -149,7 +152,10 @@ export function ActionToast(props: ActionToastProps) {
               transition={{
                 delay: getDelayForAction(action),
                 duration: 2.0, 
-                ease: "easeIn"
+                // ease: "easeIn"
+                type: "spring",
+                damping: 30,
+                stiffness: 50,
               }}
               >
               <h2 className="text" data-text={action.text}>{action.text}</h2>
@@ -166,7 +172,10 @@ export function ActionToast(props: ActionToastProps) {
             transition={{
               delay: getDelayForAction(action),
               duration: 2.0, 
-              ease: "easeIn",
+              // ease: "easeIn",
+              type: "spring",
+              damping: 50,
+              stiffness: 100,
               transitionEnd
             }}>
             <h2 className="text" data-text={`+${action.points}`}>+{action.points}</h2>

@@ -144,6 +144,7 @@ const Game = (props: GameProps) => {
   const clearedRows: Ref<number[]> = useRef(null);
   const clearEffectData: Ref<any> = useRef(null);
   const dropEffectData: Ref<any> = useRef(null);
+  const pieceWasSet = useRef(false);
 
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
@@ -454,7 +455,7 @@ const Game = (props: GameProps) => {
 
       if(updateGhostCoords) {
         const dropDistance: number = getDropDistance();
-        console.log(dropDistance);
+        // console.log(dropDistance);
         if(dropDistance <= 0) {
           updateGhostCoords = false;
         }
@@ -493,12 +494,12 @@ const Game = (props: GameProps) => {
         i_ss--;
       }
 
-      if(updateGhostCoords) {
-        console.log("gst:" + JSON.stringify(newCoordsGhost));
-        console.log("new: " + JSON.stringify(newCoords));
-        // console.log(JSON.stringify(ghostYX));
-        console.log({ghostY});
-      }
+      // if(updateGhostCoords) {
+      //   console.log("gst:" + JSON.stringify(newCoordsGhost));
+      //   console.log("new: " + JSON.stringify(newCoords));
+      //   // console.log(JSON.stringify(ghostYX));
+      //   console.log({ghostY});
+      // }
 
       if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
         stats.current.score += 1;
@@ -592,7 +593,7 @@ const Game = (props: GameProps) => {
               }
             }
 
-            console.log("CornerCount:", cornerCount);
+            // console.log("CornerCount:", cornerCount);
 
             if(cornerCount === 2) {
               isTSpin.current = false;
@@ -621,10 +622,12 @@ const Game = (props: GameProps) => {
         activePiece.current = null; 
         requestAnimationFrame(()=>{
           // updatePosition();
+          pieceWasSet.current = true;
           updateBoard(null);
         });
         setTimeout(()=>{
           activePiece.current = getPieceFromQue() || null;          
+          updateBoard(activePiece.current);
         }, TICK_INTERVAL);
         return;
       }
@@ -647,6 +650,13 @@ const Game = (props: GameProps) => {
     }
     else  
     {
+      if(!pieceWasSet.current) {
+        console.log("Piece Not Set");
+        return;
+      }
+
+      
+
       let numCleared = 0;
 
       // CLEAR COMPLETE LINES
@@ -794,7 +804,9 @@ const Game = (props: GameProps) => {
         
 
         comboCount.current += 1;
-        
+        console.log("Combo count: " + comboCount.current);
+
+
         // console.log("updatePoints");
         stats.current.lines += numCleared;
 
@@ -839,7 +851,7 @@ const Game = (props: GameProps) => {
           
 
         if(clearEffectData.current && clearEffectData.current.length > 0) {
-          console.log(clearEffectData.current.toString())
+          // console.log(clearEffectData.current.toString())
           pauseGame(true, true);
         }
 
@@ -847,9 +859,13 @@ const Game = (props: GameProps) => {
       else {
         // no scoring move
         console.log("no scoring move");
+        console.log("comobo counter reset to -1");
+
+        pieceWasSet.current = false;
         comboCount.current = -1;
         lastPieceAction.current = ActionType.NO_LINES_CLEARED;
         lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
+          
       }
     }
   };
@@ -1337,7 +1353,7 @@ const Game = (props: GameProps) => {
       updateBoard(activePiece.current);
     }
     
-  });
+  }, [tick.value]);
 
   const renderBoard = () => {
     if(!board.current){
