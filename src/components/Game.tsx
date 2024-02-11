@@ -30,7 +30,7 @@ import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, GameAction, ShapeColors, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
+import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, ShapeColors, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
@@ -655,8 +655,6 @@ const Game = (props: GameProps) => {
         return;
       }
 
-      
-
       let numCleared = 0;
 
       // CLEAR COMPLETE LINES
@@ -675,30 +673,46 @@ const Game = (props: GameProps) => {
         }
       }
 
+      
+      let boardPositions: BoardPosition[] = [];
       if(numCleared > 0) {
 
         clearedRows.current = [...clearedRowIndexesDesc];
 
         for(let i=0; i<clearedRowIndexesDesc.length; i++) {
           if(!clearEffectData.current){
-            clearEffectData.current = []
+            clearEffectData.current = [];
           }
+
+          let top = (clearedRowIndexesDesc[i] - 4);
+          let bottom = 24 - (clearedRowIndexesDesc[i] + 1);
+
           if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
-            clearEffectData.current[clearEffectData.current.length - 1].top = `${(clearedRowIndexesDesc[i] - 4)}rem`;
+            clearEffectData.current[clearEffectData.current.length - 1].top = `${top}rem`;
+            boardPositions[clearEffectData.current.length - 1].top = top;
+            boardPositions[clearEffectData.current.length - 1].height += 1;
           }
           else {
+            boardPositions.push(
+              {
+                top,
+                left: 0,
+                width: 10,
+                height: 20 - bottom - top,
+              }
+            );
             clearEffectData.current.push(
               {
-                top: `${(clearedRowIndexesDesc[i] - 4)}rem`,
-                bottom: `${(24 - (clearedRowIndexesDesc[i] + 1))}rem`,
+                top: `${top}rem`,
+                bottom: `${bottom}rem`,
                 left: `${-1}rem`,
                 right: `${-1}rem`,
-                id: (Math.round(performance.now()*1000).toString() + '.' + i.toString()),
+                id: newUID(),
               }
             );
           }
         }
-      
+
         // Dear Future Self...
         // clearedRowIndexesDesc needs to (and should already) be sorted descending
         // no need to sort this array here, but remember that is required for this splice 
@@ -836,6 +850,8 @@ const Game = (props: GameProps) => {
         //TODO: implement all clear
         //DONE: combo, and back-to-back bonuses
         
+        
+       
 
         props.actionCallback({
           type: actionEnum, 
@@ -845,6 +861,7 @@ const Game = (props: GameProps) => {
           points: `${points}` + (backToBack ? ' x 1.5 ' : ' ') + (comboBouns > 0 ? `+ ${comboBouns}` : ''), 
           combo: comboCount.current > 0 ? comboCount.current : undefined, 
           toast: true,
+          boardPositions,
           backToBack: backToBack,
           transitioning: true,
         } as GameAction);

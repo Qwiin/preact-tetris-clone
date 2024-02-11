@@ -1,4 +1,4 @@
-import {ActionType, BaseToastDelay, GameAction } from "../TetrisConfig";
+import {ActionType, BaseToastDelay, BoardPosition, GameAction } from "../TetrisConfig";
 import {motion} from "framer-motion";
 import TSpin from "../TSpin";
 import BackToBack from "./BackToBack";
@@ -22,19 +22,6 @@ const transitionEnd = {
 //       transitionEnd
 //     }
 // };
-
-const pointsDivVariants = {
-  show: {
-    transform: "translateY(-25%) scale(80%)",
-    opacity: 1
-    
-  }, 
-  hidden: {
-    transform: "translateY(-100%) scale(64%)",
-    opacity: 0,
-    transitionEnd
-  }
-};
 
 interface ActionToastProps {
   actions: GameAction[];
@@ -111,6 +98,18 @@ export function ActionToast(props: ActionToastProps) {
   
   }
 
+  const getYFromActionBoardPosition = (action: GameAction): number => {
+    
+    let pos: BoardPosition | undefined = (action.boardPositions ? action.boardPositions[0] : undefined);
+
+    if(pos) {
+      return (20 - pos.top - ( (pos.height) / 2 ));
+      console.log({pos});
+    }
+
+    return 0;
+  }
+
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
       <div id="ToastOrigin" className='toast-action-origin'>
@@ -172,17 +171,24 @@ export function ActionToast(props: ActionToastProps) {
           <motion.div className="toast-points"
             onAnimationComplete={()=>{props.toastComplete(action.id)}}
             key={action.id + 'b'} 
-            variants={pointsDivVariants}
+            variants={{
+              show: {
+                transform: `translateY(${-getYFromActionBoardPosition(action)}rem) scale(64%)`,
+                opacity: 1
+                
+              }, 
+              hidden: {
+                transform: `translateY(${-getYFromActionBoardPosition(action)-1.5}rem) scale(64%)`,
+                opacity: 0,
+                transitionEnd
+              }
+            }}
             initial="show"
             animate="hidden"
             transition={{
               delay: getDelayForAction(action),
-              duration: 2.0, 
-              // ease: "easeIn",
-              type: "spring",
-              damping: 50,
-              stiffness: 100,
-              transitionEnd
+              duration: 1.0, 
+              ease: "easeIn",
             }}>
             <h2 className="text" data-text={`+${action.points}`}>+{action.points}</h2>
           </motion.div>
