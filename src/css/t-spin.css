@@ -51,7 +51,7 @@
   opacity: 0;
   content: attr(data-chars);
   position: absolute;
-  color: #fbf7f4;
+  color: var(--toast-yellow-100);
   transform: scale(100%);
   z-index: 200;
 }

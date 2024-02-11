@@ -787,55 +787,51 @@ const Game = (props: GameProps) => {
           lastLineClearAction.current = numCleared;
         }
 
-        if(comboCount.current === null){
+        if(comboCount.current === null || stats.current === null){
           console.error("comboCount ref is null");
           return;
         }
+        
+
+        comboCount.current += 1;
+        
+        // console.log("updatePoints");
+        stats.current.lines += numCleared;
+
+        const level: number = Math.floor(stats.current.lines / 10) + 1;
+        const comboBouns: number = comboCount.current * level * 50;
+
+        // update level
+        if(stats.current.level !== level){
+          stats.current.level = level;
+          props.actionCallback({type: ActionType.LEVEL_UP});  
+        }
+  
+        if(isTSpinMini.current) {
+          points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
+        }
+        else if(isTSpin.current) {
+          points += (400 + (numCleared * 400)) * level; 
+        }
         else {
-          comboCount.current += 1;
-        }
-        
-        if(stats.current) {
-
-          // console.log("updatePoints");
-          stats.current.lines += numCleared;
-          let level: number = Math.floor(stats.current.lines / 10) + 1;
-
-          let comboBouns: number = 50 * (comboCount.current) * level;
-
-          if(stats.current.level !== level){
-            stats.current.level = level;
-            props.actionCallback({type: ActionType.LEVEL_UP});  
-          }
-    
-          if(isTSpinMini.current) {
-            points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
-          }
-          else if(isTSpin.current) {
-            points += (400 + (numCleared * 400)) * level; 
-          }
-          else {
-            points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
-          }
-
-          stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBouns;
-
-          //TODO: implement all clear
-          //DONE: combo, and back-to-back bonuses
+          points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
         }
 
-        
+        // add bonuses
+        stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBouns;
 
+
+        //TODO: implement all clear
+        //DONE: combo, and back-to-back bonuses
+        
 
         props.actionCallback({
           type: actionEnum, 
           id: newUID(),
           timestamp: (window.performance.now() / 1000),
           text: actionText, 
-          points: points, 
-          combo: ((comboCount.current > 0) 
-            ? `Combo x ${comboCount.current})` 
-            : undefined), 
+          points: `${points}` + (backToBack ? ' x 1.5 ' : ' ') + (comboBouns > 0 ? `+ ${comboBouns}` : ''), 
+          combo: comboCount.current > 0 ? comboCount.current : undefined, 
           toast: true,
           backToBack: backToBack,
           transitioning: true,

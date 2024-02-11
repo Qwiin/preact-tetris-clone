@@ -1,20 +1,31 @@
 import {ActionType, BaseToastDelay, GameAction } from "../TetrisConfig";
-import {motion} from "framer-motion";
+import {animate, motion} from "framer-motion";
 // import BackToBack from "./BackToBack";
 import TSpin from "../TSpin";
-import { pseudoRandom } from "../utils/AppUtil";
+// import { pseudoRandom } from "../utils/AppUtil";
 import BackToBack from "./BackToBack";
 // import { useEffect } from "preact/hooks";
 
-interface ActionToastProps {
-  actions: GameAction[];
-  toastComplete: (id?: string)=>void;
-  // lastToastId: string;
-}
 
+const LABEL_COMBO: string = "COMBO";
 
+const easeOutBounce = (x: number): number => {
+  const n1 = 7.5625;
+  const d1 = 2.75;
+  
+  if (x < 1 / d1) {
+      return n1 * x * x;
+  } else if (x < 2 / d1) {
+      return n1 * (x -= 1.5 / d1) * x + 0.75;
+  } else if (x < 2.5 / d1) {
+      return n1 * (x -= 2.25 / d1) * x + 0.9375;
+  } else {
+      return n1 * (x -= 2.625 / d1) * x + 0.984375;
+  }
+};
 
 const transitionEnd = {
+  opacity: 0,
   display: 'none'
 };
 
@@ -32,29 +43,22 @@ const textDivVariants = {
 
 const pointsDivVariants = {
   show: {
-    transform: "translateY(-100%)",
+    transform: "translateY(0%) scale(80%)",
     opacity: 1
     
   }, 
   hidden: {
-    transform: "translateY(-300%)",
+    transform: "translateY(-150%) scale(120%)",
     opacity: 0,
     transitionEnd
   }
 };
 
-// const comboDivVariants = {
-//   show: {
-//     transform: "translateY(-50%) translateX(0%)",
-//     opacity: 1
-    
-//   }, 
-//   hidden: {
-//     transform: "translateY(-250%)",
-//     opacity: 0,
-//     transitionEnd
-//   }
-// };
+interface ActionToastProps {
+  actions: GameAction[];
+  toastComplete: (id?: string)=>void;
+  // lastToastId: string;
+}
 
 export function ActionToast(props: ActionToastProps) {
 
@@ -79,10 +83,11 @@ export function ActionToast(props: ActionToastProps) {
 
   const renderComboToast = (action: GameAction) => {
     
-    const {id, combo} = action;
+    const {id} = action;
 
 
-    let tx = pseudoRandom(action.id + 'c')*60 - 30;
+    // let tx = pseudoRandom(action.id + 'c') * 0;
+    // let tx = pseudoRandom(action.id + 'c') * 30 - 15;
     // let rx = ["0 deg","0 deg"];
     // let ry = ["0 deg",`${tx/2} deg`];
     // let rz = ["0 deg",`${tx/3} deg`];
@@ -94,25 +99,28 @@ export function ActionToast(props: ActionToastProps) {
         key={id + 'c'} 
         variants={{
           show: {
-            transform: `translateX(0%) translateY(-50%)`,
-            opacity: 1
-            
+            transform: `translateY(-.8rem)`,
+            opacity: 0
           }, 
           hidden: {
-            transform: `translate(${tx}%) translateY(-250%)`,
-            opacity: 0,
+            transform: `translateY(0rem)`,
+            opacity: 1,
             transitionEnd
           }
         }}
-        initial="show"
-        animate="hidden"
+        initial={"show"}
+        animate={"hidden"}
+        
         transition={{
           delay: getDelayForAction(action),
           duration: 2.0, 
-          ease: "easeOut",
-          transitionEnd
+          type: "spring",
+          damping: 10,
+          stiffness: 100,
+          
         }}>
-        <h2 className=".text">{combo}</h2>
+        <h2 className="count" data-text={action.combo}>{action.combo}</h2>
+        <h2 className="label" data-text={LABEL_COMBO}>{LABEL_COMBO}</h2>
       </motion.div>
     );
   
@@ -124,6 +132,7 @@ export function ActionToast(props: ActionToastProps) {
       {/* <TSpin id={props.actions && props.actions[0] ? props.actions[0].id || "123" : "123"}  
         animationComplete={props.toastComplete} 
         timestamp={performance.now()/1000}/>   */}
+      {renderComboToast({id: "123", combo:2} as GameAction)}  
       {(props.actions &&
         (props.actions || [{text: "Action", points: "1,000,000"}]).map((action: GameAction) =>{ 
           if(!action) {
@@ -159,25 +168,15 @@ export function ActionToast(props: ActionToastProps) {
               transition={{
                 delay: getDelayForAction(action),
                 duration: 2.0, 
-                ease: "easeOut"
+                ease: "easeIn"
               }}
               >
-              <h2 className="tw-m-0 tw-py-2 tw-font-thin">{action.text}</h2>
+              <h2 className="text" data-text={action.text}>{action.text}</h2>
             </motion.div>
           }
           { action.points &&
           // @ts-expect-error Motion Component
-          <motion.div className="
-            tw-font-extrabold 
-            tw-font-mono 
-            tw-w-full 
-            tw-flex 
-            tw-justify-center 
-            tw-items-center 
-            tw-absolute 
-            tw-top-0 
-            tw-left 
-            tw-opacity-1"
+          <motion.div className="toast-points"
             onAnimationComplete={()=>{props.toastComplete(action.id)}}
             key={action.id + 'b'} 
             variants={pointsDivVariants}
@@ -186,10 +185,10 @@ export function ActionToast(props: ActionToastProps) {
             transition={{
               delay: getDelayForAction(action),
               duration: 2.0, 
-              ease: "easeOut",
+              ease: "easeIn",
               transitionEnd
             }}>
-            <h2 className="tw-m-0 tw-py-2 tw-font-thin tw-text-green-500">+{action.points}</h2>
+            <h2 className="text" data-text={`+${action.points}`}>+{action.points}</h2>
           </motion.div>
           }
           

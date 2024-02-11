@@ -6,7 +6,7 @@ export interface GameAction {
   textSequence?: string[];
   textSequenceJoin?: string;
   subtext?: string;
-  points?: number;
+  points?: number | string;
   combo?: number;
   backToBack?: boolean;
   id?: string;
