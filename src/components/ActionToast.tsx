@@ -16,7 +16,7 @@ const textDivVariants = {
       opacity: 1
     }, 
     hidden: {
-      transform: "translateY(-20%) scale(80%)",
+      transform: "translateY(-30%) scale(80%)",
       opacity: 0,
       transitionEnd
     }
@@ -24,12 +24,12 @@ const textDivVariants = {
 
 const pointsDivVariants = {
   show: {
-    transform: "translateY(-25%) scale(100%)",
+    transform: "translateY(-25%) scale(80%)",
     opacity: 1
     
   }, 
   hidden: {
-    transform: "translateY(-100%) scale(80%)",
+    transform: "translateY(-100%) scale(64%)",
     opacity: 0,
     transitionEnd
   }
