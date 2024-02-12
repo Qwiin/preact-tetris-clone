@@ -24,6 +24,27 @@
     rgba(0,128,196,0.7) 0.2rem 0.2rem 0.7rem
   }
 }
+@keyframes hdrift-left {
+  0% {
+    transform: translateX(0%) scale(0.6);
+  }
+  100% {
+    transform: translateX(-30%) scale(1.0);
+  }
+}
+@keyframes hdrift-right {
+  0% {
+    transform: translateX(0%) scale(0.6);
+  }
+  100% {
+    transform: translateX(30%) scale(1.0);
+  }
+}
+
+@keyframes vdrift {
+  from { transform: translateY( attr(data-drift-from rem, 0)) };
+  to { transform: translateY( attr(data-drift-to rem, 100%)) };
+}
 
 @keyframes tspin-type-mini {
   0% {

@@ -25,6 +25,7 @@ h2.toast-combo {
   width: 100%;
   left: -.1rem;
   text-align: center;
+  vertical-align: middle;
   /* text-shadow: var(--toast-yellow-highlight); */
   color: var(--toast-yellow-100);
   font-weight:900;
@@ -74,8 +75,8 @@ h2.toast-combo {
   text-shadow: var(--toast-white-glow2);
 }
 
-
 .toast-points {
+  /* background-color: #FFF9; */
   display: flex;
   position: absolute;
   top: -3rem;
@@ -85,22 +86,60 @@ h2.toast-combo {
   justify-content: center;
   font-weight: bold;
   font-family: var(--font-action-toast);
-  font-size: 1.0rem;
   width: 100%
 }
-.toast-points .label {
-  color: var(--toast-dark-blue);
+.toast-points .labels-wrapper {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  justify-content: center;
+  /* color: var(--toast-dark-blue); */
   font-weight: bold;
   font-family: var(--font-action-toast);
-  font-size: 1.0rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.05rem;
 } 
 
-.toast-points .label::before {
+.toast-points .label h2 {
+  text-align: center;
+  margin: 0rem;
+  
+}
+.toast-points .label h2.std-pts {
+  font-size: 0.8rem;
+  color: var(--toast-yellow-100);
+  text-shadow: var(--toast-yellow-highlight);
+}
+.toast-points .label h2.b2b-pts {
+  color: var(--toast-orange-300);
+  text-shadow: var(--toast-orange-600) 0 0.05rem 0.05rem;
+} 
+.toast-points .label h2.combo-pts {
+  color: var(--toast-pink-200);
+  text-shadow: var(--toast-shadow-pink) 0 0.05rem 0.05rem;
+}
+
+.toast-points .label h2.std-pts::before,
+.toast-points .label h2.b2b-pts::before,
+.toast-points .label h2.combo-pts::before {
   position: absolute;
   content: attr(data-text);
   transform: translate(0 0.05rem);
-  color: var(--toast-purple-700);
+  /* color: var(--toast-purple-700); */
   z-index: -1;
-  text-shadow: var(--toast-white-glow);
+  text-shadow: var(--toast-white-glow2);
 }
 
+.toast-points .label h2.drift {
+  /* background-color: blue; */
+  /* transform: translateX(var(--data-rand-tx)); */
+  animation: hdrift-left 0.9s ease-in-out;
+  transform: translateX(-30%) scale(1.0);
+}
+.toast-points .label h2.combo-pts.drift {
+  /* background-color: rebeccapurple; */
+  /* margin-right: var(--data-rand-tx2); */
+  /* transform: translateX(var(--data-rand-tx2)); */
+  transform: translateX(30%) scale(1.0);
+  animation: hdrift-right 0.9s ease-in-out;
+}

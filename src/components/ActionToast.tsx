@@ -3,6 +3,7 @@ import {motion} from "framer-motion";
 import TSpin from "../TSpin";
 import BackToBack from "./BackToBack";
 import LineClearToast from "./LineClearToast";
+import { pseudoRandom } from "../utils/AppUtil";
 
 const LABEL_COMBO: string = "COMBO";
 
@@ -86,6 +87,41 @@ export function ActionToast(props: ActionToastProps) {
   
   }
 
+
+  const renderPointsLabels = (action: GameAction) => {
+    let rands: number[] = [
+      (pseudoRandom(action.id + 'az') - 0.5) + 0,
+      (pseudoRandom(action.id + 'srq') - 0.5) + 0,
+    ];
+    return (
+      <>
+      
+        <h2 data-text={`+${action.points}`} 
+          style={{
+            animationDelay: ((rands[0] + 0.5)/3), 
+            // marginRight:`${rands[0]}rem`,
+            height:`${rands[0]/2 + 1.5}rem`,
+            lineHeight:`${1.1*rands[0]/2 + 1.5}rem`,
+            width:`${rands[0] + 3.0}rem`,
+          }} 
+            className={`${action.backToBack ? 'b2b-pts' : 'std-pts'} ${action.combo ? 'drift' : ''}`}>+{action.points}</h2> 
+
+        { action.combo !== undefined && action.combo > 0 && action.comboPoints !== undefined &&
+
+          <h2 data-text={`+${action.comboPoints}`} 
+          style={{
+            animationDelay: ((rands[1] + 0.5)/3),
+            // marginLeft:`${rands[1]}rem`,
+            height:`${rands[1]/2 + 1.5}rem`,
+            lineHeight:`${1.1*rands[1]/2 + 1.5}rem`,
+            width:`${rands[1] + 3.0}rem`,
+          }} 
+            className={`combo-pts ${action.combo ? 'drift' : ''}`}>+{action.comboPoints}</h2> 
+        }
+      </>
+    );
+  };
+
   const getYFromActionBoardPosition = (action: GameAction): number => {
     
     let pos: BoardPosition | undefined = (action.boardPositions ? action.boardPositions[0] : undefined);
@@ -161,12 +197,12 @@ export function ActionToast(props: ActionToastProps) {
             key={action.id + 'b'} 
             variants={{
               show: {
-                transform: `translateY(${-getYFromActionBoardPosition(action)}rem) scale(64%)`,
+                transform: `translateY(${-getYFromActionBoardPosition(action)}rem)`,
                 opacity: 1
                 
               }, 
               hidden: {
-                transform: `translateY(${-getYFromActionBoardPosition(action)-1.5}rem) scale(64%)`,
+                transform: `translateY(${-getYFromActionBoardPosition(action)-1.2}rem)`,
                 opacity: 0,
                 transitionEnd
               }
@@ -178,7 +214,9 @@ export function ActionToast(props: ActionToastProps) {
               duration: 1.0, 
               ease: "easeIn",
             }}>
-            <h2 className="text" data-text={`+${action.points}`}>+{action.points}</h2>
+            <div className={`label labels-wrapper`}>
+              {renderPointsLabels(action)}
+            </div>
           </motion.div>
           }
           

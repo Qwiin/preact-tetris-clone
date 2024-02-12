@@ -825,7 +825,7 @@ const Game = (props: GameProps) => {
         stats.current.lines += numCleared;
 
         const level: number = Math.floor(stats.current.lines / 10) + 1;
-        const comboBouns: number = comboCount.current * level * 50;
+        const comboBonus: number = comboCount.current * level * 50;
 
         // update level
         if(stats.current.level !== level){
@@ -844,22 +844,20 @@ const Game = (props: GameProps) => {
         }
 
         // add bonuses
-        stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBouns;
+        stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBonus;
 
 
         //TODO: implement all clear
         //DONE: combo, and back-to-back bonuses
         
-        
-       
-
         props.actionCallback({
           type: actionEnum, 
           id: newUID(),
           timestamp: (window.performance.now() / 1000),
           text: actionText, 
-          points: `${points}` + (backToBack ? ' x 1.5 ' : ' ') + (comboBouns > 0 ? `+ ${comboBouns}` : ''), 
+          points: `${points * (backToBack ? 1.5 : 1 )}`,
           combo: comboCount.current > 0 ? comboCount.current : undefined, 
+          comboPoints: comboBonus,
           toast: true,
           boardPositions,
           backToBack: backToBack,
