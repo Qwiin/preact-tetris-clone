@@ -126,7 +126,7 @@ return (
 
 
 
-    <filter id="ghostly" x="-10%" y="-10%" r width="120%" height="120%" filterUnits="objectBoundingBox" 
+    <filter id="ghostly" x="-10%" y="-10%" width="120%" height="120%" filterUnits="objectBoundingBox" 
     primitiveUnits="userSpaceOnUse" 
     color-interpolation-filters="linearRGB">
       <feMorphology operator="dilate" radius="2 2" in="SourceAlpha" result="morphology"/>
