@@ -1434,7 +1434,7 @@ const Game = (props: GameProps) => {
           }/>
           <div>
             <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{tick.value}</h5>
-            <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"1px solid rgba(200,200,200,1)"}}>
+            <div class="board-grid-mask">
               
               { dropEffectData.current && 
 

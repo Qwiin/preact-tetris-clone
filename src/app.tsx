@@ -1,5 +1,5 @@
 import { Ref } from 'preact';
-import { useReducer, useRef, useState } from 'preact/hooks';
+import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import { GameAction } from './TetrisConfig';
 import './app.css';
 import ActionToast from './components/ActionToast';
@@ -20,9 +20,15 @@ export function App() {
   const actionQue: Ref<GameAction[]> = useRef([]);
   const [theme, setTheme] = useState(1);
   
+  useEffect(()=>{
+      if(theme) {
+        // load theme
+      }
+  },[theme]);
 
   const actionCallback = (a: GameAction) => {
     
+
     if (a.text || a.subtext || a.toast) {
 
       if(actionQue.current){
