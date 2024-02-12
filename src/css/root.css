@@ -1,5 +1,9 @@
 :root {
 
+  --app-container-bg-color: 51 65 85;
+  --app-container-bg-op: 0.3;
+  --app-container-scale: 125%;
+
   --font-stats-value: 'SF Digital Heavy';
   --font-action-toast: 'SfTheraminGothicBold';
 
@@ -20,7 +24,8 @@
   --toast-red-200:    #EC5D8B;
   --toast-red-peony:  #DC4982;
   --toast-red-mario:  #E83333;
-  --toast-orange:     #DF6442;
+  --toast-orange-300: #DF7C62;
+  --toast-orange-600: #6c301f;
   --toast-yellow-coin:#FCF752;
   
   --toast-yellow:     #e6f14c;

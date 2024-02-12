@@ -1,11 +1,13 @@
 @import 'css/fonts.css';
 @import 'css/root.css';
+@import 'css/themes.css';
 @import 'css/animations.css';
 @import 'css/action-toast.css';
 @import 'css/back-to-back.css';
 @import 'css/t-spin.css';
 @import 'css/tool-tip.css';
 @import 'css/checkbox.css';
+@import 'css/cell-colors.css';
 
 
 body {
@@ -33,6 +35,11 @@ body {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+}
+
+.app-container {
+  background-color: rgb(var(--app-container-bg-color) / var(--app-container-bg-op));
+  transform: scale(var(--app-container-scale));
 }
 
 /* .theme-09 {
@@ -232,18 +239,17 @@ Where toast items are positioned from
   rgba(100,100,100,0.44),
   rgba(200,200,200,0.6));
 
-  border-style: solid;
+  /* border-style: solid; */
   box-shadow: 
     /* #9996 -0.03125rem 0.03125rem 0.03125rem,  */
-    #FFFc 0 0 0.125rem;
+    #FFF6 0 0 0.125rem;
     /* #9996 0.03125rem 0.03125rem 0.03125rem,  */
     /* #FFF6 -0.03125rem -0.03125rem 0.03125rem; */
   /* transform: scale(0.96); */
-  border-width: 0.042rem;
-  border-radius: 0.125rem;
-  
+  /* border-width: 0.042rem; */
+  /* border-radius: 0.125rem; */
 
-  z-index: 100;
+  
 }
 
 .empty-cell {
@@ -265,6 +271,7 @@ Where toast items are positioned from
 }
 
 .filled-cell {
+  border-radius: 0.125rem;
   overflow:hidden;
   /* filter: url(#sandy180) contrast(1.2) blur(0.25px); */
   /* filter: url('#frosted-glass') contrast(1.2) saturate(1.5) brightness(1.5); */

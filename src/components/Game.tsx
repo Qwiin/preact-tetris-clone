@@ -1370,16 +1370,15 @@ const Game = (props: GameProps) => {
             row.map((cellValue, colIndex) => {
 
             let isGhost = cellValue < -10;
-            let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
+            // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
                 ? 'empty-cell tw-border-gray-900'
-                : `cell-color-${cellValue} tw-border tw-rounded-sm ${!isGhost ? `filled-cell tw-bg-${ShapeColorsVal}` : `ghost-cell tw-border-solid`} tw-border-${ShapeColorsVal} `;
+                : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
             return (
               <div
                 key={`c${colIndex}`}
-                className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
-                style={{ borderStyle: (cellValue === 0 ? 'outset' : cellValue > 0 ? 'outset' : undefined) }}
+                className={`board-cell ${cellColor}`}
               ></div>
             );
           })}

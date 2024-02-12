@@ -106,7 +106,7 @@ export function PieceQue(props: PieceQueProps) {
                             return (
                               <>
                                 <div
-                                  className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
+                                  className={`board-cell ${cellColor} tw-box-border`}
                                   style={{ borderStyle: (cellValue === 0 ? 'none' : 'outset') }}
                                 ></div>
                               </>

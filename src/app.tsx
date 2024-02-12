@@ -1,5 +1,5 @@
 import { Ref } from 'preact';
-import { useReducer, useRef } from 'preact/hooks';
+import { useReducer, useRef, useState } from 'preact/hooks';
 import { GameAction } from './TetrisConfig';
 import './app.css';
 import ActionToast from './components/ActionToast';
@@ -18,6 +18,7 @@ export function App() {
   const [, forceUpdate] = useReducer(x => x + 1, 0);
   const soundBoardDomRef:Ref<HTMLDivElement> = useRef(null);
   const actionQue: Ref<GameAction[]> = useRef([]);
+  const [theme, setTheme] = useState(1);
   
 
   const actionCallback = (a: GameAction) => {
@@ -45,7 +46,7 @@ export function App() {
   return (
     <>
       <Filters />
-      <div className="tw-bg-slate-700 tw-scale-125 tw-bg-opacity-30">
+      <div data-theme={theme} className={`app-container theme-${theme}`}>
         <div className={`tw-opacity-1`}>
           <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header">TETRIS</h1>
         </div>
