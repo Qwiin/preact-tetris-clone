@@ -278,6 +278,10 @@
   width: 24rem
 }
 
+.tw-w-10 {
+  width: 2.5rem
+}
+
 .tw-max-w-80 {
   max-width: 20rem
 }
@@ -9118,6 +9122,11 @@
 
 .tw-bg-yellow-900\/95 {
   background-color: rgb(113 63 18 / 0.95)
+}
+
+.tw-bg-slate-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(226 232 240 / var(--tw-bg-opacity))
 }
 
 .tw-bg-opacity-30 {

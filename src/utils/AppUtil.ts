@@ -30,7 +30,11 @@ function stringToInt32Hash(str: string) {
  * @param seedStr 
  * @returns float value between 0 and 1;
  */
-export function pseudoRandom(seedStr: string) {
+export function pseudoRandom(seedStr: string | undefined) {
+  if(!seedStr){
+    console.error("invalid value for `seedStr`");
+    return 0;
+  }
   const seed = stringToInt32Hash(seedStr);
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
