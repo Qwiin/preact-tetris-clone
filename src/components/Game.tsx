@@ -30,7 +30,7 @@ import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, ShapeColors, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
+import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';

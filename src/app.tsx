@@ -21,8 +21,8 @@ export function App() {
   const [theme, setTheme] = useState(1);
   
   useEffect(()=>{
-      if(theme) {
-        // load theme
+      if(theme !== 1) {
+        setTheme(1);
       }
   },[theme]);
 
