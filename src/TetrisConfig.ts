@@ -18,6 +18,7 @@ export interface GameAction {
   subtext?: string;
   points?: number | string;
   combo?: number;
+  comboPoints?: number;
   backToBack?: boolean;
   id?: string;
   timestamp?: number;
