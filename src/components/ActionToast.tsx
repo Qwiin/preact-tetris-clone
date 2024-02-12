@@ -103,11 +103,12 @@ export function ActionToast(props: ActionToastProps) {
           style={{
             position: "absolute",
             width: "4.0rem",
-            height: "2.0rem",
+            // height: "2.0rem",
 
             // dynamically position combo points at the location of the top of the last piece
             left: `${comboXY[0] - 2.0}rem`,
-            top: `${comboXY[1] - 2.0}rem`,
+            // top: `${comboXY[1] - 2.0}rem`,
+            top: 0,
 
             lineHeight: "100%",
             padding: 0,
