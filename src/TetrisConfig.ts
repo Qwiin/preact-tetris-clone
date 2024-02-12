@@ -1,3 +1,13 @@
+/* way of defining a region relative to the game board 
+  {top: 19 left: 0, } would be the top-left of the lower-left grid cell 
+*/
+export interface BoardPosition {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 export interface GameAction {
   toast?: boolean;
   type: ActionType;
@@ -8,11 +18,13 @@ export interface GameAction {
   subtext?: string;
   points?: number | string;
   combo?: number;
+  comboPoints?: number;
   backToBack?: boolean;
   id?: string;
   timestamp?: number;
+  boardPositions?: BoardPosition[];
+  piecePosition?: BoardPosition;
 }
-
 
 export const ToastTimeout: number = 500;
 export const BaseToastDelay: number = 0.05;
@@ -87,9 +99,9 @@ export const GAME_SPEEDS = [
   0.04693 * G,
   0.06361 * G,
   0.0879 * G,
-  0.1236 * G/1.3,
-  0.1775 * G/1.4,
-  0.2598 * G/1.5,
+  0.1236 * G/1.2,
+  0.1775 * G/1.3,
+  0.2598 * G/1.4,
   // 0.388 * G,
   // 0.59 * G,
   // 0.92 * G,
