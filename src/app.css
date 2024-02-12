@@ -11,7 +11,7 @@
 body {
   min-width: 1000px;
   overflow-x: hidden;
-  background: 
+  background:
     url("/src/assets/tetris_bg_intergalactic09.webp"), 
     url("/src/assets/radial_bg_blend.avif");
   /* background-repeat: repeat; */
@@ -216,4 +216,82 @@ Where toast items are positioned from
   width: 22rem;
   max-width: 22rem;
   height: 3.5rem;
+}
+
+.ghost-cell {
+  /* opacity: 0.8; */
+  filter: url('#sandy0') contrast(1.2) blur(0.1px) saturate(1.7);
+  /* filter: url('#ghostly') brightness(1.7) contrast(0.6) saturate(1.5); */
+  background-size: 140% 100%;
+  background-position: 50% -30%;
+  
+  background-image: radial-gradient(ellipse at 73% 62%,
+  rgba(0,0,0,0),
+  rgba(100,100,100,.2) 60%,
+  
+  rgba(100,100,100,0.44),
+  rgba(200,200,200,0.6));
+
+  border-style: solid;
+  box-shadow: 
+    /* #9996 -0.03125rem 0.03125rem 0.03125rem,  */
+    #FFFc 0 0 0.125rem;
+    /* #9996 0.03125rem 0.03125rem 0.03125rem,  */
+    /* #FFF6 -0.03125rem -0.03125rem 0.03125rem; */
+  /* transform: scale(0.96); */
+  border-width: 0.042rem;
+  border-radius: 0.125rem;
+  
+
+  z-index: 100;
+}
+
+.empty-cell {
+  border-width: 0.03125rem;
+  background-color: rgba(0,0,0,1);
+  border-radius: none;
+  opacity: 0.5; 
+}
+
+.ghost-cell::before, 
+.filled-cell::before {
+  position: absolute;
+  border-width: 0.03125rem;
+  background-color: rgba(0,0,0,1);
+  opacity: 0.5;
+  border-radius: none;
+  z-index: -1;
+  border-color: rgb(17 24 39);
+}
+
+.filled-cell {
+  overflow:hidden;
+  /* filter: url(#sandy180) contrast(1.2) blur(0.25px); */
+  /* filter: url('#frosted-glass') contrast(1.2) saturate(1.5) brightness(1.5); */
+  /* filter: url('#dancing2'); */
+  border-width: 0.03125rem;
+  /* border-bottom-width: 0.0rem; */
+  /* box-shadow: #CCF9 0 0.02rem 0; */
+}
+
+.filled-cell:nth-child(3n) {
+  /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
+  filter: url(#sandy0) contrast(1.2) blur(0.2px);
+}
+.filled-cell:nth-child(3n+1) {
+  filter: url(#sandy180) contrast(1.2) blur(0.2px);
+}
+.filled-cell:nth-child(3n+2) {
+  filter: url(#sandy180) contrast(1.2) blur(0.2px);
+}
+
+
+.board-grid {
+  height: 24rem;
+  width: 10rem;
+  background-color: #0003;
+  display: flex;
+  flex-direction: column;
+  gap: none;
+  box-sizing: content-box;
 }

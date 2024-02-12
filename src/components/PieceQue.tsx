@@ -102,7 +102,7 @@ export function PieceQue(props: PieceQueProps) {
                             let cellColor: string =
                               cellValue === 0
                                 ? 'tw-bg-transparent'
-                                : `tw-border tw-bg-${ShapeColorsVal} tw-border-${ShapeColorsVal} tw-border-outset`;
+                                : `filled-cell tw-bg-${ShapeColorsVal} tw-border-${ShapeColorsVal}`;
                             return (
                               <>
                                 <div

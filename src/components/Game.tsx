@@ -1370,16 +1370,16 @@ const Game = (props: GameProps) => {
             row.map((cellValue, colIndex) => {
 
             let isGhost = cellValue < -10;
-            let ShapeColorsVal = cellValue > 10 ? ShapeColors[cellValue/11] : ShapeColors[cellValue]
+            let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
-                ? 'tw-bg-black tw-border tw-border-gray-900'
-                : `tw-border ${!isGhost ? `tw-bg-${ShapeColorsVal}` : ``} tw-border-${ShapeColorsVal} tw-border-outset`;
+                ? 'empty-cell tw-border-gray-900'
+                : `cell-color-${cellValue} tw-border tw-rounded-sm ${!isGhost ? `filled-cell tw-bg-${ShapeColorsVal}` : `ghost-cell tw-border-solid`} tw-border-${ShapeColorsVal} `;
             return (
               <div
                 key={`c${colIndex}`}
                 className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
-                style={{ borderStyle: (cellValue === 0 ? 'solid' : 'outset') }}
+                style={{ borderStyle: (cellValue === 0 ? 'outset' : cellValue > 0 ? 'outset' : undefined) }}
               ></div>
             );
           })}
@@ -1522,7 +1522,7 @@ const Game = (props: GameProps) => {
                 })
               }
               
-              <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
+              <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
                 {renderBoard()}
               </div>
               { (gameover || paused.current) &&
