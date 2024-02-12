@@ -81,6 +81,7 @@ h2.toast-combo {
   position: absolute;
   top: -3rem;
   height:2rem;
+  width: 5rem;
   opacity: 1;
   align-items: center;
   justify-content: center;
@@ -90,6 +91,10 @@ h2.toast-combo {
 }
 .toast-points .labels-wrapper {
   display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 10rem; /* --board-width */
+  gap:0;
   /* gap: 0.25rem; */
   align-items: center;
   justify-content: center;
@@ -101,45 +106,45 @@ h2.toast-combo {
 } 
 
 .toast-points .label h2 {
+  opacity: 0.9;
   text-align: center;
   margin: 0rem;
-  
+  font-size: 0.8rem;
 }
 .toast-points .label h2.std-pts {
-  font-size: 0.8rem;
   color: var(--toast-yellow-100);
   text-shadow: var(--toast-yellow-highlight);
 }
 .toast-points .label h2.b2b-pts {
   color: var(--toast-orange-300);
-  text-shadow: var(--toast-orange-600) 0 0.05rem 0.05rem;
+  /* text-shadow: var(--toast-orange-600) 0 0.05rem 0.05rem; */
 } 
 .toast-points .label h2.combo-pts {
   color: var(--toast-pink-200);
-  text-shadow: var(--toast-shadow-pink) 0 0.05rem 0.05rem;
+  text-shadow: var(--toast-yellow-highlight);
+  /* text-shadow: var(--toast-shadow-pink) 0 0.05rem 0.05rem; */
 }
 
-.toast-points .label h2.std-pts::before,
+/* .toast-points .label h2.std-pts::before,
 .toast-points .label h2.b2b-pts::before,
 .toast-points .label h2.combo-pts::before {
   position: absolute;
   content: attr(data-text);
   transform: translate(0 0.05rem);
-  /* color: var(--toast-purple-700); */
   z-index: -1;
   text-shadow: var(--toast-white-glow2);
-}
+} */
 
 .toast-points .label h2.drift {
   /* background-color: blue; */
   /* transform: translateX(var(--data-rand-tx)); */
-  animation: hdrift-left 0.9s ease-in-out;
-  transform: translateX(-30%) scale(1.0);
+  animation: hdrift-right 0.7s ease-out;
+  /* transform: translateX(-30%) scale(1.0); */
 }
 .toast-points .label h2.combo-pts.drift {
   /* background-color: rebeccapurple; */
   /* margin-right: var(--data-rand-tx2); */
   /* transform: translateX(var(--data-rand-tx2)); */
-  transform: translateX(30%) scale(1.0);
-  animation: hdrift-right 0.9s ease-in-out;
+  /* transform: translateX(10%) scale(1.0); */
+  animation: hdrift-right 0.7s ease-out;
 }

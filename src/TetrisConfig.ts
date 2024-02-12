@@ -23,6 +23,7 @@ export interface GameAction {
   id?: string;
   timestamp?: number;
   boardPositions?: BoardPosition[];
+  piecePosition: BoardPosition;
 }
 
 export const ToastTimeout: number = 500;

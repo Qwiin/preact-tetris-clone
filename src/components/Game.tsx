@@ -161,6 +161,7 @@ const Game = (props: GameProps) => {
 
   const comboCount: Ref<number> = useRef(0);
   const lastPieceAction: Ref<ActionType> = useRef(0);
+  const lastPiecePosition: Ref<any> = useRef(null);
   const lastLineClearAction: Ref<ActionType> = useRef(null);
 
   const board: Ref<number[][]> = useRef(null);
@@ -563,6 +564,12 @@ const Game = (props: GameProps) => {
             gameOver();
             return;
           }
+          lastPiecePosition.current = {
+            top: piece.y - piece.height - 4,
+            left: piece.x,
+            width: piece.width,
+            height: piece.height
+          }
         }
         
         // Verify and complete T-SPIN
@@ -860,6 +867,7 @@ const Game = (props: GameProps) => {
           comboPoints: comboBonus,
           toast: true,
           boardPositions,
+          piecePosition: lastPiecePosition.current || undefined,
           backToBack: backToBack,
           transitioning: true,
         } as GameAction);
@@ -1342,6 +1350,7 @@ const Game = (props: GameProps) => {
       comboCount.current = null;
       lastLineClearAction.current = null;
       lastPieceAction.current = null;
+      lastPiecePosition.current = null;
 
       if(ticker.current) {
         clearInterval(ticker.current);
