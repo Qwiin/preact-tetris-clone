@@ -1,7 +1,7 @@
 :root {
 
   --app-container-bg-color: 51 65 85;
-  --app-container-bg-op: 0.3;
+  --app-container-bg-op: 0.1;
   --app-container-scale: 125%;
 
   --font-stats-value: 'SF Digital Heavy';

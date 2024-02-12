@@ -81,9 +81,7 @@ export function ActionToast(props: ActionToastProps) {
         <h2 className="label" data-text={LABEL_COMBO}>{LABEL_COMBO}</h2>
       </motion.div>
     );
-  
   }
-
 
   const renderPointsLabels = (action: GameAction) => {
 
@@ -144,8 +142,6 @@ export function ActionToast(props: ActionToastProps) {
     return [0,0];
   }
 
-  
-
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
       <div id="ToastOrigin" className='toast-action-origin'>
@@ -184,6 +180,7 @@ export function ActionToast(props: ActionToastProps) {
             action.type === ActionType.TRIPLE ||
             action.type === ActionType.TETRIS) &&
             <LineClearToast  type={action.type} id={action.id || 'no_id'} animationComplete={props.toastComplete} timestamp={action.timestamp || performance.now()/1000}/>
+
           }
           { action.points &&
           // @ts-expect-error Motion Component
@@ -214,6 +211,7 @@ export function ActionToast(props: ActionToastProps) {
             <div className={`label labels-wrapper`}>
               {renderPointsLabels(action)}
             </div>
+
           </motion.div>
           }
           

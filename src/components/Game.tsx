@@ -1447,9 +1447,7 @@ const Game = (props: GameProps) => {
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
-        <div
-        className="tw-flex tw-flex-row tw-gap-0 tw-items-start tw-justify-center tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-0 tw-pb-0"
-        style={{paddingTop: "2rem", marginLeft: "-1rem", marginRight:"-1rem"}}>
+        <div className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
           
           <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}

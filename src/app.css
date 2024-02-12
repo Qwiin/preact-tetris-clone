@@ -11,7 +11,7 @@
 
 
 body {
-  min-width: 1000px;
+  /* min-width: 1000px; */
   overflow-x: hidden;
   background:
     url("/src/assets/tetris_bg_intergalactic09.webp"), 
@@ -38,7 +38,8 @@ body {
 }
 
 .app-container {
-  background-color: rgb(var(--app-container-bg-color) / var(--app-container-bg-op));
+  /* background-color: rgb(var(--app-container-bg-color) / var(--app-container-bg-op)); */
+
   transform: scale(var(--app-container-scale));
 }
 
@@ -163,6 +164,7 @@ body {
 }
 
 .game-header {
+  padding-left: 0.6rem;
   padding-top: 24px;
   line-height: 40px;
   letter-spacing: 0.3em;
@@ -289,14 +291,13 @@ Where toast items are positioned from
   filter: url(#sandy180) contrast(1.2) blur(0.2px);
 }
 .filled-cell:nth-child(3n+2) {
-  filter: url(#sandy180) contrast(1.2) blur(0.2px);
+  filter: url(#sandy270) contrast(1.2) blur(0.2px);
 }
-
 
 .board-grid {
   height: 24rem;
   width: 10rem;
-  background-color: #0003;
+  background-color: #0000;
   display: flex;
   flex-direction: column;
   gap: none;
@@ -318,7 +319,7 @@ Where toast items are positioned from
   margin-bottom: 0;
   height: 22rem;
 
-  background-color: rgba(0, 0, 0, 0.493);
+  background-color: rgba(0,0,0, 0.5);
   padding-top: 1rem;
   border-top-left-radius: 1rem;
   border-top-right-radius: 0rem;
@@ -327,7 +328,7 @@ Where toast items are positioned from
   
   transform: translateX(-16%) translateY(-20%) scale(60%);
   z-index: -1;
-  border: 0.09375rem solid rgba(200,200,200,0.8);
+  border: 0.09375rem solid rgba(200,200,200,0.6);
   /* border-bottom-right-radius: none; */
   /* border-left-width: 0; */
   z-index: -1;
@@ -350,5 +351,20 @@ Where toast items are positioned from
   overflow: hidden;
   box-sizing: content-box;
   position: relative;
-  border: 0.0625rem solid rgba(200,200,200,0.8);
+  border: 0.0625rem solid rgba(200,200,200,0.6);
+}
+
+.game-container {
+  /* transform: scale(1.2); */
+  display: flex;
+  gap: 0;
+  flex-direction: row;
+  align-items: start;
+  background-color:rgba(51, 65, 85, 0.2);
+  border-radius: 0.75rem;
+  height: 100%;
+  padding: 0;
+  padding-top: 2.5rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
 }
