@@ -2,7 +2,7 @@
 
   --app-container-bg-color: 51 65 85;
   --app-container-bg-op: 0.1;
-  --app-container-scale: 125%;
+  --app-container-scale: 100%;
 
   --font-stats-value: 'SF Digital Heavy';
   --font-action-toast: 'SfTheraminGothicBold';
@@ -38,6 +38,7 @@
   --toast-dark-sky:   #acb8ec;
   --toast-light-blue: #8DC4FA;
   --toast-blue:       #2356F4;
+  --toast-purple:     #af43f1;
   --toast-purple:     #A221F4;
   --toast-purple-500: #520f7c;
   --toast-purple-700: #2b0741;

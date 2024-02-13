@@ -38,7 +38,7 @@ body {
 }
 
 .app-container {
-  /* background-color: rgb(var(--app-container-bg-color) / var(--app-container-bg-op)); */
+  background-color: rgb(var(--app-container-bg-color) / var(--app-container-bg-op));
 
   transform: scale(var(--app-container-scale));
 }

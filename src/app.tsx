@@ -13,22 +13,79 @@ const fakeMouseEventArgs:[string, any] = ["click",{
   buttons: 0,
 }];
 
+const MIN_DESKTOP_WIDTH: number = 864;
+const MIN_DESKTOP_HEIGHT: number = 560;
+const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
+
+const APP_LAYOUT_DESKTOP = "Desktop";
+const APP_LAYOUT_MOBILE = "Mobile";
+
 export function App() {
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
   const soundBoardDomRef:Ref<HTMLDivElement> = useRef(null);
   const actionQue: Ref<GameAction[]> = useRef([]);
   const [theme, setTheme] = useState(1);
+  const resizeTimeout: Ref<NodeJS.Timeout> = useRef(null);
+
+  const appContainerRef: Ref<HTMLDivElement> = useRef(null);
   
+  const [appScale, setAppScale] = useState(1);
+  const [appLayout, setAppLayout] = useState("Desktop");
+
+  useEffect(() => {
+    window.addEventListener("resize", handleWindowResize)
+
+    // scale on mount
+    handleWindowResize();
+
+    return () => {
+      window.removeEventListener("resize",handleWindowResize);
+    }
+  },[]);
+
   useEffect(()=>{
       if(theme !== 1) {
         setTheme(1);
       }
   },[theme]);
 
+  const handleWindowResize = (event?: Event) => { 
+
+    if(!event) {
+      console.log("Window Resize triggered manually");
+    }
+    
+    if(resizeTimeout.current) { 
+      // debounce window resize
+      clearTimeout(resizeTimeout.current);
+    }
+
+    resizeTimeout.current = setTimeout(()=>{
+      console.log("...resize timeout completed");
+      console.log(appContainerRef.current);
+      resizeApp();
+    }, RESIZE_DEBOUNCE_TIMEOUT);
+    
+  }
+
+  const resizeApp = () => {
+      let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
+      let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
+
+      console.log({hScale, vScale});
+
+      let newAppScale = Math.min(hScale, vScale);
+
+      setAppScale(newAppScale);
+      setAppLayout( newAppScale >= 1 ? APP_LAYOUT_DESKTOP : APP_LAYOUT_MOBILE );
+
+
+      console.log(`scale(${newAppScale}) ${newAppScale < 1 ? `translateX(${100 * (newAppScale - 1) / 2}%)` : ''}`);
+  }
+
   const actionCallback = (a: GameAction) => {
     
-
     if (a.text || a.subtext || a.toast) {
 
       if(actionQue.current){
@@ -45,14 +102,18 @@ export function App() {
 
     const mouseEventArgs:[string, any] = [...fakeMouseEventArgs];
     mouseEventArgs[1].buttons = a.type;
-    soundBoardDomRef.current?.dispatchEvent(new MouseEvent(...mouseEventArgs));
-    
+    soundBoardDomRef.current?.dispatchEvent(new MouseEvent(...mouseEventArgs));  
   }
 
   return (
     <>
       <Filters />
-      <div data-theme={theme} className={`app-container theme-${theme}`}>
+      <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
+        data-theme={theme} data-app-layout={appLayout}
+        style={{
+          transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
+        }}
+        >
         <div className={`tw-opacity-1`}>
           <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header">TETRIS</h1>
         </div>
