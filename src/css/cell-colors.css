@@ -22,7 +22,8 @@
 .empty-cell {
   /* filter: blur(0.25px); */
   position:relative;
-  background-color: rgb(61, 45, 73);
+  /* background-color: rgb(61, 45, 73); */
+  background-color: rgb(39, 36, 45);
   border: rgb(34 48 78);
   border-style: var(--cell-border-style-empty);
   border-radius: 0;
