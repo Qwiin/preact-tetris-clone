@@ -5,6 +5,7 @@ import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
+import {animate} from 'framer-motion';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
@@ -13,8 +14,10 @@ const fakeMouseEventArgs:[string, any] = ["click",{
   buttons: 0,
 }];
 
-const MIN_DESKTOP_WIDTH: number = 864;
-const MIN_DESKTOP_HEIGHT: number = 560;
+const MIN_DESKTOP_WIDTH: number = 803;
+const MIN_DESKTOP_HEIGHT: number = 520;
+const ASPECT_RATIO = MIN_DESKTOP_WIDTH / MIN_DESKTOP_HEIGHT;
+
 const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
 
 const APP_LAYOUT_DESKTOP = "Desktop";
@@ -70,18 +73,39 @@ export function App() {
   }
 
   const resizeApp = () => {
+
+      // let windowAspectRatio = window.innerWidth / window.innerHeight;
       let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
       let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
+      // console.log({hScale, vScale});
 
-      console.log({hScale, vScale});
-
-      let newAppScale = Math.min(hScale, vScale);
+      let scaleRatio: number = hScale/vScale;
+      let newAppScale = (window.innerWidth <= 640 && vScale > hScale) 
+        ? Math.max(hScale, vScale)  // PORTRAIT MODE
+        : Math.min(hScale, vScale);
 
       setAppScale(newAppScale);
       setAppLayout( newAppScale >= 1 ? APP_LAYOUT_DESKTOP : APP_LAYOUT_MOBILE );
 
+      // let newAppX = (newAppScale < 1 && newAppScale === hScale) ? 100 * (newAppScale - 1)/2 : 0;
+      // let newAppY = (newAppScale < 1 && windowAspectRatio > ASPECT_RATIO) ? 100 * (newAppScale - 1)/2 : 0;
+      let newAppX = 0;
+      let newAppY = 0;
 
-      console.log(`scale(${newAppScale}) ${newAppScale < 1 ? `translateX(${100 * (newAppScale - 1) / 2}%)` : ''}`);
+      animate(
+        "#AppContainer", 
+        { 
+          transform: `scale(${newAppScale})`,
+        }, 
+        { 
+          duration: 0.3,
+          ease: "easeInOut",
+          delay: 0
+        }
+      );
+
+      console.log({vScale, hScale, scaleRatio});
+      console.log(`scale(${newAppScale})`);
   }
 
   const actionCallback = (a: GameAction) => {
@@ -110,9 +134,9 @@ export function App() {
       <Filters />
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} data-app-layout={appLayout}
-        style={{
-          transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
-        }}
+        // style={{
+        //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
+        // }}
         >
         <div className={`tw-opacity-1`}>
           <h1 className="tw-m-0 tw-py-2 tw-font-thin game-header">TETRIS</h1>
