@@ -1,4 +1,4 @@
-import { TETRONIMOES, ShapeColors } from "../TetrisConfig";
+import { TETRONIMOES } from "../TetrisConfig";
 import { PieceQueItem } from "./Game";
 import {motion} from 'framer-motion';
 
@@ -86,11 +86,9 @@ export function PieceQue(props: PieceQueProps) {
                       <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length * 4}`}>
                         {
                           row.map((cellValue: number)=>{
-                            let ShapeColorsVal = cellValue > 10 ? ShapeColors[cellValue/11] : ShapeColors[cellValue]
-                            let cellColor: string =
-                              cellValue === 0
-                                ? 'tw-bg-transparent'
-                                : `filled-cell tw-bg-${ShapeColorsVal} tw-border-${ShapeColorsVal}`;
+                            let cellColor: string = (cellValue !== 0)
+                                ? `filled-cell cell-color-${cellValue}`
+                                : 'tw-bg-transparent'
                             return (
                               <>
                                 <div

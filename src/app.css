@@ -301,16 +301,16 @@ Where toast items are positioned from
 
 
 
-.filled-cell:nth-child(3n) {
+.filled-cell:nth-child(n) {
   /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
-  filter: url(#sandy0) contrast(1.2) blur(0.2px);
+  filter: url(#sandy0) contrast(1.2);
 }
-.filled-cell:nth-child(3n+1) {
+/* .filled-cell:nth-child(3n+1) {
   filter: url(#sandy180) contrast(1.2) blur(0.2px);
 }
 .filled-cell:nth-child(3n+2) {
   filter: url(#sandy270) contrast(1.2) blur(0.2px);
-}
+} */
 
 .board-grid {
   height: 24rem;

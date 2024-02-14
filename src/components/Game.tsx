@@ -1459,7 +1459,7 @@ const Game = (props: GameProps) => {
         <div className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
           <div id="DevTools">
-            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{frameCount.current} : {tick.value}</h5>
+            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
           </div>
           <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
           pieces={
