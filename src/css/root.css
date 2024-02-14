@@ -1,5 +1,9 @@
 :root {
 
+  --app-container-bg-color: 51 65 85;
+  --app-container-bg-op: 0.1;
+  --app-container-scale: 100%;
+
   --font-stats-value: 'SF Digital Heavy';
   --font-action-toast: 'SfTheraminGothicBold';
 
@@ -20,7 +24,8 @@
   --toast-red-200:    #EC5D8B;
   --toast-red-peony:  #DC4982;
   --toast-red-mario:  #E83333;
-  --toast-orange:     #DF6442;
+  --toast-orange-300: #DF7C62;
+  --toast-orange-600: #6c301f;
   --toast-yellow-coin:#FCF752;
   
   --toast-yellow:     #e6f14c;
@@ -33,6 +38,7 @@
   --toast-dark-sky:   #acb8ec;
   --toast-light-blue: #8DC4FA;
   --toast-blue:       #2356F4;
+  --toast-purple:     #af43f1;
   --toast-purple:     #A221F4;
   --toast-purple-500: #520f7c;
   --toast-purple-700: #2b0741;

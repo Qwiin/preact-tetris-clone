@@ -1,0 +1,23 @@
+*, ::before, ::after {
+  /* yellow-400 */
+  --theme-0-cell-color-1: 253 224 71;
+
+  /* pink-600 */
+  --theme-0-cell-color-2: 219 39 119;
+
+  /* green-500 */
+  --theme-0-cell-color-3: 34 197 94;    
+  
+  /* blue-600 */
+  --theme-0-cell-color-4: 37 99 235;
+
+  /* orange-500 */
+  --theme-0-cell-color-5: 249 115 22;
+
+  /* violet-600 */
+  --theme-0-cell-color-6:  175 67 241;
+  
+
+  /* blue-400 */
+  --theme-0-cell-color-7: 96 165 250;
+}

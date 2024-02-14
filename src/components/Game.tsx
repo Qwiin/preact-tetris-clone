@@ -30,13 +30,13 @@ import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, Direction, GAME_SPEEDS, GameAction, ShapeColors, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
+import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
+import { newUID } from '../utils/AppUtil';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
-import { newUID } from '../utils/AppUtil';
 
-const TICK_INTERVAL: number = 50;
+export const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
@@ -140,6 +140,7 @@ const Game = (props: GameProps) => {
   const [gameover, setGameover] = useState(false);
 
   const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  const frameCount = useRef(0);
   
   const clearedRows: Ref<number[]> = useRef(null);
   const clearEffectData: Ref<any> = useRef(null);
@@ -161,6 +162,7 @@ const Game = (props: GameProps) => {
 
   const comboCount: Ref<number> = useRef(0);
   const lastPieceAction: Ref<ActionType> = useRef(0);
+  const lastPiecePosition: Ref<any> = useRef(null);
   const lastLineClearAction: Ref<ActionType> = useRef(null);
 
   const board: Ref<number[][]> = useRef(null);
@@ -251,6 +253,7 @@ const Game = (props: GameProps) => {
     
     let rotationAttempted = false;
     let failedRotation = false;
+    let rotationType = ActionType.NONE;
 
     // let canMoveLateral = true;
     if (p.rotation !== p.rotationPrev) {
@@ -264,6 +267,10 @@ const Game = (props: GameProps) => {
       let dy = p.y - p.yPrev;
 
       let rotatedClockwise = (p.rotation - p.rotationPrev === 1 || p.rotation - p.rotationPrev === -3);
+
+      rotationType = ( rotatedClockwise === true ) 
+        ? ActionType.ROTATE_RIGHT 
+        : ActionType.ROTATE_LEFT;
 
       let canRotateInPlace = true;
       let canTSpin = true;
@@ -386,7 +393,7 @@ const Game = (props: GameProps) => {
     }
 
     if(!failedRotation && rotationAttempted) {
-      props.actionCallback({type: ActionType.ROTATE});
+      props.actionCallback({type: rotationType});
     }
 
     let j_i = p.x;
@@ -563,6 +570,12 @@ const Game = (props: GameProps) => {
             gameOver();
             return;
           }
+          lastPiecePosition.current = {
+            top: piece.y - piece.height - 4,
+            left: piece.x,
+            width: piece.width,
+            height: piece.height
+          }
         }
         
         // Verify and complete T-SPIN
@@ -655,8 +668,6 @@ const Game = (props: GameProps) => {
         return;
       }
 
-      
-
       let numCleared = 0;
 
       // CLEAR COMPLETE LINES
@@ -675,30 +686,46 @@ const Game = (props: GameProps) => {
         }
       }
 
+      
+      let boardPositions: BoardPosition[] = [];
       if(numCleared > 0) {
 
         clearedRows.current = [...clearedRowIndexesDesc];
 
         for(let i=0; i<clearedRowIndexesDesc.length; i++) {
           if(!clearEffectData.current){
-            clearEffectData.current = []
+            clearEffectData.current = [];
           }
+
+          let top = (clearedRowIndexesDesc[i] - 4);
+          let bottom = 24 - (clearedRowIndexesDesc[i] + 1);
+
           if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
-            clearEffectData.current[clearEffectData.current.length - 1].top = `${(clearedRowIndexesDesc[i] - 4)}rem`;
+            clearEffectData.current[clearEffectData.current.length - 1].top = `${top}rem`;
+            boardPositions[clearEffectData.current.length - 1].top = top;
+            boardPositions[clearEffectData.current.length - 1].height += 1;
           }
           else {
+            boardPositions.push(
+              {
+                top,
+                left: 0,
+                width: 10,
+                height: 20 - bottom - top,
+              }
+            );
             clearEffectData.current.push(
               {
-                top: `${(clearedRowIndexesDesc[i] - 4)}rem`,
-                bottom: `${(24 - (clearedRowIndexesDesc[i] + 1))}rem`,
+                top: `${top}rem`,
+                bottom: `${bottom}rem`,
                 left: `${-1}rem`,
                 right: `${-1}rem`,
-                id: (Math.round(performance.now()*1000).toString() + '.' + i.toString()),
+                id: newUID(),
               }
             );
           }
         }
-      
+
         // Dear Future Self...
         // clearedRowIndexesDesc needs to (and should already) be sorted descending
         // no need to sort this array here, but remember that is required for this splice 
@@ -811,7 +838,7 @@ const Game = (props: GameProps) => {
         stats.current.lines += numCleared;
 
         const level: number = Math.floor(stats.current.lines / 10) + 1;
-        const comboBouns: number = comboCount.current * level * 50;
+        const comboBonus: number = comboCount.current * level * 50;
 
         // update level
         if(stats.current.level !== level){
@@ -830,21 +857,23 @@ const Game = (props: GameProps) => {
         }
 
         // add bonuses
-        stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBouns;
+        stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBonus;
 
 
         //TODO: implement all clear
         //DONE: combo, and back-to-back bonuses
         
-
         props.actionCallback({
           type: actionEnum, 
           id: newUID(),
           timestamp: (window.performance.now() / 1000),
           text: actionText, 
-          points: `${points}` + (backToBack ? ' x 1.5 ' : ' ') + (comboBouns > 0 ? `+ ${comboBouns}` : ''), 
+          points: `${points * (backToBack ? 1.5 : 1 )}`,
           combo: comboCount.current > 0 ? comboCount.current : undefined, 
+          comboPoints: comboBonus,
           toast: true,
+          boardPositions,
+          piecePosition: lastPiecePosition.current || undefined,
           backToBack: backToBack,
           transitioning: true,
         } as GameAction);
@@ -1025,7 +1054,7 @@ const Game = (props: GameProps) => {
           
           // sfx_movePiece();
 
-          props.actionCallback({type: ActionType.MOVE, data: e.key});
+          props.actionCallback({type: ActionType.MOVE_RIGHT, data: e.key});
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
           p.x += 1; 
@@ -1035,7 +1064,7 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowLeft":
         if(p.x > 0) {
-          props.actionCallback({type: ActionType.MOVE, data: e.key});
+          props.actionCallback({type: ActionType.MOVE_LEFT, data: e.key});
           // sfx_movePiece();
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
@@ -1256,6 +1285,8 @@ const Game = (props: GameProps) => {
     comboCount.current = -1;
     lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
     lastPieceAction.current = ActionType.NONE;
+
+    frameCount.current = 0;
   }
 
   const gameOver = () => {
@@ -1327,6 +1358,7 @@ const Game = (props: GameProps) => {
       comboCount.current = null;
       lastLineClearAction.current = null;
       lastPieceAction.current = null;
+      lastPiecePosition.current = null;
 
       if(ticker.current) {
         clearInterval(ticker.current);
@@ -1348,6 +1380,7 @@ const Game = (props: GameProps) => {
         || upArrowPressed.current   === true
         || downArrowPressed.current === true) {
             
+      frameCount.current += 1;    
       downArrowPressed.current = false;
       upArrowPressed.current = false;
       updateBoard(activePiece.current);
@@ -1370,16 +1403,15 @@ const Game = (props: GameProps) => {
             row.map((cellValue, colIndex) => {
 
             let isGhost = cellValue < -10;
-            let ShapeColorsVal = cellValue > 10 ? ShapeColors[cellValue/11] : ShapeColors[cellValue]
+            // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
-                ? 'tw-bg-black tw-border tw-border-gray-900'
-                : `tw-border ${!isGhost ? `tw-bg-${ShapeColorsVal}` : ``} tw-border-${ShapeColorsVal} tw-border-outset`;
+                ? 'empty-cell tw-border-gray-900'
+                : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
             return (
               <div
                 key={`c${colIndex}`}
-                className={`tw-h-4 tw-w-4 ${cellColor} tw-box-border`}
-                style={{ borderStyle: (cellValue === 0 ? 'solid' : 'outset') }}
+                className={`board-cell ${cellColor}`}
               ></div>
             );
           })}
@@ -1424,18 +1456,18 @@ const Game = (props: GameProps) => {
         <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
       </div>
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
-        <div
-        className="tw-flex tw-flex-row tw-gap-0 tw-items-start tw-justify-center tw-bg-slate-700 tw-bg-opacity-30 tw-rounded-xl tw-h-full tw-pl-0 tw-pb-0"
-        style={{paddingTop: "2rem", marginLeft: "-1rem", marginRight:"-1rem"}}>
+        <div className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
-          
+          <div id="DevTools">
+            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
+          </div>
           <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
           pieces={
             holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
           }/>
           <div>
-            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{tick.value}</h5>
-            <div class="tw-pt-0 tw-h-80 tw-overflow-hidden tw-border-content tw-relative" style={{border:"1px solid rgba(200,200,200,1)"}}>
+            <BoardBackground></BoardBackground>
+            <div class="board-grid-mask">
               
               { dropEffectData.current && 
 
@@ -1522,11 +1554,11 @@ const Game = (props: GameProps) => {
                 })
               }
               
-              <div className="tw-h-96 tw-w-40 tw-bg-black tw-flex tw-flex-col tw-gap-0 tw-border-content"  style={{transform: "translateY(-4.0rem)"}}>
+              <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
                 {renderBoard()}
               </div>
               { (gameover || paused.current) &&
-                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40  tw-z-10 tw-top-0 tw-left-0">
+                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
@@ -1559,3 +1591,241 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
+
+
+export function BoardBackground() {
+  return (
+    <div class='board-background grid-rows'>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+  </div>
+
+  );
+}

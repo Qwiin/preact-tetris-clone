@@ -1,0 +1,143 @@
+.board-cell {
+
+  box-sizing: border-box;
+
+  --cell-bg-op: 1;
+  --cell-border-op: 1;
+  --cell-border-op-ghost: .4;
+  --cell-radius-empty: none;
+  --cell-radius-filled: 0.125rem;
+  --cell-radius-ghost: 0.125rem;
+  --cell-border-width-ghost: 0.09375rem;
+
+  --cell-border-style-ghost: solid;
+  --cell-border-style-filled: outset;
+  --cell-border-style-empty: inset;
+
+  height: 1rem;
+  width: 1rem;
+  border-radius: 0.125rem;
+}
+
+.empty-cell {
+  box-sizing: border-box;
+  /* filter: blur(0.25px); */
+  position:relative;
+  /* background-color: rgb(61, 45, 73); */
+  /* background-color: rgb(39, 36, 45); */
+  /* border: rgb(34 48 78); */
+  /* border-style: var(--cell-border-style-empty); */
+  border-radius: 0;
+  overflow: hidden;
+  /* box-shadow:  inset 0.2rem 0.4rem 0.2rem 0rem rgba(30,45,60, 0.75); */
+  /* box-shadow: inset 1px 1px 1px 1px rgb(0, 0, 0, 0.5); */
+}
+
+/* .empty-cell::before {
+  height: 1rem;
+  width: 1rem;
+  font-size: 0;
+  content: '.';
+  top:0;
+  left:0;
+  position: absolute;
+  z-index: 400;
+  background-color: black;
+  border-radius: 0.5rem;
+  transform: translate(-0.03125rem,-0.25rem) scale(1.65);
+  box-shadow:  inset 0.2rem 0.4rem 0.2rem 0rem rgba(30,45,60, 0.75),
+               inset 0 -1rem 0.1rem 0rem rgba(130,145,160, 0.3);
+  border-top-width: 0.09375rem;
+  border-bottom-width: 0.09375rem;
+} */
+
+.filled-cell {
+  border-radius: var(--cell-radius-filled);
+  border-style: var(--cell-border-style-filled);
+  /* box-shadow: inset 0.25em 0.167em 1em gold; */
+}
+.ghost-cell {
+  border-radius: var(--cell-radius-ghost);
+  border-style: var(--cell-border-style-ghost);
+  border-width: var(--cell-border-width-ghost);
+  z-index: 100;
+}
+
+
+/*
+
+Below are the theme colors for the board cells;
+
+*/
+
+
+/* O piece */
+.cell-color-1,
+.cell-color-11 {
+  background-color: rgb( var(--theme-0-cell-color-1) / var(--cell-bg-op));
+  border-color: rgb( var(--theme-0-cell-color-1) / var(--cell-border-op));
+}
+.cell-color--11 {
+  border-color: rgb( var(--theme-0-cell-color-1) / var(--cell-border-op-ghost));
+}
+
+/* Z piece */
+.cell-color-2,
+.cell-color-22 {
+  background-color: rgb( var(--theme-0-cell-color-2) / var(--cell-bg-op));
+  border-color: rgb( var(--theme-0-cell-color-2) / var(--cell-border-op));
+}
+.cell-color--22 {
+  border-color: rgb( var(--theme-0-cell-color-2) / var(--cell-border-op-ghost));
+}
+
+/* S piece */
+.cell-color-3,
+.cell-color-33 {
+  background-color: rgb( var(--theme-0-cell-color-3) / var(--cell-bg-op));
+  border-color: rgb( var(--theme-0-cell-color-3) / var(--cell-border-op));
+}
+.cell-color--33 {
+  border-color: rgb( var(--theme-0-cell-color-3) / var(--cell-border-op-ghost));
+}
+
+/* J piece */
+.cell-color-4,
+.cell-color-44 {
+  background-color: rgb( var(--theme-0-cell-color-4) / var(--cell-bg-op));
+  border-color: rgb( var(--theme-0-cell-color-4) / var(--cell-border-op));
+}
+.cell-color--44 {
+  border-color: rgb( var(--theme-0-cell-color-4) / var(--cell-border-op-ghost));
+}
+
+/* L piece */
+.cell-color-5,
+.cell-color-55 {
+  background-color: rgb( var(--theme-0-cell-color-5) / var(--cell-bg-op));
+  border-color: rgb( var(--theme-0-cell-color-5) / var(--cell-border-op));
+}
+.cell-color--55 {
+  border-color: rgb( var(--theme-0-cell-color-5) / var(--cell-border-op-ghost));
+}
+
+/* T piece */
+.cell-color-6,
+.cell-color-66 {
+  background-color: rgb( var(--theme-0-cell-color-6) / var(--cell-bg-op));
+  border-color: rgb( var(--theme-0-cell-color-6) / var(--cell-border-op));
+}
+.cell-color--66 {
+  border-color: rgb( var(--theme-0-cell-color-6) / var(--cell-border-op-ghost));
+}
+
+/* I piece */
+.cell-color-7,
+.cell-color-77 {
+  background-color: rgb( var(--theme-0-cell-color-7) / var(--cell-bg-op));
+  border-color: rgb( var(--theme-0-cell-color-7) / var(--cell-border-op));
+}
+.cell-color--77 {
+  border-color: rgb( var(--theme-0-cell-color-7) / var(--cell-border-op-ghost));
+}
+

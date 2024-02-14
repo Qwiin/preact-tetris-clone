@@ -1,4 +1,4 @@
-import {ActionType, BaseToastDelay, GameAction } from "../TetrisConfig";
+import {ActionType, BaseToastDelay, BoardPosition, GameAction } from "../TetrisConfig";
 import {motion} from "framer-motion";
 import TSpin from "../TSpin";
 import BackToBack from "./BackToBack";
@@ -11,31 +11,6 @@ const transitionEnd = {
   display: 'none'
 };
 
-// const textDivVariants = {
-//     show: {
-//       transform: "translateY(-10%) scale(100%)",
-//       opacity: 1
-//     }, 
-//     hidden: {
-//       transform: "translateY(-30%) scale(80%)",
-//       opacity: 0,
-//       transitionEnd
-//     }
-// };
-
-const pointsDivVariants = {
-  show: {
-    transform: "translateY(-25%) scale(80%)",
-    opacity: 1
-    
-  }, 
-  hidden: {
-    transform: "translateY(-100%) scale(64%)",
-    opacity: 0,
-    transitionEnd
-  }
-};
-
 interface ActionToastProps {
   actions: GameAction[];
   toastComplete: (id?: string)=>void;
@@ -43,7 +18,6 @@ interface ActionToastProps {
 }
 
 export function ActionToast(props: ActionToastProps) {
-
 
   // useEffect(()=>{
   //   if((window as any).confetti)
@@ -66,7 +40,6 @@ export function ActionToast(props: ActionToastProps) {
   const renderComboToast = (action: GameAction) => {
     
     const {id} = action;
-
 
     // let tx = pseudoRandom(action.id + 'c') * 0;
     // let tx = pseudoRandom(action.id + 'c') * 30 - 15;
@@ -108,7 +81,65 @@ export function ActionToast(props: ActionToastProps) {
         <h2 className="label" data-text={LABEL_COMBO}>{LABEL_COMBO}</h2>
       </motion.div>
     );
-  
+  }
+
+  const renderPointsLabels = (action: GameAction) => {
+
+    let comboXY = getXYFromActionPiecePosition(action);
+
+    return (
+      <>
+      
+        <h2 data-text={`+${action.points}`} 
+          onAnimationEnd={(e:AnimationEvent)=>{e.stopImmediatePropagation()}}
+          className={`${action.backToBack ? 'b2b-pts' : 'std-pts'} ${action.combo ? '' : ''}`}>+{action.points}</h2> 
+
+        { action.combo !== undefined && action.combo > 0 && action.comboPoints !== undefined &&
+
+          <h2 data-text={`+${action.comboPoints}`} 
+          onAnimationEnd={(e:AnimationEvent)=>{e.stopImmediatePropagation()}}
+          style={{
+            position: "absolute",
+            width: "4.0rem",
+            // height: "2.0rem",
+
+            // dynamically position combo points at the location of the top of the last piece
+            left: `${comboXY[0] - 2.0}rem`,
+            // top: `${comboXY[1] - 2.0}rem`,
+            top: 0,
+
+            lineHeight: "100%",
+            padding: 0,
+            
+          }} 
+            className={`combo-pts ${action.combo ? '' : ''}`}>+{action.comboPoints}</h2> 
+        }
+      </>
+    );
+  };
+
+  const getYFromActionBoardPosition = (action: GameAction): number => {
+    
+    let pos: BoardPosition | undefined = (action.boardPositions ? action.boardPositions[0] : undefined);
+
+    if(pos) {
+      console.log({pos});
+      return (20 - pos.top - ( (pos.height) / 2 ));
+    }
+
+    return 0;
+  }
+
+  const getXYFromActionPiecePosition = (action: GameAction): number[] => {
+    
+    let pos: BoardPosition | undefined = action.piecePosition || undefined;
+
+    if(pos) {
+      console.log({piecePosition: pos});
+      return [(pos.left + pos.width / 2),(20 - pos.top)];
+    }
+
+    return [0,0];
   }
 
   return (
@@ -149,42 +180,38 @@ export function ActionToast(props: ActionToastProps) {
             action.type === ActionType.TRIPLE ||
             action.type === ActionType.TETRIS) &&
             <LineClearToast  type={action.type} id={action.id || 'no_id'} animationComplete={props.toastComplete} timestamp={action.timestamp || performance.now()/1000}/>
-            // // @ts-expect-error Motion Component
-            // <motion.div className="tw-w-full tw-flex tw-font-mono tw-text-amber-600 tw-justify-center tw-items-center tw-absolute tw-top-0 tw-opacity-1"
-            //   key={action.id + "a"} 
-            //   variants={textDivVariants}
-            //   initial="show"
-            //   animate="hidden"
-            //   transition={{
-            //     delay: getDelayForAction(action),
-            //     duration: 2.0, 
-            //     // ease: "easeIn"
-            //     type: "spring",
-            //     damping: 30,
-            //     stiffness: 50,
-            //   }}
-            //   >
-            //   <h2 className="text" data-text={action.text}>{action.text}</h2>
-            // </motion.div>
+
           }
           { action.points &&
           // @ts-expect-error Motion Component
           <motion.div className="toast-points"
             onAnimationComplete={()=>{props.toastComplete(action.id)}}
             key={action.id + 'b'} 
-            variants={pointsDivVariants}
+            variants={{
+              show: {
+                transform: `translateY(${-getYFromActionBoardPosition(action)}rem)`,
+                scale: 0.8,
+                opacity: 1
+                
+              }, 
+              hidden: {
+                transform: `translateY(${-getYFromActionBoardPosition(action)-1.5}rem)`,
+                scale: 0.7,
+                opacity: 0,
+                transitionEnd
+              }
+            }}
             initial="show"
             animate="hidden"
             transition={{
               delay: getDelayForAction(action),
-              duration: 2.0, 
-              // ease: "easeIn",
-              type: "spring",
-              damping: 50,
-              stiffness: 100,
-              transitionEnd
+              duration: 1.0, 
+              ease: "easeIn",
             }}>
-            <h2 className="text" data-text={`+${action.points}`}>+{action.points}</h2>
+            <div className={`label labels-wrapper`}>
+              {renderPointsLabels(action)}
+            </div>
+
           </motion.div>
           }
           

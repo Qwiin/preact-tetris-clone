@@ -84,7 +84,7 @@ export default function LineClearToast(props: LineClearToastProps) {
   const lineClearLabel: string = getLabelForActionType(props.type);
   
   return (
-
+    <>
     <div key={props.id} className="line-clear-toast">
       
     {/* TETRIS */}
@@ -106,6 +106,7 @@ export default function LineClearToast(props: LineClearToastProps) {
         )
       }
     </div>
+    </>
   );
 }
 

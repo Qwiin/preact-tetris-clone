@@ -8,10 +8,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "css": "npx tailwindcss -i ./src/input.css -o ./public/output.css --watch",
-    "serve": "concurrently \"postcss css/tailwind.css -o public/main.min.css --watch\"  \"npm run dev\"",
-    "development": "postcss css/tailwind.css -o public/main.min.css",
-    "production": "postcss css/tailwind.css -o public/main.min.css",
+    "css": "npx tailwindcss -i ./src/input.css -o /output.css --watch",
+    "serve": "concurrently \"postcss css/tailwind.css -o /output.css --watch\"  \"npm run dev\"",
+    "development": "postcss css/tailwind.css -o /output.css",
+    "production": "postcss css/tailwind.css -o dist/output.css",
     "start": "npm run serve"
   },
   "dependencies": {
