@@ -31,12 +31,12 @@ import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
+import { newUID } from '../utils/AppUtil';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
-import { newUID } from '../utils/AppUtil';
 
-const TICK_INTERVAL: number = 50;
+export const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
@@ -140,6 +140,7 @@ const Game = (props: GameProps) => {
   const [gameover, setGameover] = useState(false);
 
   const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  const frameCount = useRef(0);
   
   const clearedRows: Ref<number[]> = useRef(null);
   const clearEffectData: Ref<any> = useRef(null);
@@ -252,6 +253,7 @@ const Game = (props: GameProps) => {
     
     let rotationAttempted = false;
     let failedRotation = false;
+    let rotationType = ActionType.NONE;
 
     // let canMoveLateral = true;
     if (p.rotation !== p.rotationPrev) {
@@ -265,6 +267,10 @@ const Game = (props: GameProps) => {
       let dy = p.y - p.yPrev;
 
       let rotatedClockwise = (p.rotation - p.rotationPrev === 1 || p.rotation - p.rotationPrev === -3);
+
+      rotationType = ( rotatedClockwise === true ) 
+        ? ActionType.ROTATE_RIGHT 
+        : ActionType.ROTATE_LEFT;
 
       let canRotateInPlace = true;
       let canTSpin = true;
@@ -387,7 +393,7 @@ const Game = (props: GameProps) => {
     }
 
     if(!failedRotation && rotationAttempted) {
-      props.actionCallback({type: ActionType.ROTATE});
+      props.actionCallback({type: rotationType});
     }
 
     let j_i = p.x;
@@ -1048,7 +1054,7 @@ const Game = (props: GameProps) => {
           
           // sfx_movePiece();
 
-          props.actionCallback({type: ActionType.MOVE, data: e.key});
+          props.actionCallback({type: ActionType.MOVE_RIGHT, data: e.key});
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
           p.x += 1; 
@@ -1058,7 +1064,7 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowLeft":
         if(p.x > 0) {
-          props.actionCallback({type: ActionType.MOVE, data: e.key});
+          props.actionCallback({type: ActionType.MOVE_LEFT, data: e.key});
           // sfx_movePiece();
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
@@ -1279,6 +1285,8 @@ const Game = (props: GameProps) => {
     comboCount.current = -1;
     lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
     lastPieceAction.current = ActionType.NONE;
+
+    frameCount.current = 0;
   }
 
   const gameOver = () => {
@@ -1372,6 +1380,7 @@ const Game = (props: GameProps) => {
         || upArrowPressed.current   === true
         || downArrowPressed.current === true) {
             
+      frameCount.current += 1;    
       downArrowPressed.current = false;
       upArrowPressed.current = false;
       updateBoard(activePiece.current);
@@ -1449,13 +1458,14 @@ const Game = (props: GameProps) => {
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
         <div className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
-          
+          <div id="DevTools">
+            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
+          </div>
           <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
           pieces={
             holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
           }/>
           <div>
-            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{tick.value}</h5>
             <div class="board-grid-mask">
               
               { dropEffectData.current && 
@@ -1547,7 +1557,7 @@ const Game = (props: GameProps) => {
                 {renderBoard()}
               </div>
               { (gameover || paused.current) &&
-                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40  tw-z-10 tw-top-0 tw-left-0">
+                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80  tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }

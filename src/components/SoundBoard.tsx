@@ -73,7 +73,8 @@ export function SoundBoard(props:SoundBoardProps) {
       return;
     }
     switch(e.buttons) {
-      case ActionType.MOVE:
+      case ActionType.MOVE_LEFT:
+      case ActionType.MOVE_RIGHT:
         sfx_tetris({id:"movePiece"});
         break;
       case ActionType.MOVE_DOWN:
@@ -85,7 +86,8 @@ export function SoundBoard(props:SoundBoardProps) {
       case ActionType.DROP:
         sfx_tetris({id:"dropPiece"});
         break;
-      case ActionType.ROTATE:
+      case ActionType.ROTATE_LEFT:
+      case ActionType.ROTATE_RIGHT:
         sfx_tetris({id:"rotatePiece"});
         break;
       case ActionType.T_SPIN:

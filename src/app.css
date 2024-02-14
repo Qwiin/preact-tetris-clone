@@ -229,7 +229,7 @@ Where toast items are positioned from
 
 .ghost-cell {
   /* opacity: 0.8; */
-  filter: url('#sandy0') contrast(1.2) blur(0.1px) saturate(1.7);
+  filter: url('#sandy0') contrast(0.8) blur(0.3px) saturate(1.7);
   /* filter: url('#ghostly') brightness(1.7) contrast(0.6) saturate(1.5); */
   background-size: 140% 100%;
   background-position: 50% -30%;
@@ -256,7 +256,7 @@ Where toast items are positioned from
 
 .empty-cell {
   border-width: 0.03125rem;
-  background-color: rgba(0,0,0,1);
+  /* background-color: rgba(0,0,0,1); */
   border-radius: none;
   opacity: 0.5; 
 }
@@ -272,7 +272,20 @@ Where toast items are positioned from
   border-color: rgb(17 24 39);
 }
 
+/* .filled-cell::after {
+  position: absolute;
+  top:0;
+  left:0;
+  height: 1rem;
+  width: 1rem;
+  transform: translateY(-.25rem);
+  box-shadow:  inset 0.2rem 0.4rem 0.2rem 0rem rgba(130,145,160, 0.75),
+               inset 0 -1rem 0.1rem 0rem rgba(130,145,160, 0.3);
+  z-index: 1000;
+  background-color: green;
+} */
 .filled-cell {
+  position: relative;
   border-radius: 0.125rem;
   overflow:hidden;
   /* filter: url(#sandy180) contrast(1.2) blur(0.25px); */
@@ -281,7 +294,12 @@ Where toast items are positioned from
   border-width: 0.03125rem;
   /* border-bottom-width: 0.0rem; */
   /* box-shadow: #CCF9 0 0.02rem 0; */
+  box-shadow:  inset 0.03125rem 0.0625rem 0.09375rem 0rem rgba(130,145,160, 0.4),
+               inset -0.0625rem -0.03125rem 0.09375rem 0rem rgba(30,45,60, 0.4);
+               /* inset 0 -1rem 0.1rem 0rem rgba(130,145,160, 0.3); */
 }
+
+
 
 .filled-cell:nth-child(3n) {
   /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
@@ -313,13 +331,13 @@ Where toast items are positioned from
   flex-direction: column;
   width: 6rem;
   align-items: center;
-  justify-content: start; /* align at top */
+  justify-content: flex-start; /* align at top */
   gap:0;
   margin-top: 0;
   margin-bottom: 0;
   height: 22rem;
 
-  background-color: rgba(0,0,0, 0.5);
+  background-color: rgba(30,45,60, 0.6);
   padding-top: 1rem;
   border-top-left-radius: 1rem;
   border-top-right-radius: 0rem;
@@ -359,7 +377,7 @@ Where toast items are positioned from
   display: flex;
   gap: 0;
   flex-direction: row;
-  align-items: start;
+  align-items: flex-start;
   background-color:rgba(51, 65, 85, 0.2);
   border-radius: 0.75rem;
   height: 100%;

@@ -40,11 +40,11 @@
     transform: translateX(5%) scale(1.0);
   }
 }
-
+/* 
 @keyframes vdrift {
   from { transform: translateY( attr(data-drift-from rem, 0)) };
   to { transform: translateY( attr(data-drift-to rem, 100%)) };
-}
+} */
 
 @keyframes tspin-type-mini {
   0% {
