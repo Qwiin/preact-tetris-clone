@@ -1466,6 +1466,7 @@ const Game = (props: GameProps) => {
             holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
           }/>
           <div>
+            <BoardBackground></BoardBackground>
             <div class="board-grid-mask">
               
               { dropEffectData.current && 
@@ -1590,3 +1591,241 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
+
+
+export function BoardBackground() {
+  return (
+    <div class='board-background grid-rows'>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+    <div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div><div class='row'>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+      <div class='col'></div>
+    </div>
+  </div>
+
+  );
+}

@@ -255,13 +255,14 @@ Where toast items are positioned from
 }
 
 .empty-cell {
-  border-width: 0.03125rem;
+  opacity: 0;
+  /* border-width: 0.03125rem; */
   /* background-color: rgba(0,0,0,1); */
   border-radius: none;
   opacity: 0.5; 
 }
 
-.ghost-cell::before, 
+/* .ghost-cell::before, 
 .filled-cell::before {
   position: absolute;
   border-width: 0.03125rem;
@@ -270,7 +271,7 @@ Where toast items are positioned from
   border-radius: none;
   z-index: -1;
   border-color: rgb(17 24 39);
-}
+} */
 
 /* .filled-cell::after {
   position: absolute;
@@ -347,8 +348,6 @@ Where toast items are positioned from
   transform: translateX(-16%) translateY(-20%) scale(60%);
   z-index: -1;
   border: 0.09375rem solid rgba(200,200,200,0.6);
-  /* border-bottom-right-radius: none; */
-  /* border-left-width: 0; */
   z-index: -1;
 }
 
@@ -363,8 +362,7 @@ Where toast items are positioned from
 }
 
 .board-grid-mask {
-  padding:0.0625rem;
-  padding-top: 0;
+  padding:0.03125rem;
   height: 20rem;
   overflow: hidden;
   box-sizing: content-box;
@@ -385,4 +383,50 @@ Where toast items are positioned from
   padding-top: 2.5rem;
   margin-left: -1rem;
   margin-right: -1rem;
+}
+
+
+.board-background {
+  position: absolute;
+  opacity: 0.5;
+  transform: translate(0.09375rem, 0.09375rem);
+  height: 20rem;
+  width: 10rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.col {
+  box-sizing: border-box;
+  background: transparent;
+  height: 1rem;
+  width: 1rem;
+  border: 0.0625rem inset rgba(61, 45, 73,0.4);
+  border-radius: 0.09375rem;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  box-sizing: border-box; 
+  background: transparent;
+  height: 1rem;
+  width: 10rem;
+}
+
+
+.grid-rows {
+  background-image:
+    repeating-linear-gradient(
+      rgba(61, 45, 73, 0.5) 0rem,
+      rgba(30,45,60, 0.5) 1rem
+    ),
+    repeating-linear-gradient(
+      0.25turn,
+      rgba(61, 45, 73, 0.5) 0rem,
+      rgba(30,45,60, 0.5) 1rem
+    );
 }

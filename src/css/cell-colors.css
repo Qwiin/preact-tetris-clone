@@ -20,12 +20,13 @@
 }
 
 .empty-cell {
+  box-sizing: border-box;
   /* filter: blur(0.25px); */
   position:relative;
   /* background-color: rgb(61, 45, 73); */
-  background-color: rgb(39, 36, 45);
-  border: rgb(34 48 78);
-  border-style: var(--cell-border-style-empty);
+  /* background-color: rgb(39, 36, 45); */
+  /* border: rgb(34 48 78); */
+  /* border-style: var(--cell-border-style-empty); */
   border-radius: 0;
   overflow: hidden;
   /* box-shadow:  inset 0.2rem 0.4rem 0.2rem 0rem rgba(30,45,60, 0.75); */
