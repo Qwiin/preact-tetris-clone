@@ -14,6 +14,8 @@ const fakeMouseEventArgs:[string, any] = ["click",{
   buttons: 0,
 }];
 
+const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 640;
+
 const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 520;
 const ASPECT_RATIO = MIN_DESKTOP_WIDTH / MIN_DESKTOP_HEIGHT;
@@ -80,17 +82,12 @@ export function App() {
       // console.log({hScale, vScale});
 
       let scaleRatio: number = hScale/vScale;
-      let newAppScale = (window.innerWidth <= 640 && vScale > hScale) 
+      let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) 
         ? Math.max(hScale, vScale)  // PORTRAIT MODE
         : Math.min(hScale, vScale);
 
       setAppScale(newAppScale);
       setAppLayout( newAppScale >= 1 ? APP_LAYOUT_DESKTOP : APP_LAYOUT_MOBILE );
-
-      // let newAppX = (newAppScale < 1 && newAppScale === hScale) ? 100 * (newAppScale - 1)/2 : 0;
-      // let newAppY = (newAppScale < 1 && windowAspectRatio > ASPECT_RATIO) ? 100 * (newAppScale - 1)/2 : 0;
-      let newAppX = 0;
-      let newAppY = 0;
 
       animate(
         "#AppContainer", 
@@ -133,7 +130,9 @@ export function App() {
     <>
       <Filters />
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
-        data-theme={theme} data-app-layout={appLayout}
+        data-theme={theme} 
+        data-app-layout={appLayout}
+        data-app-scale={appScale}
         // style={{
         //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
         // }}
