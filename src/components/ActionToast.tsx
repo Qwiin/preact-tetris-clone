@@ -3,6 +3,7 @@ import {motion} from "framer-motion";
 import TSpin from "../TSpin";
 import BackToBack from "./BackToBack";
 import LineClearToast from "./LineClearToast";
+import { BaseComponentProps } from "../BaseTypes";
 
 const LABEL_COMBO: string = "COMBO";
 
@@ -11,7 +12,7 @@ const transitionEnd = {
   display: 'none'
 };
 
-interface ActionToastProps {
+interface ActionToastProps extends BaseComponentProps {
   actions: GameAction[];
   toastComplete: (id?: string)=>void;
   // lastToastId: string;

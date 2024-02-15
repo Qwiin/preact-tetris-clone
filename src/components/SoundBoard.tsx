@@ -8,8 +8,9 @@ import {useSound} from 'use-sound';
 import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
+import { BaseComponentProps } from '../BaseTypes';
 
-interface SoundBoardProps {
+interface SoundBoardProps extends BaseComponentProps {
   eventTargetRef: Ref<HTMLDivElement>;
   volume?: number;
 }
@@ -143,11 +144,10 @@ export function SoundBoard(props:SoundBoardProps) {
 
   return (
     <>
-      <div className="tw-absolute tw-font-mono game-sounds tw-rounded-lg tw-gap-2 tw-w-32 tw-h-16 tw-flex tw-flex-col tw-justify-center tw-items-center tw-box-border"
-        style={{border: "1px solid rgba(226,232,240,0.6)"}}>
+      <div data-layout={props.layout} className="game-sounds">
         <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
-          <div className="tw-flex tw-flex-row tw-justify-between tw-w-24">
-            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>SoundFX</label>
+          <div key="option1" className="sound-switch">
+            <label for="EnableSoundFX">SoundFX</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={()=>{
                 setSoundEnabled(!soundEnabled);
@@ -155,8 +155,8 @@ export function SoundBoard(props:SoundBoardProps) {
               <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableSoundFX"></label>
             </div>
           </div>
-          <div className="tw-flex tw-gap-2 tw-justify-between tw-w-24">
-            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>Music</label>
+          <div key="option2" className="sound-switch">
+            <label for="EnableMusic">Music</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
               onChange={()=>{

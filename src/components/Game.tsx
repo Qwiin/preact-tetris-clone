@@ -35,6 +35,7 @@ import { newUID } from '../utils/AppUtil';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
+import { AppLayout, BaseComponentProps } from '../BaseTypes';
 
 export const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -44,7 +45,7 @@ const tick: Signal<number> = signal(0);
 
 // const actionSignal: Signal<string> = signal("action");
 
-interface GameProps {
+interface GameProps extends BaseComponentProps {
   numColumns?: number;
   numRows?: number;
   init: boolean;
@@ -1422,13 +1423,19 @@ const Game = (props: GameProps) => {
   };
 
   return (
-    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
+    <div data-layout={props.layout} className="panels-container">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-start tw-pb-4">
-        <button className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md ${(paused.current === false && gameoverRef.current === false) ? 'disabled': ''}`} 
-          style={{paddingTop:"0.7rem"}}
-          onClick={()=>{
-          
+      <MenuPanel 
+      layout={props.layout}
+      gameover={gameoverRef.current}
+      paused={paused.current}
+      controlMapCallback={
+        (e: any)=>{
+          keydownHandler(e)
+        }
+      }
+      menuButtonCallback={ (action: MenuButtonAction) => {
+        if(action === "restart") {    
           initRefs();
           if(activePiece.current) {
             // activePiece.current = getNextPiece();
@@ -1437,26 +1444,21 @@ const Game = (props: GameProps) => {
           
           setGameover(false);
           resumeGame();
-        }} disabled={
-          paused.current === false && gameoverRef.current === false
-          }>{gameoverRef.current === false ? "Restart" : "New Game"}</button>
-        <button 
-          className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
-          style={{paddingTop:"0.7rem"}}
-          disabled={gameoverRef.current} 
-          onClick={()=>{
+          return;
+        }
+        if(action === "pause") {
           if(!paused.current) {
             pauseGame(false, true);
           }
           else {
             resumeGame();
           }
-        }}>{(paused.current && !gameoverRef.current) ? 'Resume' : 'Pause'}</button>
+        }
+      }}
+      ></MenuPanel>
 
-        <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
-      </div>
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
-        <div className="game-container">
+        <div data-layout={props.layout} className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
           <div id="DevTools">
             <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
@@ -1572,7 +1574,7 @@ const Game = (props: GameProps) => {
         }
         </div>
       </div>
-      <StatsPanel fields={[
+      <StatsPanel layout={props.layout} fields={[
         {
           name: "Score",
           value: stats.current?.score || 0
@@ -1592,6 +1594,40 @@ const Game = (props: GameProps) => {
 
 export default Game;
 
+
+
+type MenuButtonAction = "restart" | "pause";
+interface MenuPanelProps extends BaseComponentProps {
+  controlMapCallback: (fakeInputEvent: any) => void;
+  menuButtonCallback: (action: MenuButtonAction) => void;
+  paused: boolean;
+  gameover: boolean;
+  layout: AppLayout;
+}
+export function MenuPanel(props:MenuPanelProps) {
+  const {paused, gameover} = props;
+  const isDesktop = props.layout === 'desktop';
+  return (
+    <div id="MenuPanel" data-layout={props.layout} className="menu-panel">
+        <button className={
+          `tetris-font menu-button btn-restart 
+           ${(paused === false && gameover === false) ? 'disabled': ''}`
+          } 
+          onClick={()=>{props.menuButtonCallback("restart")}}
+        
+        disabled={
+          paused === false && gameover === false
+          }>{gameover === false ? (isDesktop ? "Restart" : "N") : (isDesktop ? "New Game" : "N")}</button>
+        <button 
+          className={`tetris-font btn-pause menu-button pause button ${gameover ? 'disabled' : ''}`} 
+    
+          disabled={gameover} 
+          onClick={()=> {props.menuButtonCallback("pause")}}>{(paused && !gameover) ? (isDesktop ? 'Resume' : '►') : (isDesktop ? 'Pause' : '■')}</button>
+
+        <ControlsMap layout={props.layout} clickCallback={props.controlMapCallback}/>
+      </div>
+  );
+}
 
 export function BoardBackground() {
   return (
