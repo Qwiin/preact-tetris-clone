@@ -8,7 +8,7 @@ import {useSound} from 'use-sound';
 import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
-import { BaseComponentProps } from '../BaseTypes';
+import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from '../BaseTypes';
 
 interface SoundBoardProps extends BaseComponentProps {
   eventTargetRef: Ref<HTMLDivElement>;
@@ -142,26 +142,46 @@ export function SoundBoard(props:SoundBoardProps) {
     }
   }
 
+  const toggleSound = () => {
+    if(!soundEnabled) {
+      sfx_tetris({id:"holdPiece"});
+      setSoundEnabled(true);
+    }
+    else {
+      setSoundEnabled(false);
+      setMusicEnabled(false);
+    }
+  };
+
+  const toggleMusic = () => {
+    setMusicEnabled(!musicEnabled);
+  };
+
   return (
     <>
       <div data-layout={props.layout} className="game-sounds">
         <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
           <div key="option1" className="sound-switch">
-            <label for="EnableSoundFX">SoundFX</label>
+            {props.layout === LAYOUT_MOBILE &&
+            <img onClick={toggleSound} style={{filter: "contrast(0)"}} height="14" width="14" src={
+              soundEnabled ? "/src/assets/icon_sound.png" : "/src/assets/icon_mute.png"}/>
+            }
+            <label for="EnableSoundFX">
+              {props.layout === LAYOUT_DESKTOP && "SoundFX"}
+            </label>
             <div class="toggle-switch">
-              <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={()=>{
-                setSoundEnabled(!soundEnabled);
-              }} checked={soundEnabled} />
+              <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={toggleSound} checked={soundEnabled} />
               <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableSoundFX"></label>
             </div>
           </div>
           <div key="option2" className="sound-switch">
-            <label for="EnableMusic">Music</label>
+          {props.layout === LAYOUT_MOBILE &&
+            <img onClick={toggleMusic} style={{filter: "contrast(0)"}} height="14" width="14" src="/src/assets/icon_music.png"/>
+          }
+            <label for="EnableMusic">{props.layout === LAYOUT_DESKTOP && "Music"}</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
-              onChange={()=>{
-                  setMusicEnabled(!musicEnabled);
-                }} checked={musicEnabled} 
+              onChange={toggleMusic} checked={musicEnabled} 
               />
               <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableMusic"></label>
             </div>

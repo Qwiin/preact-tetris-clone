@@ -241,6 +241,8 @@ const Game = (props: GameProps) => {
     return minDistance;
   }
 
+  // TODO: make sure the piece.lastTick is updated each time updatePosition is called;
+  // updatePosition should not be called twice in the same tick.
   const updatePosition = () => {
     if(!board.current || !activePiece.current || clearEffectData.current) {
       return
@@ -483,7 +485,7 @@ const Game = (props: GameProps) => {
         
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] === 0) {
+          if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && (board.current[i][j] === 0 || board.current[i][j] === p.cellValue)) {
 
             if(updateGhostCoords) {
               newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
@@ -1463,7 +1465,7 @@ const Game = (props: GameProps) => {
           <div id="DevTools">
             <h5 className=" tw-hidden game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
           </div>
-          <PieceQue layout={props.layout} onTap={()=>{keydownHandler({key: '/'})}} title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
+          <PieceQue id="HoldQue" layout={props.layout} onTap={()=>{keydownHandler({key: '/'})}} title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
           pieces={
             holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
           }/>
@@ -1617,12 +1619,12 @@ export function MenuPanel(props:MenuPanelProps) {
         
         disabled={
           paused === false && gameover === false
-          }>{gameover === false ? (isDesktop ? "Restart" : "N") : (isDesktop ? "New Game" : "N")}</button>
+          }>{gameover === false ? (isDesktop ? "Restart" : "Restart") : (isDesktop ? "New Game" : "New Game")}</button>
         <button 
           className={`tetris-font btn-pause menu-button pause button ${gameover ? 'disabled' : ''}`} 
     
           disabled={gameover} 
-          onClick={()=> {props.menuButtonCallback("pause")}}>{(paused && !gameover) ? (isDesktop ? 'Resume' : '►') : (isDesktop ? 'Pause' : '■')}</button>
+          onClick={()=> {props.menuButtonCallback("pause")}}>{(paused && !gameover) ? (isDesktop ? 'Resume' : 'Resume') : (isDesktop ? 'Pause' : 'Pause')}</button>
 
         <ControlsMap layout={props.layout} clickCallback={props.controlMapCallback}/>
       </div>

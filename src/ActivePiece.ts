@@ -79,7 +79,7 @@ export default class ActivePiece {
     if(item) {
       this.shapeEnum = item.shapeEnum;
       this.shape = JSON.parse(TETRONIMO_STRINGS[item.shapeEnum]);
-      this.cellValue = Math.max(...this.shape.flat());
+      this.cellValue = Math.max(...this.shape.flat());  // standard values 11,22,33,44,55,66,77
       this.id = item.id;
       this.shapeByDirection[Direction.N] = this.shape;
       if(rotation) {
