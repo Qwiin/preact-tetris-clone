@@ -16,7 +16,7 @@ const fakeMouseEventArgs:[string, any] = ["click",{
   buttons: 0,
 }];
 
-const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 640;
+const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 450;
 
 const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 520;
@@ -80,15 +80,20 @@ export function App() {
       // let windowAspectRatio = window.innerWidth / window.innerHeight;
       let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
       let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
-      // console.log({hScale, vScale});
+      console.log({hScale, vScale});
+
+    console.log({portraitRatio: window.innerHeight / window.innerWidth});
 
       let scaleRatio: number = hScale/vScale;
       let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) 
-        ? Math.max(hScale, vScale)  // PORTRAIT MODE
+        ? Math.min(Math.max(hScale, vScale), window.innerWidth/450 * 1.56)  // PORTRAIT MODE
         : Math.min(hScale, vScale);
 
-      setAppLayout( (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? APP_LAYOUT_MOBILE : APP_LAYOUT_DESKTOP );
+      let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? APP_LAYOUT_MOBILE : APP_LAYOUT_DESKTOP;
+      setAppLayout( newAppLayout );
       setAppScale(newAppScale);
+
+      document.body.setAttribute('data-layout', newAppLayout);
 
       animate(
         "#AppContainer", 

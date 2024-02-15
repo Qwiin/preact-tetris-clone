@@ -14,7 +14,7 @@
   user-select: none;
 }
 
-body {
+body[data-layout="desktop"] {
   /* min-width: 1000px; */
   overflow: hidden;
   
@@ -28,6 +28,20 @@ body {
   
   /* background-blend-mode: color-dodge; */
   background-blend-mode: overlay;
+}
+
+body[data-layout="mobile"] {
+  /* min-width: 1000px; */
+  overflow: hidden;
+  
+  background:
+    url("/src/assets/mobile_bg.png");
+  /* background-repeat: repeat; */
+  background-size: 200vh auto;
+  background-position: 50% 50%;
+  
+  /* background-blend-mode: color-dodge; */
+  
 }
 
 /* @media(max-width: 1000px) {
@@ -159,6 +173,10 @@ body {
   margin-top: 2rem;
   font-size: 1rem;
   padding: 0;
+}
+
+[data-layout="mobile"] {
+  touch-action: none;
 }
 
 [data-layout="mobile"].stats-panel {
@@ -484,11 +502,12 @@ Keyboard Controls Map UI
     border-radius: 0.375rem;
     height: 2rem;
     width: 2rem;
-    
+    touch-action: manipulation;
+
       &.clicked {
         background-color: rgb(107, 107, 107);
       }
-
+      
 
       & .subtext {
 
@@ -661,6 +680,8 @@ Where toast items are positioned from
   transform: translateX(16%) translateY(-20%) scale(60%);
   margin-bottom: 16rem;
   height: 6rem;
+  touch-action: auto;
+  pointer-events: all;
 }
 
 .board-grid-mask {
@@ -685,6 +706,7 @@ Where toast items are positioned from
   padding-top: 2rem;
   margin-left: -1rem;
   margin-right: -1rem;
+  z-index: 3000;
 }
 .game-container[data-layout="mobile"] {
   /* transform: scale(1.2); */
@@ -803,10 +825,12 @@ div[data-layout="mobile"] {
   }
 }
 .menu-panel[data-layout="mobile"] {
-  z-index: 2000;
+  pointer-events: none;
+  z-index: 3001;
   width: 15rem;
   
   & .menu-button {
+    pointer-events: all;
     color: aliceblue;
     text-shadow: rgba(0,128,196,0.9) 0rem 0.1rem 0.7rem;
     opacity: 0.8;
@@ -854,6 +878,7 @@ div[data-layout="mobile"] {
     gap: 0rem;
 
     & .game-control-button {
+      pointer-events: all;
       /* border: 1px rgba(255,255,255,0.6) solid; */
       border: none;
       opacity: 0.6;

@@ -1458,12 +1458,12 @@ const Game = (props: GameProps) => {
       ></MenuPanel>
 
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
-        <div data-layout={props.layout} className="game-container">
+        <div id="GameContainer" data-layout={props.layout} className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
           <div id="DevTools">
-            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
+            <h5 className=" tw-hidden game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
           </div>
-          <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
+          <PieceQue layout={props.layout} onTap={()=>{keydownHandler({key: '/'})}} title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
           pieces={
             holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
           }/>

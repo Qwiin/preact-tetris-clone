@@ -69,7 +69,7 @@ export function ControlsMap(props: ControlsMapProps) {
             <>↺</>
             <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateLeft} ({props.keyRotateLeft ? KEY_CODE_MAP[props.keyRotateLeft] : props.keyRotateLeft})</span>
           </div>
-          <div id="BtnHold" className=" game-control-button hover-text subtext btn-hold"
+          <div id="BtnHold" className="btn-hold game-control-button hover-text subtext btn-hold"
           onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyHoldPiece})}}}>
             <><p className="tw-mt-2" style={{paddingLeft: "0.2rem", paddingTop:"0.1rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>HOLD</p></>
             {/* <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyHoldPiece} ({props.keyHoldPiece ? KEY_CODE_MAP[props.keyHoldPiece] : props.keyHoldPiece?.toString()})</span> */}
