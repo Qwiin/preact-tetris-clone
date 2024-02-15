@@ -780,7 +780,8 @@ Where toast items are positioned from
   justify-content: flex-start;
 }
 
-div[data-layout="mobile"] {  
+div[data-layout="mobile"] { 
+
   & .btn-row {
     gap: 11rem;
     & .btn-rot-l {
@@ -798,7 +799,7 @@ div[data-layout="mobile"] {
   }
 
   & .btn-row:nth-child(2) {
-    gap: 2rem;
+    gap: 5rem;
   }
 }
 .menu-panel[data-layout="mobile"] {
@@ -871,6 +872,11 @@ div[data-layout="mobile"] {
         display: flex;
         flex-direction: column;
         gap:0;
+      }
+      &.subtext.btn-hold {
+        display: none;
+        flex-direction: none;
+        gap: none;
       }
       
     }
