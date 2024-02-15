@@ -643,13 +643,14 @@ const Game = (props: GameProps) => {
         });
 
         setTimeout(()=>{
-          if(clearEffectData.current) {
+          if(clearEffectData.current !== null) {
             // fix for mobile rendering bug
             // next piece will be grabbed after clear effect
             // animation completes
             return;
           }
-          activePiece.current = getPieceFromQue() || null;          
+          activePiece.current = getPieceFromQue() || null;   
+          updatePosition();       
           updateBoard(activePiece.current);
         }, TICK_INTERVAL);
         return;
@@ -1528,10 +1529,12 @@ const Game = (props: GameProps) => {
 
                           if(!activePiece.current) {
                             // fix for mobile rendering bug
-                            requestAnimationFrame(()=>{
-                              activePiece.current = getPieceFromQue() || null;          
+                            updateBoard(null);
+                            setTimeout(()=>{
+                              activePiece.current = getPieceFromQue() || null;  
+                              updatePosition();        
                               updateBoard(activePiece.current);
-                            });
+                            },TICK_INTERVAL);
                           }
                         }
                         clearedRows.current = null;
