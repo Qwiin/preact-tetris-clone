@@ -641,7 +641,14 @@ const Game = (props: GameProps) => {
           pieceWasSet.current = true;
           updateBoard(null);
         });
+
         setTimeout(()=>{
+          if(clearEffectData.current) {
+            // fix for mobile rendering bug
+            // next piece will be grabbed after clear effect
+            // animation completes
+            return;
+          }
           activePiece.current = getPieceFromQue() || null;          
           updateBoard(activePiece.current);
         }, TICK_INTERVAL);
@@ -1518,6 +1525,14 @@ const Game = (props: GameProps) => {
                         if(clearEffectData.current !== null) {
                           clearEffectData.current = null;
                           props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
+
+                          if(!activePiece.current) {
+                            // fix for mobile rendering bug
+                            requestAnimationFrame(()=>{
+                              activePiece.current = getPieceFromQue() || null;          
+                              updateBoard(activePiece.current);
+                            });
+                          }
                         }
                         clearedRows.current = null;
                         resumeGame();
