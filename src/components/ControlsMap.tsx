@@ -48,6 +48,7 @@ export function ControlsMap(props: ControlsMapProps) {
     document.querySelectorAll('.game-control-button').forEach((el: Element) =>{
       el.addEventListener("mousedown", ()=>{buttonDownHandler(el)});
       el.addEventListener("mouseup", ()=>{buttonUpHandler(el)});
+      el.addEventListener("mouseout", ()=>{buttonUpHandler(el)});
     });
 
     window.addEventListener("touchend", endBtnRepeat);
@@ -60,6 +61,7 @@ export function ControlsMap(props: ControlsMapProps) {
       document.querySelectorAll('.game-control-button').forEach((el: Element) =>{
         el.removeEventListener("mousedown", ()=>{buttonDownHandler(el)});
         el.removeEventListener("mouseup", ()=>{buttonUpHandler(el)});
+        el.removeEventListener("mouseout", ()=>{buttonUpHandler(el)});
       });
       window.removeEventListener("touchend", endBtnRepeat);
       window.removeEventListener("touchcancel", endBtnRepeat);
