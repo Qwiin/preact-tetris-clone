@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks";
-import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from "../BaseTypes";
+import { BaseComponentProps, LAYOUT_DESKTOP } from "../BaseTypes";
 import { Ref } from "preact";
 
 interface ControlsMapProps extends BaseComponentProps {
