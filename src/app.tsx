@@ -8,6 +8,7 @@ import SoundBoard from './components/SoundBoard';
 import {animate} from 'framer-motion';
 import { Filters } from './effects/Filters';
 import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
+import { mobileCheck } from './utils/AppUtil';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
@@ -89,6 +90,17 @@ export function App() {
       let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
       setAppLayout( newAppLayout );
       setAppScale(newAppScale);
+
+      if(newAppLayout === LAYOUT_MOBILE || mobileCheck()) {
+        if((screen.orientation as any).hasOwnProperty("lock")) {
+          (screen.orientation as any).lock("portrait");
+        }
+      }
+      else {
+        if((screen.orientation as any).hasOwnProperty("unlock")) {
+          (screen.orientation as any).unlock();
+        }
+      }
 
       document.body.setAttribute('data-layout', newAppLayout);
 
