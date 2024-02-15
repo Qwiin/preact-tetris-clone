@@ -8,6 +8,11 @@ import {useSound} from 'use-sound';
 import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
+
+import icon_mute from '@assets/icon_mute.png';
+import icon_sound from '@assets/icon_sound.png';
+import icon_music from '@assets/icon_music.png';
+
 import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from '../BaseTypes';
 
 interface SoundBoardProps extends BaseComponentProps {
@@ -164,7 +169,7 @@ export function SoundBoard(props:SoundBoardProps) {
           <div key="option1" className="sound-switch">
             {props.layout === LAYOUT_MOBILE &&
             <img onClick={toggleSound} style={{filter: "contrast(0)"}} height="14" width="14" src={
-              soundEnabled ? "/src/assets/icon_sound.png" : "/src/assets/icon_mute.png"}/>
+              soundEnabled ? icon_sound : icon_mute}/>
             }
             <label for="EnableSoundFX">
               {props.layout === LAYOUT_DESKTOP && "SoundFX"}
@@ -176,7 +181,7 @@ export function SoundBoard(props:SoundBoardProps) {
           </div>
           <div key="option2" className="sound-switch">
           {props.layout === LAYOUT_MOBILE &&
-            <img onClick={toggleMusic} style={{filter: "contrast(0)"}} height="14" width="14" src="/src/assets/icon_music.png"/>
+            <img onClick={toggleMusic} style={{filter: "contrast(0)"}} height="14" width="14" src={icon_music}/>
           }
             <label for="EnableMusic">{props.layout === LAYOUT_DESKTOP && "Music"}</label>
             <div class="toggle-switch">

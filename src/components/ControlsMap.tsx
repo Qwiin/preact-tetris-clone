@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks";
-import { BaseComponentProps } from "../BaseTypes";
+import { BaseComponentProps, LAYOUT_DESKTOP } from "../BaseTypes";
 import { Ref } from "preact";
 
 interface ControlsMapProps extends BaseComponentProps {
@@ -129,17 +129,20 @@ export function ControlsMap(props: ControlsMapProps) {
         <div className="btn-row">
           <div id="BtnMoveLeft" className="game-control-button hover-text btn-left"
             // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveLeft})}}}
-            onMouseDown={()=>{
+            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveLeft)}}}
+            onMouseUp={endBtnRepeat}
+            onTouchStart={()=>{
               startBtnRepeat(props?.keyMoveLeft);
             }}
-            onMouseUp={endBtnRepeat}>
+            onTouchEnd={endBtnRepeat}
+            >
             <>{props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)}</>
           <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Left ({props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)})</span>
           </div>
           <div className="btn-col">
             <div id="BtnDrop" className=" game-control-button hover-text subtext btn-drop"
             style={{lineHeight:"1.25rem"}}
-            onMouseDown={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
+            onTouchStart={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
               <>
                 {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
                 <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0" style={{paddingLeft: "0.2rem",marginTop: "-0.375rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>DROP</div>
@@ -148,20 +151,26 @@ export function ControlsMap(props: ControlsMapProps) {
             </div>
             <div id="BtnMoveDown" className="game-control-button hover-text btn-down"
               // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveDown})}}}
-              onMouseDown={()=>{
+              onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveDown)}}}
+              onMouseUp={endBtnRepeat}
+              onTouchStart={()=>{
                 startBtnRepeat(props?.keyMoveDown);
               }}
-              onMouseUp={endBtnRepeat}>
+              onTouchEnd={endBtnRepeat}
+              >
               <>{props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)}</>
               <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Down ({props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)})</span>
             </div>
           </div>
           <div id="BtnMoveRight" className="game-control-button hover-text btn-right"
             // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveRight})}}}
-            onMouseDown={()=>{
-              startBtnRepeat(props?.keyMoveRight);
-            }}
-            onMouseUp={endBtnRepeat}>
+            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveRight)}}}
+              onMouseUp={endBtnRepeat}
+              onTouchStart={()=>{
+                startBtnRepeat(props?.keyMoveRight);
+              }}
+              onTouchEnd={endBtnRepeat}
+            >
             <>{props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)}</>
             <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Right ({props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)})</span>
             </div>
