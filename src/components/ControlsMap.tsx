@@ -18,7 +18,8 @@ const DEFAULT_KEY_MAP: ControlsMapProps = {
   keyDropPiece: 'ArrowUp',
   keyRotateRight: 'Shift',
   keyRotateLeft: 'Alt',
-  keyHoldPiece: 'Slash'
+  keyHoldPiece: 'Slash',
+  layout:'desktop'
 }
 
 const KEY_CODE_MAP: any = {
@@ -73,7 +74,7 @@ export function ControlsMap(props: ControlsMapProps) {
             onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
               <>
                 {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
-                <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0 subtext" style={{paddingLeft: "0",marginTop: "-0.375rem",fontSize: '0.5rem'}}>Drop</div>
+                <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0" style={{paddingLeft: "0",marginTop: "-0.375rem",fontSize: '0.5rem'}}>Drop</div>
               </>
               <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
             </div>
