@@ -10,6 +10,10 @@
 @import 'css/cell-colors.css';
 
 
+*, :root, body, div {
+  user-select: none;
+}
+
 body {
   /* min-width: 1000px; */
   overflow: hidden;
@@ -442,7 +446,7 @@ Keyboard Controls Map UI
 */
 .game-control-map {
   margin-top: 5.5rem;
-  background-color: rgb(26, 26, 26, 0.8);
+  /* background-color: rgb(26, 26, 26, 0.8); */
   /* border: 1px rgba(148, 163, 184, 0.8) solid; */
   /* border: 1px solid rgba(226,232,240,0.6); */
   padding-top: 0.1rem;
@@ -481,6 +485,10 @@ Keyboard Controls Map UI
     height: 2rem;
     width: 2rem;
     
+      &.clicked {
+        background-color: rgb(107, 107, 107);
+      }
+
 
       & .subtext {
 
@@ -674,7 +682,7 @@ Where toast items are positioned from
   border-radius: 0.75rem;
   height: 100%;
   padding: 0;
-  padding-top: 2.5rem;
+  padding-top: 2rem;
   margin-left: -1rem;
   margin-right: -1rem;
 }
@@ -855,7 +863,11 @@ div[data-layout="mobile"] {
       width: 2rem;
       height: 2rem;
 
-      & .subtext {
+      &.clicked {
+        background-color: rgb(107, 107, 107);
+      }
+
+      &.subtext {
         display: flex;
         flex-direction: column;
         gap:0;

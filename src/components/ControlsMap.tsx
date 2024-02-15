@@ -1,3 +1,4 @@
+import { useEffect } from "preact/hooks";
 import { BaseComponentProps } from "../BaseTypes";
 
 interface ControlsMapProps extends BaseComponentProps {
@@ -34,6 +35,28 @@ const KEY_CODE_MAP: any = {
 }
 
 export function ControlsMap(props: ControlsMapProps) {
+
+  useEffect(()=>{
+
+    document.querySelectorAll('.game-control-button').forEach((el: Element) =>{
+      el.addEventListener("mousedown", ()=>{buttonDownHandler(el)});
+      el.addEventListener("mouseup", ()=>{buttonUpHandler(el)});
+    });
+
+    return () => {
+      document.querySelectorAll('.game-control-button').forEach((el: Element) =>{
+        el.removeEventListener("mousedown", ()=>{buttonDownHandler(el)});
+        el.removeEventListener("mouseup", ()=>{buttonUpHandler(el)});
+      });
+    }
+  },[]);
+
+  function buttonDownHandler(el: Element){
+    el.classList.add("clicked");
+  }
+  function buttonUpHandler(el: Element){
+    el.classList.remove("clicked");
+  }
 
   return (
     <>
