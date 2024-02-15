@@ -1,4 +1,4 @@
-import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from "../BaseTypes";
+import { BaseComponentProps } from "../BaseTypes";
 import { TETRONIMOES } from "../TetrisConfig";
 import { PieceQueItem } from "./Game";
 import {motion} from 'framer-motion';
