@@ -1,6 +1,6 @@
 
-export const LAYOUT_MOBILE: string = "mobile";
-export const LAYOUT_DESKTOP: string = "desktop";
+export const LAYOUT_MOBILE: AppLayout = "mobile";
+export const LAYOUT_DESKTOP: AppLayout = "desktop";
 
 export type AppLayout = "mobile" | "desktop";
 

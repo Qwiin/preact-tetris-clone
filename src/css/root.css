@@ -105,3 +105,12 @@
 .ignore {
   display: none;
 }
+
+#DevTools {
+  position: fixed;
+  background: rgba(0,0,0,0.3);
+
+  & .fps {
+    color: red
+  }
+}

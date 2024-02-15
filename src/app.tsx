@@ -7,7 +7,7 @@ import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
 import {animate} from 'framer-motion';
 import { Filters } from './effects/Filters';
-import { AppLayout } from './BaseTypes';
+import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
@@ -22,9 +22,6 @@ const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 520;
 
 const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
-
-const APP_LAYOUT_DESKTOP = "desktop";
-const APP_LAYOUT_MOBILE = "mobile";
 
 export function App() {
 
@@ -89,7 +86,7 @@ export function App() {
         ? Math.min(Math.max(hScale, vScale), window.innerWidth/450 * 1.56)  // PORTRAIT MODE
         : Math.min(hScale, vScale);
 
-      let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? APP_LAYOUT_MOBILE : APP_LAYOUT_DESKTOP;
+      let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
       setAppLayout( newAppLayout );
       setAppScale(newAppScale);
 
