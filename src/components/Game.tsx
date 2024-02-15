@@ -987,7 +987,7 @@ const Game = (props: GameProps) => {
     }
 
     // if not gameover, pause should be allowed
-    if(e.key === "Escape" && gameover === false) {
+    if(e.key === "Escape" && gameoverRef.current === false) {
       if(!paused.current) {
         pauseGame();
         forceUpdate(1); // changes "Pause" button label to "Resume"
@@ -1561,7 +1561,7 @@ const Game = (props: GameProps) => {
               </div>
               { (gameover || paused.current) &&
                 <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
-                  <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
+                  <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
             </div>

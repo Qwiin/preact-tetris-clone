@@ -300,6 +300,7 @@ body {
 
 .tetris-font {
   font-family: 'Brick3DRegular';
+  letter-spacing: 0.1rem;
 }
 
 .drop-effect {
@@ -358,10 +359,10 @@ body {
     display: flex;
     gap: 0rem;
     justify-content: space-between;
-    width: 3rem;
+    width: 3.2rem;
     
     & label {
-      font-size: 0.35rem;
+      font-size: 0.4rem;
       margin-right: 0rem;
       padding-top: 0.25rem;
       transform: skew(-10deg);
@@ -443,7 +444,7 @@ Keyboard Controls Map UI
   margin-top: 5.5rem;
   background-color: rgb(26, 26, 26, 0.8);
   /* border: 1px rgba(148, 163, 184, 0.8) solid; */
-  border: 1px solid rgba(226,232,240,0.6);
+  /* border: 1px solid rgba(226,232,240,0.6); */
   padding-top: 0.1rem;
   padding-bottom: 0.5rem;
 
@@ -669,7 +670,7 @@ Where toast items are positioned from
   gap: 0;
   flex-direction: row;
   align-items: flex-start;
-  background-color:rgba(51, 65, 85, 0.2);
+  /* background-color:rgba(51, 65, 85, 0.2); */
   border-radius: 0.75rem;
   height: 100%;
   padding: 0;
@@ -685,7 +686,7 @@ Where toast items are positioned from
   gap: 0;
   flex-direction: row;
   align-items: flex-start;
-  background-color:rgba(51, 65, 85, 0.2);
+  /* background-color:rgba(51, 65, 85, 0.2); */
   border-radius: 0.75rem;
   height: 100%;
   padding: 0;
