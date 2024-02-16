@@ -100,7 +100,7 @@
 }
 
 .tspin-flexbox.flash::after,
-.tetris-flexbox::after {
+.tetris-flexbox.flash::after {
   color: white;
   animation: flash 0.2s ease-out;
   text-shadow:  var(--toast-flash-highlight);

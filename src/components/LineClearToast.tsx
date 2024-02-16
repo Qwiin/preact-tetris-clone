@@ -1,6 +1,7 @@
 import {animate} from "framer-motion";
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { ActionType, BaseToastDelay, getLabelForActionType } from "../TetrisConfig";
+import { Ref } from "preact";
 
 interface LineClearToastProps {
   // type: "mini" | "single" | "double" | "triple"
@@ -13,16 +14,17 @@ interface LineClearToastProps {
 
 export default function LineClearToast(props: LineClearToastProps) {
 
-  const [animateType, setAnimateType] = useState(false);
+  const tetrisFlexbox: Ref<HTMLDivElement> = useRef(null);
+  const tetrisLabel: Ref<HTMLDivElement> = useRef(null);
+  const lineClearTypeRef: Ref<HTMLDivElement> = useRef(null);
 
   useEffect(()=>{
     playAnimation();
   },[props.id])
 
-  const playAnimation = () => {
+  const playAnimation = async () => {
     if(props.type === ActionType.TETRIS) {
-      setAnimateType(true);
-      animate(
+      await animate(
           ".tetris-flexbox .tetris-label", 
           { 
             transform: ["translateY(50%)","translateY(-25%)", "translateY(-100%)", "translateY(-50%)", "translateY(0%)", "translateY(-20%)", "translateY(0%)"], 
@@ -30,54 +32,48 @@ export default function LineClearToast(props: LineClearToastProps) {
           }, 
           { 
             delay: BaseToastDelay + (props.timestamp - (performance.now() / 1000)),
-            duration: 0.4,
+            duration: 0.5,
             ease: "easeOut",
           }
-      ).then(()=>{
+      )
           
-        document.querySelector('.tetris-flexbox')?.classList.add("flash");
-        
-        requestAnimationFrame(()=>{
-          animate(
-            ".line-clear-toast", 
-            { 
-              opacity: 0,
-              scale: 0,
-            }, 
-            { 
-              duration: 0.3,
-              ease: "easeOut",
-              delay: 0.5
-            }
-          ).then(()=>{
+      tetrisFlexbox.current?.classList.add("flash");
+      
+      await animate(
+        ".line-clear-toast", 
+        { 
+          opacity: 0,
+          scale: 0,
+        }, 
+        { 
+          duration: 0.3,
+          ease: "easeOut",
+          delay: 0.5
+        }
+      )
             
-            document.querySelector('.tetris-flexbox')?.classList.remove("flash");
-            props.animationComplete(props.id);
-          });
-        });
-      });
+      tetrisFlexbox.current?.classList.remove("flash");
+          
+      props.animationComplete(props.id);
     }
     else {
-      document.querySelector('.line-clear-type')?.classList.add("show","flash");
+      lineClearTypeRef.current?.classList.add("show","flash");
 
-      requestAnimationFrame(()=>{
-        animate(
-          ".line-clear-toast", 
-          { 
-            opacity: 0,
-            // scale: 0,
-          }, 
-          { 
-            duration: 0.3,
-            ease: "easeOut",
-            delay: 0.5
-          }
-        ).then(()=>{
+      await animate(
+        ".line-clear-toast", 
+        { 
+          opacity: 0,
+          // scale: 0,
+        }, 
+        { 
+          duration: 0.3,
+          ease: "easeOut",
+          delay: 0.5
+        }
+      )
           
-          document.querySelector('.line-clear-type')?.classList.remove("show","flash");
-          props.animationComplete(props.id);
-        });
-      });
+      lineClearTypeRef.current?.classList.remove("show","flash");
+      props.animationComplete(props.id);
     }
   }
 
@@ -89,8 +85,8 @@ export default function LineClearToast(props: LineClearToastProps) {
       
     {/* TETRIS */}
     { lineClearLabel && props.type === ActionType.TETRIS && (
-        <div className="tetris-flexbox" data-chars={lineClearLabel} key="abc">
-          <div className="tetris-label primary" data-char={lineClearLabel} key="abc1">{lineClearLabel}</div>
+        <div ref={tetrisFlexbox} className="tetris-flexbox" data-chars={lineClearLabel}  key={`${props.id + 'tfb'}`}>
+          <div ref={tetrisLabel} className="tetris-label primary" data-char={lineClearLabel}  key={`${props.id + 'tlc'}`}>{lineClearLabel}</div>
         </div>
       )
     }
@@ -99,9 +95,10 @@ export default function LineClearToast(props: LineClearToastProps) {
     { lineClearLabel && props.type !== ActionType.TETRIS &&
         (
           <h3 key={`${props.id + 'b'}`} 
+          ref={lineClearTypeRef}
           data-chars={lineClearLabel} 
           style={{transform: "translateY(-100%) scale(120%)"}}
-          className={`line-clear-type ${lineClearLabel.toLowerCase()} ${animateType === true ? 'animate' : ''}`} 
+          className={`line-clear-type ${lineClearLabel.toLowerCase()}`} 
           >{lineClearLabel}</h3>
         )
       }
