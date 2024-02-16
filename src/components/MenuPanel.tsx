@@ -1,4 +1,4 @@
-import { AppLayout } from "../BaseTypes";
+import { AppLayout, BaseComponentProps } from "../BaseTypes";
 import ControlsMap from "./ControlsMap";
 
 export type MenuButtonAction = "restart" | "pause";
