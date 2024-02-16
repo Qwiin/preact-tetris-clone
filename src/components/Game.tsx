@@ -12,7 +12,7 @@ Gameplay:
 
 UI/UX:
   
-  1. Styleize UI
+  1. (done) Styleize UI
   2. (done) Add Sound
   3. (done) Break this out into multiple components
 
@@ -30,14 +30,18 @@ import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
+import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { newUID } from '../utils/AppUtil';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
 import { AppLayout, BaseComponentProps } from '../BaseTypes';
+import { BoardBackground } from './BoardBackground';
+import { MenuButtonAction, MenuPanel } from './MenuPanel';
+import DropEffect from './DropEffect';
+import LineClearEffect from './LineClearEffect';
 
-export const TICK_INTERVAL: number = 50;
+
 const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
@@ -783,31 +787,29 @@ const Game = (props: GameProps) => {
 
         // This should be a memory optimized operation
         requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-          let emptyRowCache: number[][] | null = [];
-          if(emptyRowCache !== null) {
-            for(let j=0; j<numCleared; j++) {
-              emptyRowCache.push(
-                rows.splice(clearedRowIndexesDesc[j],1)[0]
-              );
-            }
-            for(let j=0; j<numCleared; j++) {
-              rows.unshift(emptyRowCache.pop() as number[]);
-            }
+          requestAnimationFrame(()=>{
+            let emptyRowCache: number[][] | null = [];
+            if(emptyRowCache !== null) {
+              for(let j=0; j<numCleared; j++) {
+                emptyRowCache.push(
+                  rows.splice(clearedRowIndexesDesc[j],1)[0]
+                );
+              }
+              for(let j=0; j<numCleared; j++) {
+                rows.unshift(emptyRowCache.pop() as number[]);
+              }
 
-            emptyRowCache = null;
-
-            let colHeights = columnHeights.current || [];
-            for(let i=0; i<colHeights.length; i++){
-              colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
               emptyRowCache = null;
+
+              let colHeights = columnHeights.current || [];
+              for(let i=0; i<colHeights.length; i++){
+                colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
+                emptyRowCache = null;
+              }
             }
-          }
-        });
+          });
         });
       }
-      
-
       
       let points: number = 0;
       // console.log("updateBoard");
@@ -1103,9 +1105,7 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowRight":
         if((p.x + p.width) < board.current[0].length) {
-          
           // sfx_movePiece();
-
           props.actionCallback({type: ActionType.MOVE_RIGHT, data: e.key});
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
@@ -1131,12 +1131,7 @@ const Game = (props: GameProps) => {
           props.actionCallback({type: ActionType.MOVE_DOWN, data: e.key});
           // sfx_movePiece();
           p.yPrev = p.y;
-          
-          
           p.y += 1;
-
-          // console.log("y:", p.y);
-          // console.log(columnHeights.current?.toString());
 
           downArrowPressed.current = true;
           // tick.value = tick.value + 1; // optimization?
@@ -1159,42 +1154,6 @@ const Game = (props: GameProps) => {
       case "ArrowUp":
         
         p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
-        // p.dropped = true;
-
-        // const cols: number[][] = getBoardCols();
-        // let colIndex = p.x;
-        // let perm: number[][] = p.permutation;
-
-        // //
-        // // Gets the offsets from the bottoms contour of the piece's current permutation
-        // //
-        // let bottomOffsets: number[] = [];
-        // for(let i=0; i<p.width; i++) {
-        //   bottomOffsets.push(0);
-        //   for(let j=p.height-1; j>=0; j--) {
-        //     if(perm[j][i] > 0) {
-        //       break;
-        //     }
-        //     bottomOffsets[i]++;
-        //   }
-        // }
-        
-        // let minDistance: number = p.yMax - p.y;
-        // let minDistances = [];
-        // for(let i=0; i<p.width; i++) {
-        //   let colArr: number[] = (cols[i + colIndex]);
-        //   let dropDistance = bottomOffsets[i];
-        //   for(let j=p.y; j<colArr.length; j++){
-        //     if(colArr[j] > 0) {
-        //       break;
-        //     }
-        //     dropDistance++;
-        //   }
-        //   minDistances.push(minDistance);
-        //   if(dropDistance < minDistance) {
-        //     minDistance = dropDistance;
-        //   }
-        // }
 
         const dropDistance = getDropDistance();
 
@@ -1208,7 +1167,6 @@ const Game = (props: GameProps) => {
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
         
-
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
         if(dropDistance > 0) {
@@ -1231,14 +1189,12 @@ const Game = (props: GameProps) => {
       case "Alt":
       case "Control":
         p.rotateLeft();
-        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
 
       case "Shift":
         p.rotateRight();
-        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
@@ -1247,7 +1203,6 @@ const Game = (props: GameProps) => {
 
   const initRefs = () => {
 
-    
     pieceQueIndexes.current = [];
     pieceQueIndexes.current?.push(
       ...randomBagDistribution(7,2,3)
@@ -1341,10 +1296,7 @@ const Game = (props: GameProps) => {
     frameCount.current = 0;
   }
 
-  useEffect(()=>{
-
-    initRefs();
-
+  const initGame = () => {
     setGameover(false);
     gameoverRef.current = false;
     resumeGame();
@@ -1354,6 +1306,15 @@ const Game = (props: GameProps) => {
       tSpun.current = false;
     },100);
   
+  }
+
+  // component did mount
+  useEffect(()=>{
+
+    initRefs();
+
+    initGame();
+
     document.addEventListener("keydown", keydownHandler);
 
     return () => {
@@ -1392,7 +1353,7 @@ const Game = (props: GameProps) => {
   },[]);
 
 
-  // Controls the game speed by level
+  // render current frame
   useEffect(() => {
 
     let speedIndex = Math.min((stats.current?.level || 1)-1,9);
@@ -1443,6 +1404,31 @@ const Game = (props: GameProps) => {
 
   };
 
+  // const menuButtonCallback = (action: MenuButtonAction) => {
+  function menuButtonCallback(action: MenuButtonAction) {
+    if(action === "restart") {    
+      initRefs();
+      initGame();
+      // if(!activePiece) {
+      //   // @ts-expect-error
+      //   activePiece.current = getNextPiece();
+      //   // activePiece = getPieceFromQue();
+      // }
+      
+      // setGameover(false);
+      // resumeGame();
+      return;
+    }
+    if(action === "pause") {
+      if(!paused.current) {
+        pauseGame(false, true);
+      }
+      else {
+        resumeGame();
+      }
+    }
+  }
+
   return (
     <div data-layout={props.layout} className="panels-container">
       
@@ -1455,144 +1441,77 @@ const Game = (props: GameProps) => {
           keydownHandler(e)
         }
       }
-      menuButtonCallback={ (action: MenuButtonAction) => {
-        if(action === "restart") {    
-          initRefs();
-          if(activePiece.current) {
-            // activePiece.current = getNextPiece();
-            activePiece.current = getPieceFromQue();
-          }
-          
-          setGameover(false);
-          resumeGame();
-          return;
-        }
-        if(action === "pause") {
-          if(!paused.current) {
-            pauseGame(false, true);
-          }
-          else {
-            resumeGame();
-          }
-        }
-      }}
+      menuButtonCallback={ menuButtonCallback }
       ></MenuPanel>
 
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
         <div id="GameContainer" data-layout={props.layout} className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
+
           <div id="DevTools">
             <h5 className=" tw-hidden game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
           </div>
-          <PieceQue id="HoldQue" layout={props.layout} onTap={()=>{keydownHandler({key: '/'})}} title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
-          pieces={
-            holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
-          }/>
+
+          <PieceQue id="HoldQue" 
+            title={"HOLD"} 
+            queLength={1} 
+            position={"left"} 
+            animation={"spinRight"} 
+            disabled={activePiece.current && activePiece.current.wasInHold || false}
+            layout={props.layout} 
+            onTap={()=>{keydownHandler({key: '/'})}} 
+            pieces={
+              holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
+            }/>
+
           <div>
-            <BoardBackground></BoardBackground>
+            <BoardBackground/>
             <div class="board-grid-mask">
               
+              {/* Effects go here until Effect Layer is implemented */}
               { dropEffectData.current && 
-
-                // @ts-expect-error
-                <motion.div key={dropEffectData.current.id} className="drop-effect" 
-                  onAnimationComplete={
-                      ()=>{dropEffectData.current = null;
-                    }}
-                  variants={{
-                    show: {
-                      opacity: 1
-                    }, 
-                    hidden: {
-                      opacity: 0
-                    }}}
-                  initial="show"
-                  animate="hidden"
-                  transition={{
-                    duration: 0.25, 
-                    ease:"easeOut"
-                  }}
-                  // transitionEnd = {{
-                  //   display: 'none'
-                  // }}
-                  
-                  style={{
-                    top: dropEffectData.current.top,
-                    left: dropEffectData.current.left,
-                    right: dropEffectData.current.right,
-                    bottom: dropEffectData.current.bottom
-                    }}>
-
-                </motion.div>
+                <DropEffect
+                  position={dropEffectData.current} 
+                  onAnimationComplete={()=>{
+                    dropEffectData.current = null
+                  }}/>
               }
+              
               { clearEffectData.current &&
-                clearEffectData.current.map((effect: any)=>{
-                  return  (
-                // @ts-expect-error
-                  <motion.div key={effect.id} className="clear-effect" 
-                    onAnimationComplete={
-                      () => {
-                        // make sure sound effect is only played once
-                        // in the event that multiple effects are needed
-                        if(clearEffectData.current !== null) {
-                          clearEffectData.current = null;
-                          props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
-                        }
-                        clearedRows.current = null;
-                        resumeGame();
-                      }
+                <LineClearEffect
+                  positions={clearEffectData.current} 
+                  onAnimationComplete={() => {
+                    // make sure sound effect is only played once
+                    // in the event that multiple effects are needed
+                    if(clearEffectData.current !== null) {
+                      clearEffectData.current = null;
+                      props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
                     }
-                    // onUpdate={()=>{
-                    //   console.log("clear effect update");
-                    // }}
-                    variants={{
-                      show: {
-                        opacity: 1,
-                        transform: 'rotateX(0)'
-                      }, 
-                      hidden: {
-                        opacity: 0,
-                        transform: 'rotateX(90deg)'
-                      }}}
-                    initial="show"
-                    animate="hidden"
-                    transition={{
-                      duration: 0.4, 
-                      ease:"easeOut",
-                      delay: 0.1,
-                    }}
-                    // transitionEnd = {{
-                    //   display: 'none'
-                    // }}
-                    
-                    style={{
-                      top: effect.top,
-                      left: effect.left,
-                      right: effect.right,
-                      bottom: effect.bottom
-                      }}>
-
-                  </motion.div>
-                  );
-                })
+                    clearedRows.current = null;
+                    resumeGame();
+                  }}/>
               }
               
               <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
                 {renderBoard()}
               </div>
-              { (gameover || paused.current) &&
+
+              { ( gameover || paused.current ) &&
                 <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
+
             </div>
           </div>
-          {pieceQue.current &&
-          <PieceQue layout={props.layout} title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
-          pieces={
-            pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
-          }/>
-        }
+
+          { pieceQue.current &&
+            <PieceQue layout={props.layout} title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
+            pieces={
+              pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
+            }/>
+          }
+
         </div>
       </div>
       <StatsPanel layout={props.layout} fields={[
@@ -1614,275 +1533,3 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
-
-
-
-type MenuButtonAction = "restart" | "pause";
-interface MenuPanelProps extends BaseComponentProps {
-  controlMapCallback: (fakeInputEvent: any) => void;
-  menuButtonCallback: (action: MenuButtonAction) => void;
-  paused: boolean;
-  gameover: boolean;
-  layout: AppLayout;
-}
-export function MenuPanel(props:MenuPanelProps) {
-  const {paused, gameover} = props;
-  const isDesktop = props.layout === 'desktop';
-  return (
-    <div id="MenuPanel" data-layout={props.layout} className="menu-panel">
-        <button className={
-          `tetris-font menu-button btn-restart 
-           ${(paused === false && gameover === false) ? 'disabled': ''}`
-          } 
-          onClick={()=>{props.menuButtonCallback("restart")}}
-        
-        disabled={
-          paused === false && gameover === false
-          }>{gameover === false ? (isDesktop ? "Restart" : "Restart") : (isDesktop ? "New Game" : "New Game")}</button>
-        <button 
-          className={`tetris-font btn-pause menu-button pause button ${gameover ? 'disabled' : ''}`} 
-    
-          disabled={gameover} 
-          onClick={()=> {props.menuButtonCallback("pause")}}>{(paused && !gameover) ? (isDesktop ? 'Resume' : 'Resume') : (isDesktop ? 'Pause' : 'Pause')}</button>
-
-        <ControlsMap layout={props.layout} clickCallback={props.controlMapCallback}/>
-      </div>
-  );
-}
-
-export function BoardBackground() {
-  return (
-    <div class='board-background grid-rows'>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-  </div>
-
-  );
-}
