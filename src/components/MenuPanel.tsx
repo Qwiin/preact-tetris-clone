@@ -5,10 +5,11 @@ export type MenuButtonAction = "restart" | "pause";
 interface MenuPanelProps extends BaseComponentProps {
   controlMapCallback: (fakeInputEvent: any) => void;
   menuButtonCallback: (action: MenuButtonAction) => void;
-  paused: boolean;
   gameover: boolean;
+  paused: boolean;
   layout: AppLayout;
 }
+
 export function MenuPanel(props:MenuPanelProps) {
   const {paused, gameover} = props;
   const isDesktop = props.layout === 'desktop';

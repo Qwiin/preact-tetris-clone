@@ -26,16 +26,14 @@ Performance:
 
 import { Signal, signal } from '@preact/signals';
 
-import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { newUID } from '../utils/AppUtil';
-import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
-import { AppLayout, BaseComponentProps } from '../BaseTypes';
+import { BaseComponentProps } from '../BaseTypes';
 import { BoardBackground } from './BoardBackground';
 import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
