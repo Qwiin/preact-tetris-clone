@@ -10,6 +10,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@css': path.resolve(__dirname, './src/css'),
       '@fonts': path.resolve(__dirname, './src/font'),
+      '@assets': path.resolve(__dirname, './src/assets'),
       '@sounds': path.resolve(__dirname, './src/assets/sounds')
     },
   },

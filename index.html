@@ -4,11 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link rel="stylesheet" href="/output.css"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <!-- <meta name="viewport" content="width=device-width, user-scalable=no" /> -->
+    <meta name="viewport" 
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script> -->
     <title>Vite + Preact + TS</title>
   </head>
-  <body>
+  <body data-layout="desktop">
     <div id="app"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

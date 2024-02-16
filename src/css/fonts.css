@@ -46,7 +46,7 @@
 @font-face {
   font-family: "Brick3DRegular";   /*Can be any text*/
   src: local("Brick3DRegular-nRJR4"),
-    url("/src/font/brick-3d-font/Brick3DRegular-nRJR4.ttf") format("truetype");
+    url("/src/font/Brick3DRegular-nRJR4.ttf") format("truetype");
 }
 @font-face {
   font-family: "8DigitPin";   /*Can be any text*/

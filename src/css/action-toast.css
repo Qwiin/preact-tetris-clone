@@ -1,3 +1,30 @@
+/*
+
+Where toast items are positioned from
+
+*/
+.toast-action-origin {
+  position: relative;
+  width: 22rem;
+  max-width: 22rem;
+  height: 3.5rem;
+
+  &[data-layout="mobile"] {
+    z-index: 3500;
+    top: 5rem;
+
+    & .toast-combo {
+      left: 0.65rem;
+    }
+    & .t-spin {
+      left: 0.65rem;
+    }
+    & .line-clear-toast {
+      left: 0.65rem;
+    }
+  }
+}
+
 .toast-combo {
   position: absolute;
   width: 100%;

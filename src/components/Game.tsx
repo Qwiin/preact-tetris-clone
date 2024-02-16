@@ -35,6 +35,7 @@ import { newUID } from '../utils/AppUtil';
 import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
+import { AppLayout, BaseComponentProps } from '../BaseTypes';
 
 export const TICK_INTERVAL: number = 50;
 const PIECE_QUE_LENGTH: number = 5;
@@ -44,7 +45,7 @@ const tick: Signal<number> = signal(0);
 
 // const actionSignal: Signal<string> = signal("action");
 
-interface GameProps {
+interface GameProps extends BaseComponentProps {
   numColumns?: number;
   numRows?: number;
   init: boolean;
@@ -169,6 +170,37 @@ const Game = (props: GameProps) => {
   const columnHeights: Ref<Int8Array> = useRef(null);
   const ghostPieceCoords: Ref<number[][]> = useRef(null); // [[row1,col1],[row2,col2]...]
 
+
+  const gameOver = () => {
+    setGameover(true);
+    gameoverRef.current = true;
+    paused.current = true;
+    pauseGame();
+    props.actionCallback({type: ActionType.GAME_OVER});
+  }
+
+  const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
+    if(ticker.current){
+      clearInterval(ticker.current);
+      ticker.current = null;
+    }
+    if(!discrete) {
+      paused.current = true;
+    }
+    if(forceRender){
+      forceUpdate(1);
+    }
+  }
+  const resumeGame = () => {
+    if(!ticker.current){
+      ticker.current = setInterval(()=>{
+        tick.value = tick.value + 1;
+      },TICK_INTERVAL)
+    }
+    paused.current = false;
+    forceUpdate(1);
+  }
+
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
   const getBoardCols = (): number[][] => {
     if(!board.current){
@@ -240,6 +272,8 @@ const Game = (props: GameProps) => {
     return minDistance;
   }
 
+  // TODO: make sure the piece.lastTick is updated each time updatePosition is called;
+  // updatePosition should not be called twice in the same tick.
   const updatePosition = () => {
     if(!board.current || !activePiece.current || clearEffectData.current) {
       return
@@ -482,7 +516,7 @@ const Game = (props: GameProps) => {
         
         let j_s = 0;
         for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && board.current[i][j] === 0) {
+          if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && (board.current[i][j] === 0 || board.current[i][j] === p.cellValue)) {
 
             if(updateGhostCoords) {
               newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
@@ -637,11 +671,24 @@ const Game = (props: GameProps) => {
           // updatePosition();
           pieceWasSet.current = true;
           updateBoard(null);
+
+          requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            // if(clearEffectData.current !== null) {
+            //   // fix for mobile rendering bug
+            //   // next piece will be grabbed after clear effect
+            //   // animation completes
+            //   return;
+            // }
+            activePiece.current = getPieceFromQue() || null;   
+            // updatePosition();       
+            updateBoard(activePiece.current);
+          });
+          });
+          });
         });
-        setTimeout(()=>{
-          activePiece.current = getPieceFromQue() || null;          
-          updateBoard(activePiece.current);
-        }, TICK_INTERVAL);
+
         return;
       }
 
@@ -670,8 +717,8 @@ const Game = (props: GameProps) => {
 
       let numCleared = 0;
 
-      // CLEAR COMPLETE LINES
-      // Method 2: find full rows and recycle them
+      // CHECK FOR COMPLETE LINES
+      // Method: find full rows and recycle them
 
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
@@ -687,6 +734,9 @@ const Game = (props: GameProps) => {
       }
 
       
+      // GET POSITIONS FOR CLEARED LINES AND PASS THE DATA 
+      // ALONG IN THE ACTION CALLBACK TO POSITION THE POINTS TOAST
+
       let boardPositions: BoardPosition[] = [];
       if(numCleared > 0) {
 
@@ -732,7 +782,8 @@ const Game = (props: GameProps) => {
         // loop to work properly
 
         // This should be a memory optimized operation
-        setTimeout(()=>{
+        requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
           let emptyRowCache: number[][] | null = [];
           if(emptyRowCache !== null) {
             for(let j=0; j<numCleared; j++) {
@@ -752,11 +803,12 @@ const Game = (props: GameProps) => {
               emptyRowCache = null;
             }
           }
-        }, 200);
+        });
+        });
       }
       
 
-      // Check for and clear full rows 
+      
       let points: number = 0;
       // console.log("updateBoard");
 
@@ -986,7 +1038,7 @@ const Game = (props: GameProps) => {
     }
 
     // if not gameover, pause should be allowed
-    if(e.key === "Escape" && gameover === false) {
+    if(e.key === "Escape" && gameoverRef.current === false) {
       if(!paused.current) {
         pauseGame();
         forceUpdate(1); // changes "Pause" button label to "Resume"
@@ -1289,36 +1341,6 @@ const Game = (props: GameProps) => {
     frameCount.current = 0;
   }
 
-  const gameOver = () => {
-    setGameover(true);
-    gameoverRef.current = true;
-    paused.current = true;
-    pauseGame();
-    props.actionCallback({type: ActionType.GAME_OVER});
-  }
-
-  const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
-    if(ticker.current){
-      clearInterval(ticker.current);
-      ticker.current = null;
-    }
-    if(!discrete) {
-      paused.current = true;
-    }
-    if(forceRender){
-      forceUpdate(1);
-    }
-  }
-  const resumeGame = () => {
-    if(!ticker.current){
-      ticker.current = setInterval(()=>{
-        tick.value = tick.value + 1;
-      },TICK_INTERVAL)
-    }
-    paused.current = false;
-    forceUpdate(1);
-  }
-
   useEffect(()=>{
 
     initRefs();
@@ -1422,13 +1444,19 @@ const Game = (props: GameProps) => {
   };
 
   return (
-    <div className="tw-flex tw-items-center tw-justify-between tw-border-gray-100 tw-gap-0">
+    <div data-layout={props.layout} className="panels-container">
       
-      <div className="tw-h-80 tw-w-60 tw-mt-0 tw-flex tw-flex-col gap-8 tw-p-0 tw-items-center tw-justify-start tw-pb-4">
-        <button className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-m-2 tw-p-2 tw-text-md ${(paused.current === false && gameoverRef.current === false) ? 'disabled': ''}`} 
-          style={{paddingTop:"0.7rem"}}
-          onClick={()=>{
-          
+      <MenuPanel 
+      layout={props.layout}
+      gameover={gameoverRef.current}
+      paused={paused.current}
+      controlMapCallback={
+        (e: any)=>{
+          keydownHandler(e)
+        }
+      }
+      menuButtonCallback={ (action: MenuButtonAction) => {
+        if(action === "restart") {    
           initRefs();
           if(activePiece.current) {
             // activePiece.current = getNextPiece();
@@ -1437,31 +1465,26 @@ const Game = (props: GameProps) => {
           
           setGameover(false);
           resumeGame();
-        }} disabled={
-          paused.current === false && gameoverRef.current === false
-          }>{gameoverRef.current === false ? "Restart" : "New Game"}</button>
-        <button 
-          className={`tetris-font menu-button tw-border-slate-200 tw-w-32 tw-p-2 tw-text-md ${gameover ? 'disabled' : ''}`} 
-          style={{paddingTop:"0.7rem"}}
-          disabled={gameoverRef.current} 
-          onClick={()=>{
+          return;
+        }
+        if(action === "pause") {
           if(!paused.current) {
             pauseGame(false, true);
           }
           else {
             resumeGame();
           }
-        }}>{(paused.current && !gameoverRef.current) ? 'Resume' : 'Pause'}</button>
+        }
+      }}
+      ></MenuPanel>
 
-        <ControlsMap clickCallback={(e)=>{ keydownHandler(e)}}/>
-      </div>
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
-        <div className="game-container">
+        <div id="GameContainer" data-layout={props.layout} className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
           <div id="DevTools">
-            <h5 className=" tw-hidden bg-green-100 game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
+            <h5 className=" tw-hidden game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
           </div>
-          <PieceQue title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
+          <PieceQue id="HoldQue" layout={props.layout} onTap={()=>{keydownHandler({key: '/'})}} title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
           pieces={
             holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
           }/>
@@ -1559,20 +1582,20 @@ const Game = (props: GameProps) => {
               </div>
               { (gameover || paused.current) &&
                 <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
-                  <h2 className="tw-text-center tetris-font tw-text-lg">{gameover ? 'Game Over' : 'Paused'}</h2>
+                  <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
             </div>
           </div>
           {pieceQue.current &&
-          <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
+          <PieceQue layout={props.layout} title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
           pieces={
             pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
           }/>
         }
         </div>
       </div>
-      <StatsPanel fields={[
+      <StatsPanel layout={props.layout} fields={[
         {
           name: "Score",
           value: stats.current?.score || 0
@@ -1592,6 +1615,40 @@ const Game = (props: GameProps) => {
 
 export default Game;
 
+
+
+type MenuButtonAction = "restart" | "pause";
+interface MenuPanelProps extends BaseComponentProps {
+  controlMapCallback: (fakeInputEvent: any) => void;
+  menuButtonCallback: (action: MenuButtonAction) => void;
+  paused: boolean;
+  gameover: boolean;
+  layout: AppLayout;
+}
+export function MenuPanel(props:MenuPanelProps) {
+  const {paused, gameover} = props;
+  const isDesktop = props.layout === 'desktop';
+  return (
+    <div id="MenuPanel" data-layout={props.layout} className="menu-panel">
+        <button className={
+          `tetris-font menu-button btn-restart 
+           ${(paused === false && gameover === false) ? 'disabled': ''}`
+          } 
+          onClick={()=>{props.menuButtonCallback("restart")}}
+        
+        disabled={
+          paused === false && gameover === false
+          }>{gameover === false ? (isDesktop ? "Restart" : "Restart") : (isDesktop ? "New Game" : "New Game")}</button>
+        <button 
+          className={`tetris-font btn-pause menu-button pause button ${gameover ? 'disabled' : ''}`} 
+    
+          disabled={gameover} 
+          onClick={()=> {props.menuButtonCallback("pause")}}>{(paused && !gameover) ? (isDesktop ? 'Resume' : 'Resume') : (isDesktop ? 'Pause' : 'Pause')}</button>
+
+        <ControlsMap layout={props.layout} clickCallback={props.controlMapCallback}/>
+      </div>
+  );
+}
 
 export function BoardBackground() {
   return (

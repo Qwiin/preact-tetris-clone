@@ -17,6 +17,11 @@
   visibility: visible;
 }
 
+div[data-layout="mobile"] .hover-text:hover .tooltip-text {
+  visibility: hidden;
+}
+
+
 .tooltip-text.top {
   top: -32px;
   left: -100%;

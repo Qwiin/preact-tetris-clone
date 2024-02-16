@@ -1,14 +1,17 @@
+import { BaseComponentProps } from "../BaseTypes";
 import { TETRONIMOES } from "../TetrisConfig";
 import { PieceQueItem } from "./Game";
 import {motion} from 'framer-motion';
 
-interface PieceQueProps {
+interface PieceQueProps extends BaseComponentProps {
   title: string;
   queLength: number;
   pieces: PieceQueItem[];
   position: "left" | "right";
   disabled: boolean;
   animation: "slideUp" | "spinRight";
+  onTap?: () => void;
+  id?: string;
 }
 
 const defaultPropsPieceQue: PieceQueProps = {
@@ -25,7 +28,8 @@ const defaultPropsPieceQue: PieceQueProps = {
     {shapeEnum: 0, id: "5"},
     {shapeEnum: 0, id: "6"},
     {shapeEnum: 0, id: "7"}
-  ]
+  ],
+  layout: "desktop",
 }
 
 export function PieceQue(props: PieceQueProps) {
@@ -44,7 +48,14 @@ export function PieceQue(props: PieceQueProps) {
 
   return (
     <>
-      <div className={`piece-que-container ${props.position === "left" ? "hold-que" : ""}`} >
+      <div id={props.id} data-layout={props.layout} className={`piece-que-container ${props.position === "left" ? "hold-que" : ""}`} 
+      // onTouchEnd={props.onTap !== undefined && props.layout === LAYOUT_MOBILE ? ()=>{ 
+      //   props.onTap ? props.onTap() : console.error("onTap() is undefined") } : undefined}
+        
+      onClick={
+        ()=>{ 
+          props.onTap ? props.onTap() : console.error("onTap() is undefined") 
+        }}>
       
       <h5 className="tw-flex-none tw-relative tw-top-0 tw-h-0 tw-p-0 tw-mb-4 tw-w-full" style={{marginTop: "-0.5rem"}}>{props.title}</h5>
         {

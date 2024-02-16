@@ -9,7 +9,9 @@ import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 
-interface SoundBoardProps {
+import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from '../BaseTypes';
+
+interface SoundBoardProps extends BaseComponentProps {
   eventTargetRef: Ref<HTMLDivElement>;
   volume?: number;
 }
@@ -20,7 +22,7 @@ export function SoundBoard(props:SoundBoardProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
 
   const [sfx_t99Music, {pause}] = useSound(audio_t99_music, {
-    volume: (props.volume || 50) / 100,
+    volume: (props.volume || 50) / 200,
     playbackRate: 1
   });
 
@@ -59,7 +61,7 @@ export function SoundBoard(props:SoundBoardProps) {
       allClear: [11000,950],
       lineClearDrop: [12000,600],
     },
-    volume: (props.volume || 50) / 150,
+    volume: (props.volume || 50) / 300,
     playbackRate: 1.0
   });
 
@@ -141,30 +143,59 @@ export function SoundBoard(props:SoundBoardProps) {
     }
   }
 
+  const toggleSound = () => {
+    if(!soundEnabled) {
+      sfx_tetris({id:"holdPiece"});
+      setSoundEnabled(true);
+    }
+    else {
+      setSoundEnabled(false);
+      setMusicEnabled(false);
+    }
+  };
+
+  const toggleMusic = () => {
+    setMusicEnabled(!musicEnabled);
+  };
+
   return (
     <>
-      <div className="tw-absolute tw-font-mono game-sounds tw-rounded-lg tw-gap-2 tw-w-32 tw-h-16 tw-flex tw-flex-col tw-justify-center tw-items-center tw-box-border"
-        style={{border: "1px solid rgba(226,232,240,0.6)"}}>
+      <div data-layout={props.layout} className="game-sounds">
         <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
-          <div className="tw-flex tw-flex-row tw-justify-between tw-w-24">
-            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>SoundFX</label>
+          <div key="option1" className="sound-switch">
+            { props.layout === LAYOUT_MOBILE &&
+              <div className={`switch-icon sound ${soundEnabled ? 'enabled' : ''}`}
+              onClick={toggleSound} 
+              ></div>
+            }
+            { props.layout === LAYOUT_DESKTOP && <>
+            <label for="EnableSoundFX">SoundFX</label>
             <div class="toggle-switch">
-              <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={()=>{
-                setSoundEnabled(!soundEnabled);
-              }} checked={soundEnabled} />
+              <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={toggleSound} checked={soundEnabled} />
               <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableSoundFX"></label>
             </div>
+            </>
+            }
           </div>
-          <div className="tw-flex tw-gap-2 tw-justify-between tw-w-24">
-            <label for="EnableMusic" style={{paddingTop: "0.25rem"}}>Music</label>
+          <div key="option2" className="sound-switch">
+          {props.layout === LAYOUT_MOBILE &&
+            <div 
+            style={{
+              transform: "translateX(-0.1rem)"
+            }} className={`switch-icon music ${musicEnabled ? 'enabled' : ''}`}
+            onClick={toggleMusic} 
+            ></div>
+          }
+          { props.layout === LAYOUT_DESKTOP && <>
+            <label for="EnableMusic">"Music"</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
-              onChange={()=>{
-                  setMusicEnabled(!musicEnabled);
-                }} checked={musicEnabled} 
+              onChange={toggleMusic} checked={musicEnabled} 
               />
               <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableMusic"></label>
             </div>
+            </>
+          }
           </div>
         {/* </div> */}
       </div>

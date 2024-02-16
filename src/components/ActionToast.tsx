@@ -3,6 +3,7 @@ import {motion} from "framer-motion";
 import TSpin from "../TSpin";
 import BackToBack from "./BackToBack";
 import LineClearToast from "./LineClearToast";
+import { BaseComponentProps } from "../BaseTypes";
 
 const LABEL_COMBO: string = "COMBO";
 
@@ -11,7 +12,7 @@ const transitionEnd = {
   display: 'none'
 };
 
-interface ActionToastProps {
+interface ActionToastProps extends BaseComponentProps {
   actions: GameAction[];
   toastComplete: (id?: string)=>void;
   // lastToastId: string;
@@ -144,7 +145,7 @@ export function ActionToast(props: ActionToastProps) {
 
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
-      <div id="ToastOrigin" className='toast-action-origin'>
+      <div data-layout={props.layout} id="ToastOrigin" className='toast-action-origin'>
       {/* <TSpin id={props.actions && props.actions[0] ? props.actions[0].id || "123" : "123"}  
         animationComplete={props.toastComplete} 
         timestamp={performance.now()/1000}/>   */}

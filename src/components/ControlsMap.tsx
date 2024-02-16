@@ -1,4 +1,8 @@
-interface ControlsMapProps {
+import { useEffect, useRef } from "preact/hooks";
+import { BaseComponentProps, LAYOUT_DESKTOP } from "../BaseTypes";
+import { Ref } from "preact";
+
+interface ControlsMapProps extends BaseComponentProps {
   clickCallback?: (e:any) => void;
   keyMoveLeft?: string;
   keyMoveRight?: string;
@@ -16,7 +20,8 @@ const DEFAULT_KEY_MAP: ControlsMapProps = {
   keyDropPiece: 'ArrowUp',
   keyRotateRight: 'Shift',
   keyRotateLeft: 'Alt',
-  keyHoldPiece: 'Slash'
+  keyHoldPiece: '/',
+  layout:'desktop'
 }
 
 const KEY_CODE_MAP: any = {
@@ -27,62 +32,158 @@ const KEY_CODE_MAP: any = {
   'Control': '^',
   'Shift': '⬆',
   'Alt': '⎇',
-  'Slash': '/'
+  '/': '/'
 }
+
+const BTN_REPEAT_RATE: number = 40;
+const BTN_DELAY_UNTIL_REPEAT: number = 120;
 
 export function ControlsMap(props: ControlsMapProps) {
 
+  const touchInterval: Ref<NodeJS.Timeout> = useRef(null);
+  const touchIntervalDelay: Ref<NodeJS.Timeout> = useRef(null);
+
+  useEffect(()=>{
+
+    document.querySelectorAll('.game-control-button').forEach((el: Element) =>{
+      el.addEventListener("mousedown", ()=>{buttonDownHandler(el)});
+      el.addEventListener("mouseup", ()=>{buttonUpHandler(el)});
+      el.addEventListener("mouseout", ()=>{buttonUpHandler(el)});
+    });
+
+    window.addEventListener("touchend", endBtnRepeat);
+    window.addEventListener("touchcancel", endBtnRepeat);
+    window.addEventListener("mouseup", endBtnRepeat);
+
+    return () => {
+      // destroy refs / event listeners on unmount;
+      endBtnRepeat();
+      document.querySelectorAll('.game-control-button').forEach((el: Element) =>{
+        el.removeEventListener("mousedown", ()=>{buttonDownHandler(el)});
+        el.removeEventListener("mouseup", ()=>{buttonUpHandler(el)});
+        el.removeEventListener("mouseout", ()=>{buttonUpHandler(el)});
+      });
+      window.removeEventListener("touchend", endBtnRepeat);
+      window.removeEventListener("touchcancel", endBtnRepeat);
+      window.removeEventListener("mouseup", endBtnRepeat);
+    }
+  },[]);
+
+  function buttonDownHandler(el: Element){
+    el.classList.add("clicked");
+  }
+  function buttonUpHandler(el: Element){
+    el.classList.remove("clicked");
+  }
+
+  const endBtnRepeat = () => {
+    if(touchIntervalDelay.current){
+      clearTimeout(touchIntervalDelay.current);
+      touchIntervalDelay.current = null;
+    }
+    if(touchInterval.current) {
+      clearInterval(touchInterval.current);
+      touchInterval.current = null;
+    }
+  }
+
+  const startBtnRepeat = (btnValue:string | undefined) => {
+    if(btnValue === undefined) {
+      return;
+    }
+    endBtnRepeat();
+    if(props.clickCallback && !touchInterval.current) {
+      props.clickCallback({key: btnValue});
+      touchIntervalDelay.current = setTimeout(()=>{
+        touchInterval.current = setInterval(()=>{
+          if(props.clickCallback){
+            props.clickCallback({key: btnValue});
+          }
+        }, BTN_REPEAT_RATE);
+      },BTN_DELAY_UNTIL_REPEAT); // delay until repeat;
+    }
+  }
+
   return (
     <>
-      <div className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-rounded-lg tw-px-1">
+      <div data-layout={props.layout} className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-rounded-lg tw-px-1">
 
-        <div className="tw-flex tw-gap-2 tw-flex-row tw-justify-center tw-items-center">
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0 tw-mt-4" 
-          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateLeft})}}}
-          style={{fontSize: '1.2rem'}}>
+        <div className="btn-row">
+          <div id="BtnRotLeft" className="game-control-button hover-text btn-rot-l" 
+          onMouseDown={()=>{ if(props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyRotateLeft})}}}
+          >
             <>↺</>
             <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateLeft} ({props.keyRotateLeft ? KEY_CODE_MAP[props.keyRotateLeft] : props.keyRotateLeft})</span>
           </div>
-          <div className=" tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0 tw-items-center tw-justify-center"
-          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyHoldPiece})}}}>
-            <><p className="tw-mt-2 tetris-font" style={{paddingLeft: "0rem",fontSize:"0.5rem", marginTop: "0.6rem"}}>Hold</p></>
+          <div id="BtnHold" className="btn-hold game-control-button hover-text subtext btn-hold"
+          onMouseDown={()=>{ if(props.clickCallback) {endBtnRepeat(); props.clickCallback({key: props?.keyHoldPiece})}}}
+          >
+            <><p className="tw-mt-2" style={{paddingLeft: "0.2rem", paddingTop:"0.1rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>HOLD</p></>
             {/* <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyHoldPiece} ({props.keyHoldPiece ? KEY_CODE_MAP[props.keyHoldPiece] : props.keyHoldPiece?.toString()})</span> */}
             <span class="tooltip-text top tw-flex-none tw-p-0">Slash ({props?.keyHoldPiece && (KEY_CODE_MAP[props.keyHoldPiece] || props.keyHoldPiece)})</span>
           </div>
           {/* <div className="tw-bg-gray-900 tw-rounded-md tw-shadow-inner tw-shadow-slate-400 tw-w-8 tw-h-8 hover-text"><>{KEY_CODE_MAP[props.keyDropPiece]}</>
             <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece</span>
           </div> */}
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0 tw-mt-4" 
-          onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateRight})}}}
-          style={{fontSize: '1.2rem'}}>
+          <div id="BtnRotRight" className="game-control-button hover-text btn-rot-r" 
+          onMouseDown={()=>{ if(props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyRotateRight})}}}
+          >
             <>↻</>
             <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateRight} ({props.keyRotateRight ? KEY_CODE_MAP[props.keyRotateRight] : props.keyRotateRight})</span>
           </div>
         </div>
-        <div className="tw-flex tw-gap-2 tw-flex-row tw-justify-center tw-items-center">
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveLeft})}}}>
+        <div className="btn-row">
+          <div id="BtnMoveLeft" className="game-control-button hover-text btn-left"
+            // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveLeft})}}}
+            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveLeft)}}}
+            onMouseUp={endBtnRepeat}
+            onTouchStart={()=>{
+              startBtnRepeat(props?.keyMoveLeft);
+            }}
+            onTouchEnd={endBtnRepeat}
+            onTouchCancel={endBtnRepeat}
+            onClick={endBtnRepeat}
+            >
             <>{props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)}</>
           <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Left ({props?.keyMoveLeft && (KEY_CODE_MAP[props.keyMoveLeft] || props.keyMoveLeft)})</span>
           </div>
-          <div className="tw-flex tw-gap-2 tw-flex-col tw-justify-center tw-items-center">
-            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text tw-flex tw-flex-col gap-0"
+          <div className="btn-col">
+            <div id="BtnDrop" className=" game-control-button hover-text subtext btn-drop"
             style={{lineHeight:"1.25rem"}}
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyDropPiece})}}}>
+            onTouchStart={()=>{ if(props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyDropPiece})}}}
+            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP && props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyDropPiece})}}}>
               <>
                 {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
-                <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0 tetris-font" style={{paddingLeft: "0",marginTop: "-0.375rem",fontSize: '0.5rem'}}>Drop</div>
+                <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0" style={{paddingLeft: "0.2rem",marginTop: "-0.375rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>DROP</div>
               </>
               <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
             </div>
-            <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-              onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveDown})}}}>
+            <div id="BtnMoveDown" className="game-control-button hover-text btn-down"
+              // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveDown})}}}
+              onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveDown)}}}
+              onMouseUp={endBtnRepeat}
+              onTouchStart={()=>{
+                startBtnRepeat(props?.keyMoveDown);
+              }}
+              onTouchEnd={endBtnRepeat}
+              onTouchCancel={endBtnRepeat}
+              onClick={endBtnRepeat}
+              >
               <>{props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)}</>
               <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Down ({props?.keyMoveDown && (KEY_CODE_MAP[props.keyMoveDown] || props.keyMoveDown)})</span>
             </div>
           </div>
-          <div className="tw-bg-gray-900 tw-rounded-md game-control-button tw-w-8 tw-h-8 hover-text"
-            onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveRight})}}}>
+          <div id="BtnMoveRight" className="game-control-button hover-text btn-right"
+            // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveRight})}}}
+            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveRight)}}}
+              onMouseUp={endBtnRepeat}
+              onTouchStart={()=>{
+                startBtnRepeat(props?.keyMoveRight);
+              }}
+              onTouchEnd={endBtnRepeat}
+              onTouchCancel={endBtnRepeat}
+              onClick={endBtnRepeat}
+            >
             <>{props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)}</>
             <span class="tooltip-text bottom tw-flex-none tw-p-0">Move Right ({props?.keyMoveRight && (KEY_CODE_MAP[props.keyMoveRight] || props.keyMoveRight)})</span>
             </div>
