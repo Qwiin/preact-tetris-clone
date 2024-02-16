@@ -9,10 +9,6 @@ import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 
-import icon_mute from '@assets/icon_mute.png';
-import icon_sound from '@assets/icon_sound.png';
-import icon_music from '@assets/icon_music.png';
-
 import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from '../BaseTypes';
 
 interface SoundBoardProps extends BaseComponentProps {
@@ -167,29 +163,39 @@ export function SoundBoard(props:SoundBoardProps) {
       <div data-layout={props.layout} className="game-sounds">
         <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
           <div key="option1" className="sound-switch">
-            {props.layout === LAYOUT_MOBILE &&
-            <img onClick={toggleSound} style={{filter: "contrast(0)"}} height="14" width="14" src={
-              soundEnabled ? icon_sound : icon_mute}/>
+            { props.layout === LAYOUT_MOBILE &&
+              <div className={`switch-icon sound ${soundEnabled ? 'enabled' : ''}`}
+              onClick={toggleSound} 
+              ></div>
             }
-            <label for="EnableSoundFX">
-              {props.layout === LAYOUT_DESKTOP && "SoundFX"}
-            </label>
+            { props.layout === LAYOUT_DESKTOP && <>
+            <label for="EnableSoundFX">SoundFX</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={toggleSound} checked={soundEnabled} />
               <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableSoundFX"></label>
             </div>
+            </>
+            }
           </div>
           <div key="option2" className="sound-switch">
           {props.layout === LAYOUT_MOBILE &&
-            <img onClick={toggleMusic} style={{filter: "contrast(0)"}} height="14" width="14" src={icon_music}/>
+            <div 
+            style={{
+              transform: "translateX(-0.1rem)"
+            }} className={`switch-icon music ${musicEnabled ? 'enabled' : ''}`}
+            onClick={toggleMusic} 
+            ></div>
           }
-            <label for="EnableMusic">{props.layout === LAYOUT_DESKTOP && "Music"}</label>
+          { props.layout === LAYOUT_DESKTOP && <>
+            <label for="EnableMusic">"Music"</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
               onChange={toggleMusic} checked={musicEnabled} 
               />
               <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for="EnableMusic"></label>
             </div>
+            </>
+          }
           </div>
         {/* </div> */}
       </div>

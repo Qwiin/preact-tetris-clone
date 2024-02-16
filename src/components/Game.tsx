@@ -170,6 +170,37 @@ const Game = (props: GameProps) => {
   const columnHeights: Ref<Int8Array> = useRef(null);
   const ghostPieceCoords: Ref<number[][]> = useRef(null); // [[row1,col1],[row2,col2]...]
 
+
+  const gameOver = () => {
+    setGameover(true);
+    gameoverRef.current = true;
+    paused.current = true;
+    pauseGame();
+    props.actionCallback({type: ActionType.GAME_OVER});
+  }
+
+  const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
+    if(ticker.current){
+      clearInterval(ticker.current);
+      ticker.current = null;
+    }
+    if(!discrete) {
+      paused.current = true;
+    }
+    if(forceRender){
+      forceUpdate(1);
+    }
+  }
+  const resumeGame = () => {
+    if(!ticker.current){
+      ticker.current = setInterval(()=>{
+        tick.value = tick.value + 1;
+      },TICK_INTERVAL)
+    }
+    paused.current = false;
+    forceUpdate(1);
+  }
+
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
   const getBoardCols = (): number[][] => {
     if(!board.current){
@@ -640,19 +671,24 @@ const Game = (props: GameProps) => {
           // updatePosition();
           pieceWasSet.current = true;
           updateBoard(null);
+
+          requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            // if(clearEffectData.current !== null) {
+            //   // fix for mobile rendering bug
+            //   // next piece will be grabbed after clear effect
+            //   // animation completes
+            //   return;
+            // }
+            activePiece.current = getPieceFromQue() || null;   
+            // updatePosition();       
+            updateBoard(activePiece.current);
+          });
+          });
+          });
         });
 
-        setTimeout(()=>{
-          if(clearEffectData.current !== null) {
-            // fix for mobile rendering bug
-            // next piece will be grabbed after clear effect
-            // animation completes
-            return;
-          }
-          activePiece.current = getPieceFromQue() || null;   
-          updatePosition();       
-          updateBoard(activePiece.current);
-        }, TICK_INTERVAL);
         return;
       }
 
@@ -681,8 +717,8 @@ const Game = (props: GameProps) => {
 
       let numCleared = 0;
 
-      // CLEAR COMPLETE LINES
-      // Method 2: find full rows and recycle them
+      // CHECK FOR COMPLETE LINES
+      // Method: find full rows and recycle them
 
       let clearedRowIndexesDesc: number[] = [];
       for(let i=nRows-1; i>=0; i--){
@@ -698,6 +734,9 @@ const Game = (props: GameProps) => {
       }
 
       
+      // GET POSITIONS FOR CLEARED LINES AND PASS THE DATA 
+      // ALONG IN THE ACTION CALLBACK TO POSITION THE POINTS TOAST
+
       let boardPositions: BoardPosition[] = [];
       if(numCleared > 0) {
 
@@ -743,7 +782,8 @@ const Game = (props: GameProps) => {
         // loop to work properly
 
         // This should be a memory optimized operation
-        setTimeout(()=>{
+        requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
           let emptyRowCache: number[][] | null = [];
           if(emptyRowCache !== null) {
             for(let j=0; j<numCleared; j++) {
@@ -763,11 +803,12 @@ const Game = (props: GameProps) => {
               emptyRowCache = null;
             }
           }
-        }, 200);
+        });
+        });
       }
       
 
-      // Check for and clear full rows 
+      
       let points: number = 0;
       // console.log("updateBoard");
 
@@ -1300,36 +1341,6 @@ const Game = (props: GameProps) => {
     frameCount.current = 0;
   }
 
-  const gameOver = () => {
-    setGameover(true);
-    gameoverRef.current = true;
-    paused.current = true;
-    pauseGame();
-    props.actionCallback({type: ActionType.GAME_OVER});
-  }
-
-  const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
-    if(ticker.current){
-      clearInterval(ticker.current);
-      ticker.current = null;
-    }
-    if(!discrete) {
-      paused.current = true;
-    }
-    if(forceRender){
-      forceUpdate(1);
-    }
-  }
-  const resumeGame = () => {
-    if(!ticker.current){
-      ticker.current = setInterval(()=>{
-        tick.value = tick.value + 1;
-      },TICK_INTERVAL)
-    }
-    paused.current = false;
-    forceUpdate(1);
-  }
-
   useEffect(()=>{
 
     initRefs();
@@ -1526,16 +1537,6 @@ const Game = (props: GameProps) => {
                         if(clearEffectData.current !== null) {
                           clearEffectData.current = null;
                           props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
-
-                          if(!activePiece.current) {
-                            // fix for mobile rendering bug
-                            updateBoard(null);
-                            setTimeout(()=>{
-                              activePiece.current = getPieceFromQue() || null;  
-                              updatePosition();        
-                              updateBoard(activePiece.current);
-                            },TICK_INTERVAL);
-                          }
                         }
                         clearedRows.current = null;
                         resumeGame();
@@ -1587,7 +1588,7 @@ const Game = (props: GameProps) => {
             </div>
           </div>
           {pieceQue.current &&
-          <PieceQue title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
+          <PieceQue layout={props.layout} title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
           pieces={
             pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
           }/>

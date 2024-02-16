@@ -17,7 +17,7 @@ const fakeMouseEventArgs:[string, any] = ["click",{
   buttons: 0,
 }];
 
-const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 450;
+const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 465;
 
 const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 520;
@@ -84,7 +84,7 @@ export function App() {
 
       let scaleRatio: number = hScale/vScale;
       let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) 
-        ? Math.min(Math.max(hScale, vScale), window.innerWidth/450 * 1.56)  // PORTRAIT MODE
+        ? Math.min(Math.max(hScale, vScale), window.innerWidth/PORTRAIT_MODE_WIDTH_THRESHOLD * 1.56)  // PORTRAIT MODE
         : Math.min(hScale, vScale);
 
       let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
