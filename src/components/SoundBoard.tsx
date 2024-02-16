@@ -187,7 +187,7 @@ export function SoundBoard(props:SoundBoardProps) {
             ></div>
           }
           { props.layout === LAYOUT_DESKTOP && <>
-            <label for="EnableMusic">"Music"</label>
+            <label for="EnableMusic">Music</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
               onChange={toggleMusic} checked={musicEnabled} 
