@@ -22,7 +22,7 @@ export function SoundBoard(props:SoundBoardProps) {
   const [musicEnabled, setMusicEnabled] = useState(false);
 
   const [sfx_t99Music, {pause}] = useSound(audio_t99_music, {
-    volume: (props.volume || 50) / 100,
+    volume: (props.volume || 50) / 200,
     playbackRate: 1
   });
 
@@ -61,7 +61,7 @@ export function SoundBoard(props:SoundBoardProps) {
       allClear: [11000,950],
       lineClearDrop: [12000,600],
     },
-    volume: (props.volume || 50) / 150,
+    volume: (props.volume || 50) / 300,
     playbackRate: 1.0
   });
 
