@@ -684,8 +684,9 @@ const Game = (props: GameProps) => {
             //   return;
             // }
             activePiece.current = getPieceFromQue() || null;   
-            // updatePosition();       
-            updateBoard(activePiece.current);
+
+            // add piece to board
+            updatePosition();
           });
           });
           });
@@ -1012,7 +1013,7 @@ const Game = (props: GameProps) => {
       let w = TETRONIMOES[item?.shapeEnum || 0][0].length;
 
       let xStart: number = Math.floor((10 - w)/2);
-      let yStart: number = 4 + h - 1;
+      let yStart: number = 4 + h;
 
       let maxColumnHeightUnderNewPiece = 0;
       if(columnHeights.current) {
@@ -1026,6 +1027,8 @@ const Game = (props: GameProps) => {
       if(maxColumnHeightUnderNewPiece > 18){
         yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
       }
+
+      console.log({xStart, yStart});
 
       return {xStart, yStart};
   }
