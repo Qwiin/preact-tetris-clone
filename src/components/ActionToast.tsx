@@ -172,7 +172,7 @@ export function ActionToast(props: ActionToastProps) {
             action.type === ActionType.T_SPIN_DOUBLE ||
             action.type === ActionType.T_SPIN_TRIPLE
             )  &&
-              <TSpin type={ActionType.T_SPIN_MINI_DOUBLE} id={action.id || 'no_id'} animationComplete={props.toastComplete} timestamp={action.timestamp || performance.now()/1000}/>
+              <TSpin type={action.type} id={action.id || 'no_id'} animationComplete={props.toastComplete} timestamp={action.timestamp || performance.now()/1000}/>
           }
           
           { action.text && 
