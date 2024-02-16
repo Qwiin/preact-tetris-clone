@@ -1,5 +1,5 @@
 import {animate} from "framer-motion";
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import { ActionType, BaseToastDelay, getLabelForActionType } from "../TetrisConfig";
 import { Ref } from "preact";
 
