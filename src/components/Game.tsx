@@ -144,6 +144,7 @@ const Game = (props: GameProps) => {
 
   const ticker: Ref<NodeJS.Timeout> = useRef(null);
   const frameCount = useRef(0);
+  const syncFrameOnNextTick = useRef(false);
   
   const clearedRows: Ref<number[]> = useRef(null);
   // const clearedRowIndexesDesc: Ref<number[]> = useRef(null);
@@ -197,8 +198,23 @@ const Game = (props: GameProps) => {
   }
   const resumeGame = () => {
     if(!ticker.current){
+
+      // when game is resumed, the piece will start at the beginning of a game tick;
+      syncFrameOnNextTick.current = true;
+      
       ticker.current = setInterval(()=>{
-        tick.value = tick.value + 1;
+        
+        if(syncFrameOnNextTick.current) {
+          // let speedIndex = Math.min((stats.current?.level || 1)-1,9);
+          // let ticksPerGameFrame = Math.round(1/GAME_SPEEDS[speedIndex]);
+          // let tickOffset = ticksPerGameFrame - ((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]))
+          tick.value = 1;
+          syncFrameOnNextTick.current = false;
+        }
+        else {
+          tick.value = tick.value + 1;
+        }
+        
       },TICK_INTERVAL)
     }
     paused.current = false;
@@ -689,6 +705,7 @@ const Game = (props: GameProps) => {
             //   // animation completes
             //   return;
             // }
+            syncFrameOnNextTick.current = true;
             activePiece.current = getPieceFromQue() || null;   
 
             // add piece to board
@@ -1374,6 +1391,7 @@ const Game = (props: GameProps) => {
 
       board.current = null;
       boardCols.current = null;
+      clearedRows.current = null;
       
       columnHeights.current = null;
       
