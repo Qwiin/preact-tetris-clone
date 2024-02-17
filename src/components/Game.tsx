@@ -748,7 +748,7 @@ const Game = (props: GameProps) => {
         console.error("cleared rows is null");
         return;
       }
-      else if(!_clearedRows.includes(-2)) {
+      else if(clearEffectData.current !== null) {
         console.warn("cleared rows was not cleared; updateBoard(nullish) was called too soon");
         window.alert("cleared rows was not cleared; updateBoard(nullish) was called too soon");
         return;
@@ -1324,11 +1324,14 @@ const Game = (props: GameProps) => {
       }
     }
     
+    clearEffectData.current = null;
+    dropEffectData.current = null;
+
     if(clearedRows.current === null) {
-      clearedRows.current = [-2,-2,-2,-2];
+      clearedRows.current = [-1,-1,-1,-1];
     }
     else {
-      clearedRows.current.fill(-2);
+      clearedRows.current.fill(-1);
     }
 
     lastPieceAction.current = ActionType.NONE;
@@ -1559,7 +1562,7 @@ const Game = (props: GameProps) => {
                       props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
                     }
                     if(clearedRows.current) {
-                      clearedRows.current.fill(-2);
+                      clearedRows.current.fill(-1);
                     }
                     resumeGame();
                   }}/>
