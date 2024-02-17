@@ -738,8 +738,8 @@ Keyboard Controls Map UI
   inset 0.03125rem 0.0625rem 0.09375rem 0.03125rem hsla(0, 80%, 90%, 0.2),
                inset -0.03125rem -0.0625rem  0.09375rem 0.03125rem hsl(0,20%,20%, 0.3); */
 
-               box-shadow: inset -0.05875rem -0.13875rem 0.25rem 0.125rem hsla(0, 60%, 10%, 0.45), 
-               inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,00%, 0.15), 
+               box-shadow: inset -0.05875rem -0.13875rem 0.25rem 0.1rem hsla(0, 60%, 10%, 0.45), 
+               inset -0.03125rem -0.0625rem 0.03125rem 0.03125rem hsl(0,20%,00%, 0.15), 
                0 0 0.0625rem #0009;               
                /* inset -0.05875rem -0.03875rem 0.25rem 0.125rem hsla(0, 80%, 0%, 0.7), inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,20%, 0.33) */
                /* inset 0.03125rem 0.0625rem 0.25rem 0.03125rem hsla(0, 80%, 1%, 0.4), inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,20%, 0.33) */
@@ -775,10 +775,10 @@ Keyboard Controls Map UI
 .filled-cell.cell-color-4, .filled-cell.cell-color-44 {
   filter: 
   /* url(#sandy3)  */
-  contrast(var(--cell-contrast))
+  contrast(calc(var(--cell-contrast)*1.2))
   blur(var(--cell-blur))
-  saturate(var(--cell-saturate))
-  brightness(calc(var(--cell-brightness) * 1.3));
+  saturate(calc(var(--cell-saturate)*1.2))
+  brightness(calc(var(--cell-brightness) * 1.6));
 }
 .filled-cell.cell-color-5, .filled-cell.cell-color-55 {
   filter: 
@@ -802,7 +802,7 @@ Keyboard Controls Map UI
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
   saturate(var(--cell-saturate))
-  brightness(var(--cell-brightness));
+  brightness(calc(var(--cell-brightness)*1.1));
 }
 
 .board-grid {
