@@ -742,9 +742,15 @@ const Game = (props: GameProps) => {
       // CHECK FOR COMPLETE LINES
       // Method: find full rows and recycle them
 
+      
       const _clearedRows = clearedRows.current;
-      if(!_clearedRows) {
+      if(_clearedRows === null) {
         console.error("cleared rows is null");
+        return;
+      }
+      else if(!_clearedRows.includes(-2)) {
+        console.warn("cleared rows was not cleared; updateBoard(nullish) was called too soon");
+        window.alert("cleared rows was not cleared; updateBoard(nullish) was called too soon");
         return;
       }
       else {
@@ -762,7 +768,6 @@ const Game = (props: GameProps) => {
           }
         }
       }
-
       
       // GET POSITIONS FOR CLEARED LINES AND PASS THE DATA 
       // ALONG IN THE ACTION CALLBACK TO POSITION THE POINTS TOAST
@@ -1320,10 +1325,10 @@ const Game = (props: GameProps) => {
     }
     
     if(clearedRows.current === null) {
-      clearedRows.current = [];
+      clearedRows.current = [-2,-2,-2,-2];
     }
     else {
-      clearedRows.current.fill(-1);
+      clearedRows.current.fill(-2);
     }
 
     lastPieceAction.current = ActionType.NONE;
@@ -1554,7 +1559,7 @@ const Game = (props: GameProps) => {
                       props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
                     }
                     if(clearedRows.current) {
-                      clearedRows.current.fill(-1);
+                      clearedRows.current.fill(-2);
                     }
                     resumeGame();
                   }}/>
