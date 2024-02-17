@@ -102,7 +102,7 @@ export function getLabelForActionType(action: ActionType): string {
   }
 }
 
-export const TICK_INTERVAL: number = 30;
+export const TICK_INTERVAL: number = 32;
 export const G: number = 3 * TICK_INTERVAL / 50;  // cells per frame
 export const GAME_SPEEDS = [
   0.01667 * G,
