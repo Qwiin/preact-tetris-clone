@@ -692,21 +692,23 @@ const Game = (props: GameProps) => {
         }
         activePiece.current = null; 
         
-        pieceWasSet.current = true;
-        updateBoard(null);
+        requestAnimationFrame(()=>{
+          pieceWasSet.current = true;
+          updateBoard(null);
 
-        requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-      
-          syncFrameOnNextTick.current = true;
-          let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
-          activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+          requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+        
+            syncFrameOnNextTick.current = true;
+            let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
+            activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
 
-          // add piece to board
-          updatePosition();
-        });
-        });
+            // add piece to board
+            updatePosition();
+          });
+          });
+          });
         });
 
         return;
