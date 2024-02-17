@@ -1043,7 +1043,7 @@ const Game = (props: GameProps) => {
       let w = TETRONIMOES[item?.shapeEnum || 0][0].length;
 
       let xStart: number = Math.floor((10 - w)/2);
-      let yStart: number = 4 + h;
+      let yStart: number = 4 + h - 1;
 
       let maxColumnHeightUnderNewPiece = 0;
       if(columnHeights.current) {
