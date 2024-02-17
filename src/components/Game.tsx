@@ -146,6 +146,7 @@ const Game = (props: GameProps) => {
   const frameCount = useRef(0);
   
   const clearedRows: Ref<number[]> = useRef(null);
+  // const clearedRowIndexesDesc: Ref<number[]> = useRef(null);
   const clearEffectData: Ref<any> = useRef(null);
   const dropEffectData: Ref<any> = useRef(null);
   const pieceWasSet = useRef(false);
@@ -169,6 +170,7 @@ const Game = (props: GameProps) => {
   const lastLineClearAction: Ref<ActionType> = useRef(null);
 
   const board: Ref<number[][]> = useRef(null);
+  const boardCols: Ref<number[][]> = useRef(null);
   const columnHeights: Ref<Int8Array> = useRef(null);
   const ghostPieceCoords: Ref<number[][]> = useRef(null); // [[row1,col1],[row2,col2]...]
 
@@ -204,36 +206,37 @@ const Game = (props: GameProps) => {
   }
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
-  const getBoardCols = (): number[][] => {
-    if(!board.current){
-      return [];
+  const updateBoardCols = () => {
+    if(!board.current || !boardCols.current){
+      console.error("cannot update boardCols");
+      return;
     }
 
     let rowLen = board.current[0].length;
     let cells = board.current.flat();
     let colLen = board.current.length;
-    const boardCols: number[][] = [];
     for (let i = 0; i < rowLen; i++) {
-      let col: number[] = [];
+      // let col: number[] = [];
       for (let j = 0; j < colLen; j++) {
         let cellValue = cells[j * rowLen + i];
         if(cellValue >= 0 ){
-          col.push(cells[j * rowLen + i]);
+          boardCols.current[i][j] = (cells[j * rowLen + i]);
         }
         else {
-          col.push(0);
+          boardCols.current[i][j] = 0
         }
       }
-      boardCols.push(col);
     }
-    return  boardCols;
   };
 
-
   const getDropDistance = (): number => {
-    const cols = getBoardCols();
+    // updateBoardCols();
+
+    const cols = boardCols.current;
     const p = activePiece.current;
-    if(!p) {
+
+    if(!p || !cols) {
+      console.error("cannot determine drop distance");
       return 0;
     }
     
@@ -613,6 +616,9 @@ const Game = (props: GameProps) => {
             height: piece.height
           }
         }
+
+        // now that piece is set in place, we can update the board columns ref
+        updateBoardCols();
         
         // Verify and complete T-SPIN
         if(piece.shapeEnum === TetronimoShape.T && tSpun.current === true) {
@@ -723,12 +729,20 @@ const Game = (props: GameProps) => {
       // CHECK FOR COMPLETE LINES
       // Method: find full rows and recycle them
 
-      let clearedRowIndexesDesc: number[] = [];
+      const _clearedRows = clearedRows.current;
+      if(!_clearedRows) {
+        console.error("cleared rows is null");
+        return;
+      }
+      else {
+        _clearedRows.fill(-1);
+      }
+
       for(let i=nRows-1; i>=0; i--){
         let row = rows[i];
         if(!row.includes(0) && numCleared < 4){
-          row.fill(0);  // overwrite (erase) the row
-          clearedRowIndexesDesc.push(i);
+          row.fill(0);  // clear line (erase the row);
+          _clearedRows[numCleared] = i;
           numCleared++;
           if(numCleared === 4) {  // TODO: cache height of last piece
             break;
@@ -743,17 +757,17 @@ const Game = (props: GameProps) => {
       let boardPositions: BoardPosition[] = [];
       if(numCleared > 0) {
 
-        clearedRows.current = [...clearedRowIndexesDesc];
-
-        for(let i=0; i<clearedRowIndexesDesc.length; i++) {
+        // clearedRows.current = [...clearedRowIndexesDesc];
+        let prevClearedIndex = -1;
+        for(let i=0; i<_clearedRows.length; i++) {
           if(!clearEffectData.current){
             clearEffectData.current = [];
           }
 
-          let top = (clearedRowIndexesDesc[i] - 4);
-          let bottom = 24 - (clearedRowIndexesDesc[i] + 1);
+          let top = (_clearedRows[i] - 4);
+          let bottom = 24 - (_clearedRows[i] + 1);
 
-          if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
+          if(i > 0 && _clearedRows[i] >= 0 && prevClearedIndex >= 0 && _clearedRows[prevClearedIndex] - _clearedRows[i] === 1){
             clearEffectData.current[clearEffectData.current.length - 1].top = `${top}rem`;
             boardPositions[clearEffectData.current.length - 1].top = top;
             boardPositions[clearEffectData.current.length - 1].height += 1;
@@ -777,35 +791,34 @@ const Game = (props: GameProps) => {
               }
             );
           }
+          prevClearedIndex = i;
         }
 
         // Dear Future Self...
-        // clearedRowIndexesDesc needs to (and should already) be sorted descending
+        // _clearedRows needs to (and should already) be sorted descending (ignoring)
         // no need to sort this array here, but remember that is required for this splice 
         // loop to work properly
 
         // This should be a memory optimized operation
         requestAnimationFrame(()=>{
           requestAnimationFrame(()=>{
-            let emptyRowCache: number[][] | null = [];
-            if(emptyRowCache !== null) {
-              for(let j=0; j<numCleared; j++) {
-                emptyRowCache.push(
-                  rows.splice(clearedRowIndexesDesc[j],1)[0]
-                );
-              }
-              for(let j=0; j<numCleared; j++) {
-                rows.unshift(emptyRowCache.pop() as number[]);
-              }
 
-              emptyRowCache = null;
-
-              let colHeights = columnHeights.current || [];
-              for(let i=0; i<colHeights.length; i++){
-                colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
-                emptyRowCache = null;
+            let shiftCount: number = 0;
+            for(let j=0; j<_clearedRows.length; j++) {  
+              if(_clearedRows[j] >= 0) {
+                console.log(_clearedRows.toString());
+                rows.unshift(rows.splice(_clearedRows[j]+shiftCount,1)[0]);  // shift cleared rows to the top of the board;
+                shiftCount++;
               }
             }
+            
+            let colHeights = columnHeights.current || [];
+            for(let i=0; i<colHeights.length; i++){
+              colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
+            }
+          
+            // now that rows are cleared and board ref is updated, we can update the columns ref
+            updateBoardCols();
           });
         });
       }
@@ -1258,12 +1271,47 @@ const Game = (props: GameProps) => {
     }
     else {
       for(let i=0;  i<board.current.length; i++) {
-        for(let j=0;  j<board.current[0].length; j++) {
-          board.current[i][j] = 0; 
-        }
+        board.current[i].fill(0);
+      }
+    }
+
+    if(boardCols.current === null) { 
+      boardCols.current = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ];
+    }
+    else {
+      for(let i=0;  i<boardCols.current.length; i++) {
+        boardCols.current[i].fill(0);
       }
     }
     
+    if(clearedRows.current === null) {
+      clearedRows.current = [];
+    }
+    else {
+      clearedRows.current.fill(-1);
+    }
+
     lastPieceAction.current = ActionType.NONE;
     lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
     
@@ -1325,6 +1373,7 @@ const Game = (props: GameProps) => {
       activePiece.current = null;
 
       board.current = null;
+      boardCols.current = null;
       
       columnHeights.current = null;
       
@@ -1488,7 +1537,9 @@ const Game = (props: GameProps) => {
                       clearEffectData.current = null;
                       props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
                     }
-                    clearedRows.current = null;
+                    if(clearedRows.current) {
+                      clearedRows.current.fill(-1);
+                    }
                     resumeGame();
                   }}/>
               }
