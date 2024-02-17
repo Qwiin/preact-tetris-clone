@@ -110,13 +110,13 @@ export function ControlsMap(props: ControlsMapProps) {
 
         <div className="btn-row">
           <div id="BtnRotLeft" className="game-control-button hover-text btn-rot-l" 
-          onMouseDown={()=>{ if(props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyRotateLeft})}}}
+          onMouseDown={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateLeft})}}}
           >
             <>↺</>
             <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateLeft} ({props.keyRotateLeft ? KEY_CODE_MAP[props.keyRotateLeft] : props.keyRotateLeft})</span>
           </div>
           <div id="BtnHold" className="btn-hold game-control-button hover-text subtext btn-hold"
-          onMouseDown={()=>{ if(props.clickCallback) {endBtnRepeat(); props.clickCallback({key: props?.keyHoldPiece})}}}
+          onMouseDown={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyHoldPiece})}}}
           >
             <><p className="tw-mt-2" style={{paddingLeft: "0.2rem", paddingTop:"0.1rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>HOLD</p></>
             {/* <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyHoldPiece} ({props.keyHoldPiece ? KEY_CODE_MAP[props.keyHoldPiece] : props.keyHoldPiece?.toString()})</span> */}
@@ -126,7 +126,7 @@ export function ControlsMap(props: ControlsMapProps) {
             <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece</span>
           </div> */}
           <div id="BtnRotRight" className="game-control-button hover-text btn-rot-r" 
-          onMouseDown={()=>{ if(props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyRotateRight})}}}
+          onMouseDown={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyRotateRight})}}}
           >
             <>↻</>
             <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyRotateRight} ({props.keyRotateRight ? KEY_CODE_MAP[props.keyRotateRight] : props.keyRotateRight})</span>

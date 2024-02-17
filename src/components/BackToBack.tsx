@@ -47,9 +47,9 @@ export default function BackToBack(props:BackToBackProps) {
         damping: 10,
         stiffness: 50,
         duration: 0.5,
-        onUpdate: (value)=>{
-          console.log({value});
-        }
+        // onUpdate: (value)=>{
+        //   console.log({value});
+        // }
       }
     ]
   ];

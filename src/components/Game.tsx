@@ -373,7 +373,7 @@ const Game = (props: GameProps) => {
         i_sss--;
       }
       if(canRotateInPlace) {
-        console.log("rotate in place");
+        // console.log("rotate in place");
         // p.coords = [...p.coordsPrev];
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
@@ -387,7 +387,7 @@ const Game = (props: GameProps) => {
 
         // cache rotation, because rotateLeft/Right() will modify prevRotation
         let prevRotation = p.rotationPrev;
-        console.log("can't rotate nor t-spin");
+        // console.log("can't rotate nor t-spin");
         // p.coords = [...p.coordsPrev];
         if(p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
           p.rotateLeft();
@@ -401,7 +401,7 @@ const Game = (props: GameProps) => {
         failedRotation = true;  
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
-        console.log("can t-spin");
+        // console.log("can t-spin");
         if(canTSpinLeft) {
           p.x = p.x - 1;
           p.xPrev = p.x;
@@ -576,7 +576,7 @@ const Game = (props: GameProps) => {
         (p.lastMoveTrigger === MovementTrigger.GRAVITY 
           || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) 
           && !canMoveDownTwice && !failedRotation) {
-        console.log("can't move down twice...");
+        // console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
     }
@@ -690,26 +690,25 @@ const Game = (props: GameProps) => {
         if(piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
           props.actionCallback({type: ActionType.SET_PIECE})
         }
+
         activePiece.current = null; 
-        
+        pieceWasSet.current = true;
+
         requestAnimationFrame(()=>{
-          pieceWasSet.current = true;
-          updateBoard(null);
+        requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+      
+          syncFrameOnNextTick.current = true;
+          let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
+          activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
 
-          requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-        
-            syncFrameOnNextTick.current = true;
-            let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
-            activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
-
-            // add piece to board
-            updatePosition();
-          });
-          });
-          });
+          // add piece to board
+          updatePosition();
         });
+        });
+        });
+
+        updateBoard(null);
 
         return;
       }
@@ -749,8 +748,7 @@ const Game = (props: GameProps) => {
         return;
       }
       else if(clearEffectData.current !== null) {
-        console.warn("cleared rows was not cleared; updateBoard(nullish) was called too soon");
-        window.alert("cleared rows was not cleared; updateBoard(nullish) was called too soon");
+        // console.log("cleared rows was not cleared; updateBoard(nullish) was called too soon");
         return;
       }
       else {
@@ -824,7 +822,7 @@ const Game = (props: GameProps) => {
             let shiftCount: number = 0;
             for(let j=0; j<_clearedRows.length; j++) {  
               if(_clearedRows[j] >= 0) {
-                console.log(_clearedRows.toString());
+                // console.log(_clearedRows.toString());
                 rows.unshift(rows.splice(_clearedRows[j]+shiftCount,1)[0]);  // shift cleared rows to the top of the board;
                 shiftCount++;
               }
@@ -915,7 +913,7 @@ const Game = (props: GameProps) => {
         
 
         comboCount.current += 1;
-        console.log("Combo count: " + comboCount.current);
+        // console.log("Combo count: " + comboCount.current);
 
 
         // console.log("updatePoints");
@@ -971,8 +969,8 @@ const Game = (props: GameProps) => {
       }
       else {
         // no scoring move
-        console.log("no scoring move");
-        console.log("comobo counter reset to -1");
+        // console.log("no scoring move");
+        // console.log("comobo counter reset to -1");
 
         pieceWasSet.current = false;
         comboCount.current = -1;
@@ -1059,7 +1057,7 @@ const Game = (props: GameProps) => {
         yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece;
       }
 
-      console.log({xStart, yStart});
+      // console.log({xStart, yStart});
 
       return {xStart, yStart};
   }
