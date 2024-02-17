@@ -870,7 +870,7 @@ Keyboard Controls Map UI
   transform: translateX(16%) translateY(-20%) scale(60%);
   margin-bottom: 16rem;
   height: 6rem;
-  touch-action: auto;
+  touch-action: manipulation;
   pointer-events: all;
 
   &[data-layout="mobile"] {
@@ -1001,6 +1001,7 @@ div[data-layout="mobile"] {
 
   & .game-control-button {
     transform: var(--scale-control-button-mobile);
+    touch-action: manipulation;
   }
 
   & .btn-row {
