@@ -159,6 +159,7 @@ const Game = (props: GameProps) => {
 
   const stats: Ref<Scoring> = useRef(null);
   
+  const holdQuePressed = useRef(false);
   const downArrowPressed = useRef(false);
   const upArrowPressed = useRef(false);
   const isTSpin: Ref<boolean> = useRef(null);
@@ -1117,15 +1118,21 @@ const Game = (props: GameProps) => {
 
             if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
-              activePiece.current = new ActivePiece(heldPieceItem, Direction.N );  
+              const {xStart, yStart} = getStartingXY(heldPieceItem);
+              activePiece.current = new ActivePiece(heldPieceItem, Direction.N, undefined, xStart, (yStart || 5) - 1);  
               activePiece.current.wasInHold = true; 
+              // updatePosition();
             }
             else {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
               activePiece.current = getPieceFromQue() || null;
-              updatePosition();
-              updateBoard(activePiece.current);
+              // updatePosition();
+              
+              // holdQuePressed.current = true;
             }
+            // holdQuePressed.current = true;
+            syncFrameOnNextTick.current = true;
+            updateBoard(activePiece.current);
 
             p = activePiece.current;
             props.actionCallback({type: ActionType.HOLD_PIECE})
@@ -1353,6 +1360,7 @@ const Game = (props: GameProps) => {
     isTSpinMini.current = false;
     tSpun.current = false;
 
+    holdQuePressed.current = false;
     upArrowPressed.current = false;
     downArrowPressed.current = false;
 
@@ -1433,10 +1441,12 @@ const Game = (props: GameProps) => {
 
     // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
     if((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]) === 0 
+        || holdQuePressed.current   === true
         || upArrowPressed.current   === true
         || downArrowPressed.current === true) {
             
       frameCount.current += 1;    
+      holdQuePressed.current = false;
       downArrowPressed.current = false;
       upArrowPressed.current = false;
       updateBoard(activePiece.current);
