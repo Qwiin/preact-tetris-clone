@@ -149,12 +149,11 @@ export function ControlsMap(props: ControlsMapProps) {
           </div>
           <div className="btn-col">
             <div id="BtnDrop" className=" game-control-button hover-text subtext btn-drop"
-            style={{lineHeight:"1.25rem"}}
             onTouchStart={()=>{ if(props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyDropPiece})}}}
             onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP && props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyDropPiece})}}}>
               <>
-                {props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
-                <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0" style={{paddingLeft: "0.2rem",marginTop: "-0.375rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>DROP</div>
+                {props?.keyDropPiece && props.layout === LAYOUT_DESKTOP && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
+                <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0">DROP</div>
               </>
               <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
             </div>
