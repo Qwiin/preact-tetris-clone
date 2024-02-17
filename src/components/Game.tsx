@@ -1125,7 +1125,7 @@ const Game = (props: GameProps) => {
             }
             else {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
-              activePiece.current = getPieceFromQue() || null;
+              activePiece.current = getPieceFromQue(-1) || null;
               // updatePosition();
               
               // holdQuePressed.current = true;
