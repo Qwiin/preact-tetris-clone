@@ -121,7 +121,7 @@ export default function TSpin(props: TSpinProps) {
       {
         isMini() && (
           <h3 key={`${props.id + 'a'}`} data-chars="Mini" className={`tspin-type mini ${animateType === true ? 'animate' : ''}`} 
-          onAnimationEnd={(e)=>{
+          onAnimationEnd={()=>{
             // console.log(e);
             document.querySelector('.tspin-type')?.classList.add("show");
           }}>Mini</h3>
