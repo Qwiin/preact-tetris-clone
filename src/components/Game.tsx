@@ -706,7 +706,11 @@ const Game = (props: GameProps) => {
             //   return;
             // }
             syncFrameOnNextTick.current = true;
-            activePiece.current = getPieceFromQue() || null;   
+            let additionalStartingYOffset = clearEffectData.current ? -1 : 0;
+
+            
+              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+            
 
             // add piece to board
             updatePosition();
@@ -997,7 +1001,7 @@ const Game = (props: GameProps) => {
     }
   }
 
-  const getPieceFromQue = () => {
+  const getPieceFromQue = (additionalStartingYOffset: number = 0) => {
     if(pieceQue.current){
 
       pieceQue.current.push( getNextPiece() );    
@@ -1010,7 +1014,7 @@ const Game = (props: GameProps) => {
       
       const {xStart, yStart} = getStartingXY(pieceItem);
        
-      let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, yStart);
+      let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, (yStart ?? 0) + additionalStartingYOffset);
       
       let c: number[][] = [];
       for(let i=0; i<p.height; i++) {
