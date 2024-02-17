@@ -933,29 +933,38 @@ Keyboard Controls Map UI
 
 div[data-layout="mobile"] { 
 
+  & .game-control-button {
+    transform: var(--scale-control-button-mobile);
+  }
+
   & .btn-row {
     gap: 11rem;
+
     & .btn-rot-l {
+      transform: var(--scale-control-button-mobile) rotate(-90deg);
       margin-top: 1rem;
       padding-bottom: 0;
       left: 15.5rem;
       top: 4.75rem;
+      line-height: 2rem;
     }
     & .btn-rot-r {
+      transform: var(--scale-control-button-mobile) rotate(90deg);
       margin-top: 1rem;
       padding-bottom: 0;
       left: -7rem;
       top: 4.75rem;
+      line-height: 2rem;
     }
     & .btn-hold {
       /* display: none; */
       height: 1rem;
-      left: 7rem;
-      top: 2rem;
+      left: 7.25rem;
+      top: 1rem;
     }
     & .btn-drop {
-      left: -7rem;
-      top: -0.5rem;
+      left: -7.25rem;
+      top: -1.5rem;
     }
     & .btn-left {
       top: 1.5rem;
@@ -966,7 +975,7 @@ div[data-layout="mobile"] {
       left: -9.5rem;
     }
     & .btn-down {
-      top: 3rem;
+      top: 3.5rem;
       left: -4.25rem;
     }
     
@@ -1039,7 +1048,6 @@ div[data-layout="mobile"] {
     gap: 0rem;
 
     & .game-control-button {
-      transform: scale(1.2);
       pointer-events: all;
       /* border: 1px rgba(255,255,255,0.6) solid; */
       border: none;
