@@ -88,7 +88,7 @@ export function ActionToast(props: ActionToastProps) {
 
     let comboXY = getXYFromActionPiecePosition(action);
 
-    let tY: number = (comboXY[0] >= 4.5 && comboXY[0] <= 6.5) ? 0.8 : 0
+    let tY: number = (comboXY[0] >= 3.5 && comboXY[0] <= 6.5) ? 0.8 : 0
 
     return (
       <>

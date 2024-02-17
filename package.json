@@ -1,7 +1,7 @@
 {
   "name": "preact-tetris",
   "private": true,
-  "version": "1.7.1",
+  "version": "1.8.0",
   "type": "module",
   "module": "es2022",
   "scripts": {
