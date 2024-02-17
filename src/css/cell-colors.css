@@ -6,7 +6,7 @@
   --cell-border-op: 1;
   --cell-border-op-ghost: .4;
   --cell-radius-empty: none;
-  --cell-radius-filled: 0.125rem;
+  --cell-radius-filled: 0.1875rem;
   --cell-radius-ghost: 0.125rem;
   --cell-border-width-ghost: 0.09375rem;
 

@@ -655,7 +655,7 @@ Keyboard Controls Map UI
 
 .ghost-cell {
   /* opacity: 0.8; */
-  filter: url('#sandy0') contrast(0.8) blur(0.3px) saturate(1.7);
+  filter: url('#sandy0') contrast(0.9) blur(0.2px) saturate(1.7);
   /* filter: url('#ghostly') brightness(1.7) contrast(0.6) saturate(1.5); */
   background-size: 140% 100%;
   background-position: 50% -30%;
@@ -721,16 +721,41 @@ Keyboard Controls Map UI
   border-width: 0.03125rem;
   /* border-bottom-width: 0.0rem; */
   /* box-shadow: #CCF9 0 0.02rem 0; */
-  box-shadow:  inset 0.03125rem 0.0625rem 0.09375rem 0rem rgba(130,145,160, 0.4),
-               inset -0.0625rem -0.03125rem 0.09375rem 0rem rgba(30,45,60, 0.4);
+  box-shadow:  
+  inset 0.03125rem 0.0625rem 0.09375rem 0.03125rem hsla(0, 80%, 90%, 0.2),
+               inset -0.03125rem -0.0625rem  0.09375rem 0.03125rem hsl(0,20%,20%, 0.3);
                /* inset 0 -1rem 0.1rem 0rem rgba(130,145,160, 0.3); */
 }
 
 
 
-.filled-cell:nth-child(n) {
+.filled-cell.cell-color-1, .filled-cell.cell-color-11 {
   /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
-  filter: url(#sandy0) contrast(1.2);
+  filter: url(#sandy0) contrast(var(--cell-contrast));
+}
+.filled-cell.cell-color-2, .filled-cell.cell-color-22 {
+  /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
+  filter: url(#sandy1) contrast(var(--cell-contrast));
+}
+.filled-cell.cell-color-3, .filled-cell.cell-color-33 {
+  /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
+  filter: url(#sandy2) contrast(var(--cell-contrast));
+}
+.filled-cell.cell-color-4, .filled-cell.cell-color-44 {
+  /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
+  filter: url(#sandy3) contrast(var(--cell-contrast));
+}
+.filled-cell.cell-color-5, .filled-cell.cell-color-55 {
+  /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
+  filter: url(#sandy4) contrast(var(--cell-contrast));
+}
+.filled-cell.cell-color-6, .filled-cell.cell-color-66 {
+  /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
+  filter: url(#sandy5) contrast(var(--cell-contrast));
+}
+.filled-cell.cell-color-7, .filled-cell.cell-color-77 {
+  /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
+  filter: url(#sandy6) contrast(var(--cell-contrast));
 }
 /* .filled-cell:nth-child(3n+1) {
   filter: url(#sandy180) contrast(1.2) blur(0.2px);
