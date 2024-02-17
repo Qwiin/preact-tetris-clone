@@ -1124,6 +1124,7 @@ const Game = (props: GameProps) => {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
               activePiece.current = getPieceFromQue() || null;
               updatePosition();
+              updateBoard(activePiece.current);
             }
 
             p = activePiece.current;
