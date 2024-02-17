@@ -730,17 +730,23 @@ Keyboard Controls Map UI
   /* filter: url(#sandy180) contrast(1.2) blur(0.25px); */
   /* filter: url('#frosted-glass') contrast(1.2) saturate(1.5) brightness(1.5); */
   /* filter: url('#dancing2'); */
-  border-width: 0.03125rem;
+  /* border-width: 0.03125rem; */
+  border-width: 0.0rem;
   /* border-bottom-width: 0.0rem; */
   /* box-shadow: #CCF9 0 0.02rem 0; */
-  box-shadow:  
+  /* box-shadow:  
   inset 0.03125rem 0.0625rem 0.09375rem 0.03125rem hsla(0, 80%, 90%, 0.2),
-               inset -0.03125rem -0.0625rem  0.09375rem 0.03125rem hsl(0,20%,20%, 0.3);
-               /* inset 0 -1rem 0.1rem 0rem rgba(130,145,160, 0.3); */
+               inset -0.03125rem -0.0625rem  0.09375rem 0.03125rem hsl(0,20%,20%, 0.3); */
+
+               box-shadow: inset -0.05875rem -0.13875rem 0.3rem 0.175rem hsla(0, 60%, 10%, 0.5), inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,00%, 0.23), 0 0 0.3125rem #0009;
+               
 }
 
+/* inset -0.05875rem -0.03875rem 0.25rem 0.125rem hsla(0, 80%, 0%, 0.7), inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,20%, 0.33) */
+/* inset 0.03125rem 0.0625rem 0.25rem 0.03125rem hsla(0, 80%, 1%, 0.4), inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,20%, 0.33) */
+/* inset -0.05875rem -0.13875rem 0.35rem 0.125rem hsla(0, 80%, 18%, 0.7), inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,20%, 0.33) */
 
-
+/* inset -0.05875rem -0.13875rem 0.35rem 0.125rem hsla(0, 60%, 10%, 0.7), inset -0.03125rem -0.0625rem 0.03125rem 0.06125rem hsl(0,20%,20%, 0.33); */
 .filled-cell.cell-color-1, .filled-cell.cell-color-11 {
   /* filter: url(#sandy0) contrast(1.2) blur(0.25px); */
   filter: url(#sandy0) contrast(var(--cell-contrast));
