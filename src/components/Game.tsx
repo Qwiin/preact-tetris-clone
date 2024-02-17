@@ -1037,7 +1037,7 @@ const Game = (props: GameProps) => {
         }
       }
       // adjust starting y position if board is stacked higher than starting height projection of piece
-      if(maxColumnHeightUnderNewPiece > 18){
+      if(maxColumnHeightUnderNewPiece >= 18){
         yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
       }
 
