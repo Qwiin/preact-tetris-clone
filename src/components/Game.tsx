@@ -691,32 +691,22 @@ const Game = (props: GameProps) => {
           props.actionCallback({type: ActionType.SET_PIECE})
         }
         activePiece.current = null; 
+        
+        pieceWasSet.current = true;
+        updateBoard(null);
+
         requestAnimationFrame(()=>{
-          // updatePosition();
-          pieceWasSet.current = true;
-          updateBoard(null);
+        requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+      
+          syncFrameOnNextTick.current = true;
+          let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
+          activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
 
-          requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-            // if(clearEffectData.current !== null) {
-            //   // fix for mobile rendering bug
-            //   // next piece will be grabbed after clear effect
-            //   // animation completes
-            //   return;
-            // }
-            syncFrameOnNextTick.current = true;
-            let additionalStartingYOffset = clearEffectData.current ? -1 : 0;
-
-            
-              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
-            
-
-            // add piece to board
-            updatePosition();
-          });
-          });
-          });
+          // add piece to board
+          updatePosition();
+        });
+        });
         });
 
         return;
@@ -1017,7 +1007,7 @@ const Game = (props: GameProps) => {
       let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, (yStart ?? 0) + additionalStartingYOffset);
       
       let c: number[][] = [];
-      for(let i=0; i<p.height; i++) {
+      for(let i=1; i<=p.height; i++) {
         for(let j=0; j<p.width; j++) {
           c.push([p.y-i,p.x+j]);
         }
@@ -1058,8 +1048,8 @@ const Game = (props: GameProps) => {
         }
       }
       // adjust starting y position if board is stacked higher than starting height projection of piece
-      if(maxColumnHeightUnderNewPiece >= 18){
-        yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+      if(maxColumnHeightUnderNewPiece > 18){
+        yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece;
       }
 
       console.log({xStart, yStart});
@@ -1128,6 +1118,7 @@ const Game = (props: GameProps) => {
             else {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
               activePiece.current = getPieceFromQue() || null;
+              updatePosition();
             }
 
             p = activePiece.current;
@@ -1373,6 +1364,7 @@ const Game = (props: GameProps) => {
 
     setTimeout(()=> {
       activePiece.current = getPieceFromQue();
+      updatePosition();
       tSpun.current = false;
     },100);
   
