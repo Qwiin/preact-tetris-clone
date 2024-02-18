@@ -42,8 +42,8 @@ body[data-layout="mobile"] {
   background:
     url("/src/assets/mobile_bg.png");
   /* background-repeat: repeat; */
-  background-size: 200vh auto;
-  background-position: 64% 20%;
+  background-size: 180vh auto;
+  background-position: 64% 22%;
   
   /* background-blend-mode: color-dodge; */
   
