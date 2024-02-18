@@ -156,7 +156,7 @@ export function App() {
         </div>
 
         {/* @ts-expect-error Preact Component */}
-        <Game init={true} actionCallback={actionCallback} layout={appLayout}/>
+        <Game init={true} actionCallback={actionCallback} layout={appLayout} startingLevel={1}/>
         <ActionToast layout={appLayout}
         actions={actionQue.current || []} 
         toastComplete={(id?: string)=>{

@@ -48,6 +48,7 @@ const tick: Signal<number> = signal(0);
 // const actionSignal: Signal<string> = signal("action");
 
 interface GameProps extends BaseComponentProps {
+  startingLevel: number;
   numColumns?: number;
   numRows?: number;
   init: boolean;
@@ -714,7 +715,7 @@ const Game = (props: GameProps) => {
         return;
       }
 
-      if(piece.lastTick !== tick.value){
+      if(piece.lastTick !== frameCount.current  ){
       
         piece.xPrev = piece.x;
         piece.yPrev = piece.y;
@@ -726,7 +727,7 @@ const Game = (props: GameProps) => {
         }
         
         // console.log({pieceY: piece.y});
-        piece.lastTick = tick.value;    // This may or may not be the most important
+        piece.lastTick = frameCount.current;    // This may or may not be the most important
         updatePosition();
       }
     }
@@ -920,7 +921,7 @@ const Game = (props: GameProps) => {
         // console.log("updatePoints");
         stats.current.lines += numCleared;
 
-        const level: number = Math.floor(stats.current.lines / 10) + 1;
+        const level: number = Math.max(Math.floor(stats.current.lines / 10) + 1, props.startingLevel);
         const comboBonus: number = comboCount.current * level * 50;
 
         // update level
@@ -1438,17 +1439,23 @@ const Game = (props: GameProps) => {
   useEffect(() => {
 
     let speedIndex = Math.min((stats.current?.level || 1)-1,9);
+    let framePct: number = (tick.value) / (Math.ceil(1/GAME_SPEEDS[speedIndex]));
 
-    // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
-    if((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]) === 0 
+    if(framePct >= 1
         || holdQuePressed.current   === true
         || upArrowPressed.current   === true
         || downArrowPressed.current === true) {
-            
-      frameCount.current += 1;    
+
       holdQuePressed.current = false;
       downArrowPressed.current = false;
       upArrowPressed.current = false;
+      
+      console.log("Frame:", frameCount.current);
+
+      tick.value = 1;
+      
+      frameCount.current += 1;    
+      // updatePosition();
       updateBoard(activePiece.current);
     }
     
