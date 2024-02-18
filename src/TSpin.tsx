@@ -62,18 +62,18 @@ export default function TSpin(props: TSpinProps) {
         document.querySelector('.line-clear-type')?.classList.add("show","flash");
 
         requestAnimationFrame(()=>{
-          animate(
-            ".t-spin", 
-            { 
-              opacity: 0,
-              scale: 0,
-            }, 
-            { 
-              duration: 0.3,
-              ease: "easeOut",
-              delay: 0.5
-            }
-          ).then(()=>{
+            animate(
+              ".t-spin", 
+              { 
+                opacity: 0,
+                scale: 0,
+              }, 
+              { 
+                duration: 0.3,
+                ease: "easeOut",
+                delay: 0.5
+              }
+            ).then(()=>{
             document.querySelector('.tspin-type')?.classList.remove("flash");
             document.querySelector('.tspin-flexbox')?.classList.remove("flash");
             document.querySelector('.line-clear-type')?.classList.remove("show","flash");
@@ -121,8 +121,8 @@ export default function TSpin(props: TSpinProps) {
       {
         isMini() && (
           <h3 key={`${props.id + 'a'}`} data-chars="Mini" className={`tspin-type mini ${animateType === true ? 'animate' : ''}`} 
-          onAnimationEnd={(e)=>{
-            console.log(e);
+          onAnimationEnd={()=>{
+            // console.log(e);
             document.querySelector('.tspin-type')?.classList.add("show");
           }}>Mini</h3>
         )

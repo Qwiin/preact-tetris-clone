@@ -18,42 +18,48 @@ export function Filters() {
           </feMerge>
       </filter>
       <filter id="sandy0">
-        <feTurbulence baseFrequency="0.65,0.75" numOctaves={2} seed="3" result="noiseMapColor" />
+        <feTurbulence baseFrequency="1.65,1.75" numOctaves={2} seed="3" result="noiseMapColor" />
         <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
         <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
         <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
       </filter>
-      <filter id="sandy180">
-        <feTurbulence baseFrequency="0.75,0.65" numOctaves={2} seed="3" result="noiseMapColor" />
+      <filter id="sandy1">
+        <feTurbulence baseFrequency="1.75,1.65" numOctaves={2} seed="2" result="noiseMapColor" />
         <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
         <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
         <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
       </filter>
-      <filter id="sandy270">
-        <feTurbulence baseFrequency="0.73,0.83" numOctaves={2} seed="2" result="noiseMapColor" />
-        <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
-        <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
-        <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
-      </filter>
-  
       <filter id="sandy2">
-        <feTurbulence baseFrequency="0.6,0.8" seed="2" result="noiseMapColor" />
+        <feTurbulence baseFrequency="1.73,1.83" numOctaves={2} seed="3" result="noiseMapColor" />
         <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
         <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
         <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
       </filter>
       <filter id="sandy3">
-        <feTurbulence baseFrequency="0.6,0.8" seed="2" result="noiseMapColor" />
-        <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 1 0"/>
+        <feTurbulence baseFrequency="1.75,1.65" numOctaves={2} seed="5" result="noiseMapColor" />
+        <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
         <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
         <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
       </filter>
-      <filter id="sandy1">
-        <feTurbulence baseFrequency="0.8,0.8"  result="noiseMapColor" />
-        <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 1 0"/>
+      <filter id="sandy4">
+        <feTurbulence baseFrequency="1.63,1.33" numOctaves={2} seed="7" result="noiseMapColor" />
+        <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
         <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
         <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
       </filter>
+      <filter id="sandy5">
+        <feTurbulence baseFrequency="1.35,1.65" numOctaves={2} seed="13" result="noiseMapColor" />
+        <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
+        <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
+        <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
+      </filter>
+      <filter id="sandy6">
+        <feTurbulence baseFrequency="1.4,1.9" numOctaves={2} seed="17" result="noiseMapColor" />
+        <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
+        <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
+        <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
+      </filter>
+  
       <filter id="frosted-glass" width="110%" height="110%">
         {/* <!-- Increase the blur value to enhance the frosted glass effect --> */}
         <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blurred"/>

@@ -126,7 +126,7 @@ export function App() {
 
       if(actionQue.current){
         actionQue.current.unshift(a);
-        console.log(JSON.stringify(actionQue.current));
+        // console.log(JSON.stringify(actionQue.current));
       }
       // setTimeout(()=>{
       //   a.transitioning = false;
@@ -169,7 +169,7 @@ export function App() {
               break;
             }
           }
-          console.log("toastComplete");
+          // console.log("toastComplete");
         }}
         />  
         <SoundBoard layout={appLayout} eventTargetRef={soundBoardDomRef} volume={50}/>

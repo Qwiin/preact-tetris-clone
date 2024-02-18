@@ -32,7 +32,7 @@ export function ActionToast(props: ActionToastProps) {
   const getDelayForAction = (action: GameAction): number => {
     if(action.timestamp) {
       let delay = BaseToastDelay + action.timestamp - (window.performance.now() / 1000);
-      console.log(delay);
+      // console.log(delay);
       return delay;
     }
     return BaseToastDelay;
@@ -88,6 +88,8 @@ export function ActionToast(props: ActionToastProps) {
 
     let comboXY = getXYFromActionPiecePosition(action);
 
+    let tY: number = (comboXY[0] >= 3.5 && comboXY[0] <= 6.5) ? 0.8 : 0
+
     return (
       <>
       
@@ -107,8 +109,8 @@ export function ActionToast(props: ActionToastProps) {
             // dynamically position combo points at the location of the top of the last piece
             left: `${comboXY[0] - 2.0}rem`,
             // top: `${comboXY[1] - 2.0}rem`,
-            top: 0,
-
+            transform: `translateY(${tY}rem) scale(${Math.pow(1.07,action.combo-1)})`,
+            zIndex: 4000,
             lineHeight: "100%",
             padding: 0,
             
@@ -124,7 +126,7 @@ export function ActionToast(props: ActionToastProps) {
     let pos: BoardPosition | undefined = (action.boardPositions ? action.boardPositions[0] : undefined);
 
     if(pos) {
-      console.log({pos});
+      // console.log({pos});
       return (20 - pos.top - ( (pos.height) / 2 ));
     }
 
@@ -196,7 +198,7 @@ export function ActionToast(props: ActionToastProps) {
                 
               }, 
               hidden: {
-                transform: `translateY(${-getYFromActionBoardPosition(action)-1.5}rem)`,
+                transform: `translateY(${-getYFromActionBoardPosition(action) - 1.625}rem)`,
                 scale: 0.7,
                 opacity: 0,
                 transitionEnd

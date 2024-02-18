@@ -8,6 +8,14 @@ export interface BoardPosition {
   height: number;
 }
 
+export interface ConstraintPosition {
+  id?: string;
+  top: string;
+  left: string;
+  bottom: string;
+  right: string;
+}
+
 export interface GameAction {
   toast?: boolean;
   type: ActionType;
@@ -94,7 +102,8 @@ export function getLabelForActionType(action: ActionType): string {
   }
 }
 
-export const G: number = 3;  // cells per frame
+export const TICK_INTERVAL: number = 32;
+export const G: number = 3 * TICK_INTERVAL / 50;  // cells per frame
 export const GAME_SPEEDS = [
   0.01667 * G,
   0.021017 * G,

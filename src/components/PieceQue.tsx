@@ -66,7 +66,7 @@ export function PieceQue(props: PieceQueProps) {
               <>
               {/* @ts-expect-error Motion Component */}
                 <motion.div key={item.id} className={`que-item tw-flex tw-flex-col tw-gap-0 tw-justify-center tw-items-center tw-h-16 tw-w-16 tw-m-0`}
-                style={{filter: props.disabled ? 'grayscale(1)' : undefined}}
+                style={{filter: props.disabled ? 'grayscale(1) contrast(0.5)' : undefined}}
                 variants={{
                   show: {
                     transform: props.animation === "slideUp" 

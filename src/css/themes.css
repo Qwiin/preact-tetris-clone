@@ -1,23 +1,74 @@
 *, ::before, ::after {
   /* yellow-400 */
-  --theme-0-cell-color-1: 253 224 71;
+  /* --theme-0-cell-color-1: 253 224 71; */
 
   /* pink-600 */
-  --theme-0-cell-color-2: 219 39 119;
+  /* --theme-0-cell-color-2: 219 39 119; */
 
   /* green-500 */
-  --theme-0-cell-color-3: 34 197 94;    
+  /* --theme-0-cell-color-3: 34 197 94;     */
   
   /* blue-600 */
-  --theme-0-cell-color-4: 37 99 235;
+  /* --theme-0-cell-color-4: 37 99 235; */
 
   /* orange-500 */
-  --theme-0-cell-color-5: 249 115 22;
+  /* --theme-0-cell-color-5: 249 115 22; */
 
   /* violet-600 */
-  --theme-0-cell-color-6:  175 67 241;
+  /* --theme-0-cell-color-6:  175 67 241; */
   
 
   /* blue-400 */
-  --theme-0-cell-color-7: 96 165 250;
+  /* --theme-0-cell-color-7: 96 165 250; */
+
+
+
+  /* yellow-400 */
+  /* --theme-0-cell-color-1: hsl(42, 96%, 50%); */
+  /* --theme-0-cell-color-1: rgb(250, 176, 5); */
+  /* --theme-0-cell-color-1: 250 176 5; */
+  /* --theme-0-cell-color-1: rgb(245, 218, 78); */
+  --theme-0-cell-color-1: 245 218 78;
+  
+  /* pink-600 */
+  /* --theme-0-cell-color-2: rgb(223, 48, 32); */
+  /* --theme-0-cell-color-2: 223 48 32; */
+  /* --theme-0-cell-color-2: hsl(350, 75%, 54%); */
+  --theme-0-cell-color-2: 226 50 79;
+
+  /* green-500 */
+  /* --theme-0-cell-color-3: rgb(123, 198, 57); */
+  /* --theme-0-cell-color-3: 123 198 57; */
+  /* --theme-0-cell-color-3: #69C84E; */
+  --theme-0-cell-color-3: 105 199 77;
+  
+  /* blue-600 */
+  /* --theme-0-cell-color-4: hsl(230, 82%, 60%); */
+  /* --theme-0-cell-color-4: 23 58 232; */
+  /* --theme-0-cell-color-4: rgb(49, 108, 231); */
+  --theme-0-cell-color-4: 49 108 231;
+
+  /* orange-500 */
+  /* --theme-0-cell-color-5: rgb(232, 110, 23); */
+  /* --theme-0-cell-color-5: 232 110 23; */
+  /* --theme-0-cell-color-5: rgb(239, 138, 52); */
+  --theme-0-cell-color-5: 239 138 52;
+  
+
+
+  /* violet-600 */
+  /* --theme-0-cell-color-6:  #d326c4; */
+  /* --theme-0-cell-color-6:  173 31 150; */
+  /* --theme-0-cell-color-6: hsl(278, 77%, 57%); */
+  --theme-0-cell-color-6: 166 59 230;
+  /* hsl(311, 68%, 35%); */
+  
+
+  /* blue-400 */
+  /* --theme-0-cell-color-7: rgb(82, 163, 224); */
+  /* --theme-0-cell-color-7: 82 163 224; */
+  /* --theme-0-cell-color-7: rgb(98, 204, 250);  */
+  --theme-0-cell-color-7: 98 204 250;
+  
+  /* --a: hsl(206, 75%, 59%); */
 }

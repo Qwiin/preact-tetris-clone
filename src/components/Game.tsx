@@ -12,7 +12,7 @@ Gameplay:
 
 UI/UX:
   
-  1. Styleize UI
+  1. (done) Styleize UI
   2. (done) Add Sound
   3. (done) Break this out into multiple components
 
@@ -26,18 +26,20 @@ Performance:
 
 import { Signal, signal } from '@preact/signals';
 
-import { motion } from 'framer-motion';
 import { Ref } from 'preact';
 import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
-import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
+import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { newUID } from '../utils/AppUtil';
-import ControlsMap from './ControlsMap';
 import { PieceQue } from './PieceQue';
 import { StatsPanel } from './StatsPanel';
-import { AppLayout, BaseComponentProps } from '../BaseTypes';
+import { BaseComponentProps } from '../BaseTypes';
+import { BoardBackground } from './BoardBackground';
+import { MenuButtonAction, MenuPanel } from './MenuPanel';
+import DropEffect from './DropEffect';
+import LineClearEffect from './LineClearEffect';
 
-export const TICK_INTERVAL: number = 50;
+
 const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
@@ -142,8 +144,10 @@ const Game = (props: GameProps) => {
 
   const ticker: Ref<NodeJS.Timeout> = useRef(null);
   const frameCount = useRef(0);
+  const syncFrameOnNextTick = useRef(false);
   
   const clearedRows: Ref<number[]> = useRef(null);
+  // const clearedRowIndexesDesc: Ref<number[]> = useRef(null);
   const clearEffectData: Ref<any> = useRef(null);
   const dropEffectData: Ref<any> = useRef(null);
   const pieceWasSet = useRef(false);
@@ -155,6 +159,7 @@ const Game = (props: GameProps) => {
 
   const stats: Ref<Scoring> = useRef(null);
   
+  const holdQuePressed = useRef(false);
   const downArrowPressed = useRef(false);
   const upArrowPressed = useRef(false);
   const isTSpin: Ref<boolean> = useRef(null);
@@ -167,6 +172,7 @@ const Game = (props: GameProps) => {
   const lastLineClearAction: Ref<ActionType> = useRef(null);
 
   const board: Ref<number[][]> = useRef(null);
+  const boardCols: Ref<number[][]> = useRef(null);
   const columnHeights: Ref<Int8Array> = useRef(null);
   const ghostPieceCoords: Ref<number[][]> = useRef(null); // [[row1,col1],[row2,col2]...]
 
@@ -193,8 +199,23 @@ const Game = (props: GameProps) => {
   }
   const resumeGame = () => {
     if(!ticker.current){
+
+      // when game is resumed, the piece will start at the beginning of a game tick;
+      syncFrameOnNextTick.current = true;
+      
       ticker.current = setInterval(()=>{
-        tick.value = tick.value + 1;
+        
+        if(syncFrameOnNextTick.current) {
+          // let speedIndex = Math.min((stats.current?.level || 1)-1,9);
+          // let ticksPerGameFrame = Math.round(1/GAME_SPEEDS[speedIndex]);
+          // let tickOffset = ticksPerGameFrame - ((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]))
+          tick.value = 1;
+          syncFrameOnNextTick.current = false;
+        }
+        else {
+          tick.value = tick.value + 1;
+        }
+        
       },TICK_INTERVAL)
     }
     paused.current = false;
@@ -202,36 +223,37 @@ const Game = (props: GameProps) => {
   }
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
-  const getBoardCols = (): number[][] => {
-    if(!board.current){
-      return [];
+  const updateBoardCols = () => {
+    if(!board.current || !boardCols.current){
+      console.error("cannot update boardCols");
+      return;
     }
 
     let rowLen = board.current[0].length;
     let cells = board.current.flat();
     let colLen = board.current.length;
-    const boardCols: number[][] = [];
     for (let i = 0; i < rowLen; i++) {
-      let col: number[] = [];
+      // let col: number[] = [];
       for (let j = 0; j < colLen; j++) {
         let cellValue = cells[j * rowLen + i];
         if(cellValue >= 0 ){
-          col.push(cells[j * rowLen + i]);
+          boardCols.current[i][j] = (cells[j * rowLen + i]);
         }
         else {
-          col.push(0);
+          boardCols.current[i][j] = 0
         }
       }
-      boardCols.push(col);
     }
-    return  boardCols;
   };
 
-
   const getDropDistance = (): number => {
-    const cols = getBoardCols();
+    // updateBoardCols();
+
+    const cols = boardCols.current;
     const p = activePiece.current;
-    if(!p) {
+
+    if(!p || !cols) {
+      console.error("cannot determine drop distance");
       return 0;
     }
     
@@ -352,7 +374,7 @@ const Game = (props: GameProps) => {
         i_sss--;
       }
       if(canRotateInPlace) {
-        console.log("rotate in place");
+        // console.log("rotate in place");
         // p.coords = [...p.coordsPrev];
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
@@ -366,7 +388,7 @@ const Game = (props: GameProps) => {
 
         // cache rotation, because rotateLeft/Right() will modify prevRotation
         let prevRotation = p.rotationPrev;
-        console.log("can't rotate nor t-spin");
+        // console.log("can't rotate nor t-spin");
         // p.coords = [...p.coordsPrev];
         if(p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
           p.rotateLeft();
@@ -380,7 +402,7 @@ const Game = (props: GameProps) => {
         failedRotation = true;  
       }
       else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
-        console.log("can t-spin");
+        // console.log("can t-spin");
         if(canTSpinLeft) {
           p.x = p.x - 1;
           p.xPrev = p.x;
@@ -555,7 +577,7 @@ const Game = (props: GameProps) => {
         (p.lastMoveTrigger === MovementTrigger.GRAVITY 
           || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) 
           && !canMoveDownTwice && !failedRotation) {
-        console.log("can't move down twice...");
+        // console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
     }
@@ -611,6 +633,9 @@ const Game = (props: GameProps) => {
             height: piece.height
           }
         }
+
+        // now that piece is set in place, we can update the board columns ref
+        updateBoardCols();
         
         // Verify and complete T-SPIN
         if(piece.shapeEnum === TetronimoShape.T && tSpun.current === true) {
@@ -666,28 +691,25 @@ const Game = (props: GameProps) => {
         if(piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
           props.actionCallback({type: ActionType.SET_PIECE})
         }
-        activePiece.current = null; 
-        requestAnimationFrame(()=>{
-          // updatePosition();
-          pieceWasSet.current = true;
-          updateBoard(null);
 
-          requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-            // if(clearEffectData.current !== null) {
-            //   // fix for mobile rendering bug
-            //   // next piece will be grabbed after clear effect
-            //   // animation completes
-            //   return;
-            // }
-            activePiece.current = getPieceFromQue() || null;   
-            // updatePosition();       
-            updateBoard(activePiece.current);
-          });
-          });
-          });
+        activePiece.current = null; 
+        pieceWasSet.current = true;
+
+        requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+      
+          syncFrameOnNextTick.current = true;
+          let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
+          activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+
+          // add piece to board
+          updatePosition();
         });
+        });
+        });
+
+        updateBoard(null);
 
         return;
       }
@@ -720,19 +742,31 @@ const Game = (props: GameProps) => {
       // CHECK FOR COMPLETE LINES
       // Method: find full rows and recycle them
 
-      let clearedRowIndexesDesc: number[] = [];
+      
+      const _clearedRows = clearedRows.current;
+      if(_clearedRows === null) {
+        console.error("cleared rows is null");
+        return;
+      }
+      else if(clearEffectData.current !== null) {
+        // console.log("cleared rows was not cleared; updateBoard(nullish) was called too soon");
+        return;
+      }
+      else {
+        _clearedRows.fill(-1);
+      }
+
       for(let i=nRows-1; i>=0; i--){
         let row = rows[i];
         if(!row.includes(0) && numCleared < 4){
-          row.fill(0);  // overwrite (erase) the row
-          clearedRowIndexesDesc.push(i);
+          row.fill(0);  // clear line (erase the row);
+          _clearedRows[numCleared] = i;
           numCleared++;
           if(numCleared === 4) {  // TODO: cache height of last piece
             break;
           }
         }
       }
-
       
       // GET POSITIONS FOR CLEARED LINES AND PASS THE DATA 
       // ALONG IN THE ACTION CALLBACK TO POSITION THE POINTS TOAST
@@ -740,17 +774,17 @@ const Game = (props: GameProps) => {
       let boardPositions: BoardPosition[] = [];
       if(numCleared > 0) {
 
-        clearedRows.current = [...clearedRowIndexesDesc];
-
-        for(let i=0; i<clearedRowIndexesDesc.length; i++) {
+        // clearedRows.current = [...clearedRowIndexesDesc];
+        let prevClearedIndex = -1;
+        for(let i=0; i<_clearedRows.length; i++) {
           if(!clearEffectData.current){
             clearEffectData.current = [];
           }
 
-          let top = (clearedRowIndexesDesc[i] - 4);
-          let bottom = 24 - (clearedRowIndexesDesc[i] + 1);
+          let top = (_clearedRows[i] - 4);
+          let bottom = 24 - (_clearedRows[i] + 1);
 
-          if(i > 0 && clearedRowIndexesDesc[i-1] - clearedRowIndexesDesc[i] === 1){
+          if(i > 0 && _clearedRows[i] >= 0 && prevClearedIndex >= 0 && _clearedRows[prevClearedIndex] - _clearedRows[i] === 1){
             clearEffectData.current[clearEffectData.current.length - 1].top = `${top}rem`;
             boardPositions[clearEffectData.current.length - 1].top = top;
             boardPositions[clearEffectData.current.length - 1].height += 1;
@@ -774,40 +808,37 @@ const Game = (props: GameProps) => {
               }
             );
           }
+          prevClearedIndex = i;
         }
 
         // Dear Future Self...
-        // clearedRowIndexesDesc needs to (and should already) be sorted descending
+        // _clearedRows needs to (and should already) be sorted descending (ignoring)
         // no need to sort this array here, but remember that is required for this splice 
         // loop to work properly
 
         // This should be a memory optimized operation
         requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-          let emptyRowCache: number[][] | null = [];
-          if(emptyRowCache !== null) {
-            for(let j=0; j<numCleared; j++) {
-              emptyRowCache.push(
-                rows.splice(clearedRowIndexesDesc[j],1)[0]
-              );
-            }
-            for(let j=0; j<numCleared; j++) {
-              rows.unshift(emptyRowCache.pop() as number[]);
-            }
+          requestAnimationFrame(()=>{
 
-            emptyRowCache = null;
-
+            let shiftCount: number = 0;
+            for(let j=0; j<_clearedRows.length; j++) {  
+              if(_clearedRows[j] >= 0) {
+                // console.log(_clearedRows.toString());
+                rows.unshift(rows.splice(_clearedRows[j]+shiftCount,1)[0]);  // shift cleared rows to the top of the board;
+                shiftCount++;
+              }
+            }
+            
             let colHeights = columnHeights.current || [];
             for(let i=0; i<colHeights.length; i++){
               colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
-              emptyRowCache = null;
             }
-          }
-        });
+          
+            // now that rows are cleared and board ref is updated, we can update the columns ref
+            updateBoardCols();
+          });
         });
       }
-      
-
       
       let points: number = 0;
       // console.log("updateBoard");
@@ -883,7 +914,7 @@ const Game = (props: GameProps) => {
         
 
         comboCount.current += 1;
-        console.log("Combo count: " + comboCount.current);
+        // console.log("Combo count: " + comboCount.current);
 
 
         // console.log("updatePoints");
@@ -939,8 +970,8 @@ const Game = (props: GameProps) => {
       }
       else {
         // no scoring move
-        console.log("no scoring move");
-        console.log("comobo counter reset to -1");
+        // console.log("no scoring move");
+        // console.log("comobo counter reset to -1");
 
         pieceWasSet.current = false;
         comboCount.current = -1;
@@ -966,7 +997,7 @@ const Game = (props: GameProps) => {
     }
   }
 
-  const getPieceFromQue = () => {
+  const getPieceFromQue = (additionalStartingYOffset: number = 0) => {
     if(pieceQue.current){
 
       pieceQue.current.push( getNextPiece() );    
@@ -979,10 +1010,10 @@ const Game = (props: GameProps) => {
       
       const {xStart, yStart} = getStartingXY(pieceItem);
        
-      let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, yStart);
+      let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, (yStart ?? 0) + additionalStartingYOffset);
       
       let c: number[][] = [];
-      for(let i=0; i<p.height; i++) {
+      for(let i=1; i<=p.height; i++) {
         for(let j=0; j<p.width; j++) {
           c.push([p.y-i,p.x+j]);
         }
@@ -1012,7 +1043,7 @@ const Game = (props: GameProps) => {
       let w = TETRONIMOES[item?.shapeEnum || 0][0].length;
 
       let xStart: number = Math.floor((10 - w)/2);
-      let yStart: number = 4 + h - 1;
+      let yStart: number = 4 + h;
 
       let maxColumnHeightUnderNewPiece = 0;
       if(columnHeights.current) {
@@ -1024,8 +1055,10 @@ const Game = (props: GameProps) => {
       }
       // adjust starting y position if board is stacked higher than starting height projection of piece
       if(maxColumnHeightUnderNewPiece > 18){
-        yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece - 1;
+        yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece;
       }
+
+      // console.log({xStart, yStart});
 
       return {xStart, yStart};
   }
@@ -1085,13 +1118,21 @@ const Game = (props: GameProps) => {
 
             if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
-              activePiece.current = new ActivePiece(heldPieceItem, Direction.N );  
+              const {xStart, yStart} = getStartingXY(heldPieceItem);
+              activePiece.current = new ActivePiece(heldPieceItem, Direction.N, undefined, xStart, (yStart || 5) - 1);  
               activePiece.current.wasInHold = true; 
+              // updatePosition();
             }
             else {
               holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
-              activePiece.current = getPieceFromQue() || null;
+              activePiece.current = getPieceFromQue(-1) || null;
+              // updatePosition();
+              
+              // holdQuePressed.current = true;
             }
+            // holdQuePressed.current = true;
+            syncFrameOnNextTick.current = true;
+            updateBoard(activePiece.current);
 
             p = activePiece.current;
             props.actionCallback({type: ActionType.HOLD_PIECE})
@@ -1103,9 +1144,7 @@ const Game = (props: GameProps) => {
         break;
       case "ArrowRight":
         if((p.x + p.width) < board.current[0].length) {
-          
           // sfx_movePiece();
-
           props.actionCallback({type: ActionType.MOVE_RIGHT, data: e.key});
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
@@ -1131,12 +1170,7 @@ const Game = (props: GameProps) => {
           props.actionCallback({type: ActionType.MOVE_DOWN, data: e.key});
           // sfx_movePiece();
           p.yPrev = p.y;
-          
-          
           p.y += 1;
-
-          // console.log("y:", p.y);
-          // console.log(columnHeights.current?.toString());
 
           downArrowPressed.current = true;
           // tick.value = tick.value + 1; // optimization?
@@ -1159,42 +1193,6 @@ const Game = (props: GameProps) => {
       case "ArrowUp":
         
         p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
-        // p.dropped = true;
-
-        // const cols: number[][] = getBoardCols();
-        // let colIndex = p.x;
-        // let perm: number[][] = p.permutation;
-
-        // //
-        // // Gets the offsets from the bottoms contour of the piece's current permutation
-        // //
-        // let bottomOffsets: number[] = [];
-        // for(let i=0; i<p.width; i++) {
-        //   bottomOffsets.push(0);
-        //   for(let j=p.height-1; j>=0; j--) {
-        //     if(perm[j][i] > 0) {
-        //       break;
-        //     }
-        //     bottomOffsets[i]++;
-        //   }
-        // }
-        
-        // let minDistance: number = p.yMax - p.y;
-        // let minDistances = [];
-        // for(let i=0; i<p.width; i++) {
-        //   let colArr: number[] = (cols[i + colIndex]);
-        //   let dropDistance = bottomOffsets[i];
-        //   for(let j=p.y; j<colArr.length; j++){
-        //     if(colArr[j] > 0) {
-        //       break;
-        //     }
-        //     dropDistance++;
-        //   }
-        //   minDistances.push(minDistance);
-        //   if(dropDistance < minDistance) {
-        //     minDistance = dropDistance;
-        //   }
-        // }
 
         const dropDistance = getDropDistance();
 
@@ -1208,7 +1206,6 @@ const Game = (props: GameProps) => {
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
         
-
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
         if(dropDistance > 0) {
@@ -1231,14 +1228,12 @@ const Game = (props: GameProps) => {
       case "Alt":
       case "Control":
         p.rotateLeft();
-        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
 
       case "Shift":
         p.rotateRight();
-        // props.actionCallback({type: ActionType.ROTATE, data: e.key});
         p.lastMoveTrigger = MovementTrigger.INPUT_ROTATE;
         updatePosition();
         break;
@@ -1247,7 +1242,6 @@ const Game = (props: GameProps) => {
 
   const initRefs = () => {
 
-    
     pieceQueIndexes.current = [];
     pieceQueIndexes.current?.push(
       ...randomBagDistribution(7,2,3)
@@ -1302,12 +1296,50 @@ const Game = (props: GameProps) => {
     }
     else {
       for(let i=0;  i<board.current.length; i++) {
-        for(let j=0;  j<board.current[0].length; j++) {
-          board.current[i][j] = 0; 
-        }
+        board.current[i].fill(0);
+      }
+    }
+
+    if(boardCols.current === null) { 
+      boardCols.current = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ];
+    }
+    else {
+      for(let i=0;  i<boardCols.current.length; i++) {
+        boardCols.current[i].fill(0);
       }
     }
     
+    clearEffectData.current = null;
+    dropEffectData.current = null;
+
+    if(clearedRows.current === null) {
+      clearedRows.current = [-1,-1,-1,-1];
+    }
+    else {
+      clearedRows.current.fill(-1);
+    }
+
     lastPieceAction.current = ActionType.NONE;
     lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
     
@@ -1328,6 +1360,7 @@ const Game = (props: GameProps) => {
     isTSpinMini.current = false;
     tSpun.current = false;
 
+    holdQuePressed.current = false;
     upArrowPressed.current = false;
     downArrowPressed.current = false;
 
@@ -1341,19 +1374,26 @@ const Game = (props: GameProps) => {
     frameCount.current = 0;
   }
 
-  useEffect(()=>{
-
-    initRefs();
-
+  const initGame = () => {
     setGameover(false);
     gameoverRef.current = false;
     resumeGame();
 
     setTimeout(()=> {
       activePiece.current = getPieceFromQue();
+      updatePosition();
       tSpun.current = false;
     },100);
   
+  }
+
+  // component did mount
+  useEffect(()=>{
+
+    initRefs();
+
+    initGame();
+
     document.addEventListener("keydown", keydownHandler);
 
     return () => {
@@ -1363,6 +1403,8 @@ const Game = (props: GameProps) => {
       activePiece.current = null;
 
       board.current = null;
+      boardCols.current = null;
+      clearedRows.current = null;
       
       columnHeights.current = null;
       
@@ -1392,17 +1434,19 @@ const Game = (props: GameProps) => {
   },[]);
 
 
-  // Controls the game speed by level
+  // render current frame
   useEffect(() => {
 
     let speedIndex = Math.min((stats.current?.level || 1)-1,9);
 
     // if(tick.value % (Math.max(80 - 10*(stats.current?.level || 1),10)/10) === 0) {
     if((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]) === 0 
+        || holdQuePressed.current   === true
         || upArrowPressed.current   === true
         || downArrowPressed.current === true) {
             
       frameCount.current += 1;    
+      holdQuePressed.current = false;
       downArrowPressed.current = false;
       upArrowPressed.current = false;
       updateBoard(activePiece.current);
@@ -1443,6 +1487,31 @@ const Game = (props: GameProps) => {
 
   };
 
+  // const menuButtonCallback = (action: MenuButtonAction) => {
+  function menuButtonCallback(action: MenuButtonAction) {
+    if(action === "restart") {    
+      initRefs();
+      initGame();
+      // if(!activePiece) {
+      //   // @ts-expect-error
+      //   activePiece.current = getNextPiece();
+      //   // activePiece = getPieceFromQue();
+      // }
+      
+      // setGameover(false);
+      // resumeGame();
+      return;
+    }
+    if(action === "pause") {
+      if(!paused.current) {
+        pauseGame(false, true);
+      }
+      else {
+        resumeGame();
+      }
+    }
+  }
+
   return (
     <div data-layout={props.layout} className="panels-container">
       
@@ -1455,144 +1524,79 @@ const Game = (props: GameProps) => {
           keydownHandler(e)
         }
       }
-      menuButtonCallback={ (action: MenuButtonAction) => {
-        if(action === "restart") {    
-          initRefs();
-          if(activePiece.current) {
-            // activePiece.current = getNextPiece();
-            activePiece.current = getPieceFromQue();
-          }
-          
-          setGameover(false);
-          resumeGame();
-          return;
-        }
-        if(action === "pause") {
-          if(!paused.current) {
-            pauseGame(false, true);
-          }
-          else {
-            resumeGame();
-          }
-        }
-      }}
+      menuButtonCallback={ menuButtonCallback }
       ></MenuPanel>
 
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
         <div id="GameContainer" data-layout={props.layout} className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
+
           <div id="DevTools">
             <h5 className=" tw-hidden game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
           </div>
-          <PieceQue id="HoldQue" layout={props.layout} onTap={()=>{keydownHandler({key: '/'})}} title={"HOLD"} queLength={1} position={"left"} animation='spinRight' disabled={activePiece.current && activePiece.current.wasInHold || false}
-          pieces={
-            holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
-          }/>
+
+          <PieceQue id="HoldQue" 
+            title={"HOLD"} 
+            queLength={1} 
+            position={"left"} 
+            animation={"spinRight"} 
+            disabled={activePiece.current && activePiece.current.wasInHold || false}
+            layout={props.layout} 
+            onTap={()=>{keydownHandler({key: '/'})}} 
+            pieces={
+              holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
+            }/>
+
           <div>
-            <BoardBackground></BoardBackground>
+            <BoardBackground/>
             <div class="board-grid-mask">
               
+              {/* Effects go here until Effect Layer is implemented */}
               { dropEffectData.current && 
-
-                // @ts-expect-error
-                <motion.div key={dropEffectData.current.id} className="drop-effect" 
-                  onAnimationComplete={
-                      ()=>{dropEffectData.current = null;
-                    }}
-                  variants={{
-                    show: {
-                      opacity: 1
-                    }, 
-                    hidden: {
-                      opacity: 0
-                    }}}
-                  initial="show"
-                  animate="hidden"
-                  transition={{
-                    duration: 0.25, 
-                    ease:"easeOut"
-                  }}
-                  // transitionEnd = {{
-                  //   display: 'none'
-                  // }}
-                  
-                  style={{
-                    top: dropEffectData.current.top,
-                    left: dropEffectData.current.left,
-                    right: dropEffectData.current.right,
-                    bottom: dropEffectData.current.bottom
-                    }}>
-
-                </motion.div>
+                <DropEffect
+                  position={dropEffectData.current} 
+                  onAnimationComplete={()=>{
+                    dropEffectData.current = null
+                  }}/>
               }
+              
               { clearEffectData.current &&
-                clearEffectData.current.map((effect: any)=>{
-                  return  (
-                // @ts-expect-error
-                  <motion.div key={effect.id} className="clear-effect" 
-                    onAnimationComplete={
-                      () => {
-                        // make sure sound effect is only played once
-                        // in the event that multiple effects are needed
-                        if(clearEffectData.current !== null) {
-                          clearEffectData.current = null;
-                          props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
-                        }
-                        clearedRows.current = null;
-                        resumeGame();
-                      }
+                <LineClearEffect
+                  positions={clearEffectData.current} 
+                  onAnimationComplete={() => {
+                    // make sure sound effect is only played once
+                    // in the event that multiple effects are needed
+                    if(clearEffectData.current !== null) {
+                      clearEffectData.current = null;
+                      props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
                     }
-                    // onUpdate={()=>{
-                    //   console.log("clear effect update");
-                    // }}
-                    variants={{
-                      show: {
-                        opacity: 1,
-                        transform: 'rotateX(0)'
-                      }, 
-                      hidden: {
-                        opacity: 0,
-                        transform: 'rotateX(90deg)'
-                      }}}
-                    initial="show"
-                    animate="hidden"
-                    transition={{
-                      duration: 0.4, 
-                      ease:"easeOut",
-                      delay: 0.1,
-                    }}
-                    // transitionEnd = {{
-                    //   display: 'none'
-                    // }}
-                    
-                    style={{
-                      top: effect.top,
-                      left: effect.left,
-                      right: effect.right,
-                      bottom: effect.bottom
-                      }}>
-
-                  </motion.div>
-                  );
-                })
+                    if(clearedRows.current) {
+                      clearedRows.current.fill(-1);
+                    }
+                    resumeGame();
+                  }}/>
               }
               
               <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
                 {renderBoard()}
               </div>
-              { (gameover || paused.current) &&
+
+              { ( gameover || paused.current ) &&
                 <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
+
             </div>
           </div>
-          {pieceQue.current &&
-          <PieceQue layout={props.layout} title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
-          pieces={
-            pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
-          }/>
-        }
+
+          { pieceQue.current &&
+            <PieceQue layout={props.layout} title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
+            pieces={
+              pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
+            }/>
+          }
+
         </div>
       </div>
       <StatsPanel layout={props.layout} fields={[
@@ -1601,12 +1605,12 @@ const Game = (props: GameProps) => {
           value: stats.current?.score || 0
         },
         {
-          name: "Lines",
-          value: stats.current?.lines || 0
-        },
-        {
           name: "Level",
           value: stats.current?.level || 1
+        },
+        {
+          name: "Lines",
+          value: stats.current?.lines || 0
         },
       ]}></StatsPanel>
     </div>
@@ -1614,275 +1618,3 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
-
-
-
-type MenuButtonAction = "restart" | "pause";
-interface MenuPanelProps extends BaseComponentProps {
-  controlMapCallback: (fakeInputEvent: any) => void;
-  menuButtonCallback: (action: MenuButtonAction) => void;
-  paused: boolean;
-  gameover: boolean;
-  layout: AppLayout;
-}
-export function MenuPanel(props:MenuPanelProps) {
-  const {paused, gameover} = props;
-  const isDesktop = props.layout === 'desktop';
-  return (
-    <div id="MenuPanel" data-layout={props.layout} className="menu-panel">
-        <button className={
-          `tetris-font menu-button btn-restart 
-           ${(paused === false && gameover === false) ? 'disabled': ''}`
-          } 
-          onClick={()=>{props.menuButtonCallback("restart")}}
-        
-        disabled={
-          paused === false && gameover === false
-          }>{gameover === false ? (isDesktop ? "Restart" : "Restart") : (isDesktop ? "New Game" : "New Game")}</button>
-        <button 
-          className={`tetris-font btn-pause menu-button pause button ${gameover ? 'disabled' : ''}`} 
-    
-          disabled={gameover} 
-          onClick={()=> {props.menuButtonCallback("pause")}}>{(paused && !gameover) ? (isDesktop ? 'Resume' : 'Resume') : (isDesktop ? 'Pause' : 'Pause')}</button>
-
-        <ControlsMap layout={props.layout} clickCallback={props.controlMapCallback}/>
-      </div>
-  );
-}
-
-export function BoardBackground() {
-  return (
-    <div class='board-background grid-rows'>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-    <div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div><div class='row'>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-      <div class='col'></div>
-    </div>
-  </div>
-
-  );
-}
