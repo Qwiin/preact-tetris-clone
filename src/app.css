@@ -282,12 +282,12 @@ body[data-layout="mobile"] {
 
   & .stats-field-value {
     color: rgb(var(--theme-0-cell-color-1));
-    filter: contrast(0.8);
+    /* filter: contrast(0.8); */
     padding-left: 1rem;
     width: 4rem;
     text-align: right;
     font-family: "Premier2019";
-    letter-spacing: 0.12rem;
+    letter-spacing: 0.10rem;
     transform: scaleX(1.5);
     transform-origin: right;
     padding-bottom: 0.03125rem;
@@ -534,8 +534,9 @@ body[data-layout="mobile"] {
   }
 }
 .game-sounds[data-layout="mobile"] {
-  left: calc(50% - .2rem - 7rem);
-  gap: 2.2rem;
+  transform: scale(1.25);
+  left: calc(50% - 0rem - 6.8rem);
+  gap: 1.2rem;
   width: 4rem;
   position: absolute;
   top: 2.1rem;
@@ -668,7 +669,7 @@ Keyboard Controls Map UI
 
   & .game-control-button {
     /* border: 1px rgba(255,255,255,0.6) solid; */
-    border: 1px rgba(148, 163, 184, 0.8) solid;
+    border: 0.625rem rgba(148, 163, 184, 0.8) solid;
     background-color: rgb(26, 26, 26, 1);
     color: rgba(255,255,255,0.8);
     border-radius: 0.375rem;
@@ -796,15 +797,15 @@ Keyboard Controls Map UI
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
   saturate(var(--cell-saturate))
-  brightness(var(--cell-brightness));
+  brightness(calc(var(--cell-brightness) * 1));
 }
 .filled-cell.cell-color-2, .filled-cell.cell-color-22 {
   filter: 
   /* url(#sandy1)  */
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
-  saturate(var(--cell-saturate))
-  brightness(calc(var(--cell-brightness) * 0.88));
+  saturate(calc(var(--cell-saturate)*1))
+  brightness(calc(var(--cell-brightness)*0.9));
 }
 .filled-cell.cell-color-3, .filled-cell.cell-color-33 {
   filter: 
@@ -817,10 +818,10 @@ Keyboard Controls Map UI
 .filled-cell.cell-color-4, .filled-cell.cell-color-44 {
   filter: 
   /* url(#sandy3)  */
-  contrast(calc(var(--cell-contrast)*1.2))
+  contrast(calc(var(--cell-contrast)*1.05))
   blur(var(--cell-blur))
-  saturate(calc(var(--cell-saturate)*1.2))
-  brightness(calc(var(--cell-brightness) * 1.6));
+  saturate(calc(var(--cell-saturate)*1.1))
+  brightness(calc(var(--cell-brightness) * 1.1));
 }
 .filled-cell.cell-color-5, .filled-cell.cell-color-55 {
   filter: 
@@ -828,23 +829,23 @@ Keyboard Controls Map UI
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
   saturate(var(--cell-saturate))
-  brightness(var(--cell-brightness));
+  brightness(calc(var(--cell-brightness)*1.05));
 }
 .filled-cell.cell-color-6, .filled-cell.cell-color-66 {
   filter: 
   /* url(#sandy5)  */
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
-  saturate(var(--cell-saturate))
-  brightness(calc(var(--cell-brightness) * 1.1));
+  saturate(calc(var(--cell-saturate) * 1))
+  brightness(calc(var(--cell-brightness) * 1));
 }
 .filled-cell.cell-color-7, .filled-cell.cell-color-77 {
   filter: 
   /* url(#sandy6)  */
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
-  saturate(var(--cell-saturate))
-  brightness(calc(var(--cell-brightness)*1.1));
+  saturate(calc(var(--cell-saturate) * 1))
+  brightness(calc(var(--cell-brightness)));
 }
 
 .board-grid {
@@ -1082,7 +1083,7 @@ div[data-layout="mobile"] {
       line-height: 2rem;
       
       & >div {
-        margin-top: 1.75rem;
+        margin-top: 0.45rem;
       }
     }
     & .btn-left {
