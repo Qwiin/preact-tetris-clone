@@ -1,4 +1,9 @@
 @font-face {
+  font-family: "Premier2019";   /*Can be any text*/
+  src: local("Premier2019-rPv9.ttf"),
+    url("/src/font/Premier2019-rPv9.ttf") format("truetype");
+}
+@font-face {
   font-family: "SfTheraminGothicShaded";   /*Can be any text*/
   src: local("SfTheraminGothicShaded-5pVz"),
     url("/src/font/SfTheraminGothicShaded-5pVz.ttf") format("truetype");

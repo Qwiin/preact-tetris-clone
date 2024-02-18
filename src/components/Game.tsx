@@ -1605,12 +1605,12 @@ const Game = (props: GameProps) => {
           value: stats.current?.score || 0
         },
         {
-          name: "Lines",
-          value: stats.current?.lines || 0
-        },
-        {
           name: "Level",
           value: stats.current?.level || 1
+        },
+        {
+          name: "Lines",
+          value: stats.current?.lines || 0
         },
       ]}></StatsPanel>
     </div>
