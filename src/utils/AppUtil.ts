@@ -4,9 +4,9 @@
  * @returns uid as string
  */
 export function newUID(): string {
-  const timestamp = Math.round(window.performance.now()).toString();
+  const timestamp = Math.round(window.performance.now() * 1000).toString();
   const randomPart = Math.random().toString(36).substring(2, 15);
-  return timestamp + "_"+ randomPart;
+  return randomPart + "_" + timestamp;
 }
 
 

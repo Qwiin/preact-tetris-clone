@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'preact/hooks'
-import { ActionType } from '../TetrisConfig';
+import { forwardRef } from 'preact/compat';
+import { useEffect, useRef, useState, useReducer } from 'preact/hooks'
 import { Ref } from 'preact';
+import { ActionType } from '../TetrisConfig';
 
 // @ts-expect-error
 import {useSound} from 'use-sound';
@@ -8,23 +9,36 @@ import {useSound} from 'use-sound';
 import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
+import audio_resume from '@sounds/success_bell-6776.mp3';
+// import audio_pause from '@sounds/interface-124464.mp3';
+import audio_pause from '@sounds/notification-for-game-scenes-132473.mp3';
+
 
 import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from '../BaseTypes';
+import Slider from './Slider';
 
 interface SoundBoardProps extends BaseComponentProps {
-  eventTargetRef: Ref<HTMLDivElement>;
+  // eventTargetRef: Ref<HTMLDivElement>;
   volume?: number;
 }
 
-export function SoundBoard(props:SoundBoardProps) {
+const SoundBoard = forwardRef(
+  function SoundBoard(props:SoundBoardProps, eventTargetRef:Ref<HTMLDivElement>) {
 
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(false);
 
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+
+  const sfxVolume = useRef(props.volume !== undefined ? props.volume : 50);
+  const musicVolume = useRef(props.volume !== undefined ? props.volume : 50);
+
   const [sfx_t99Music, {pause}] = useSound(audio_t99_music, {
-    volume: (props.volume || 50) / 200,
+    volume: (Math.sqrt(musicVolume.current) ?? props.volume ?? 0)/100,
     playbackRate: 1
   });
+
+
 
   useEffect(()=>{
     if(musicEnabled){
@@ -42,6 +56,15 @@ export function SoundBoard(props:SoundBoardProps) {
     }
   },[musicEnabled]);
 
+  const [sfx_pause] = useSound(audio_pause, {
+    volume: (Math.sqrt(sfxVolume.current) ?? props.volume ?? 0)/100,
+    playbackRate: 1
+  });
+  const [sfx_resume] = useSound(audio_resume, {
+    volume: (Math.sqrt(sfxVolume.current) ?? props.volume ?? 0)/100,
+    playbackRate: 1
+  });
+
   const [sfx_tetris] = useSound(audio_t99, {
     sprite: {
       levelUp: [0,950],
@@ -58,10 +81,10 @@ export function SoundBoard(props:SoundBoardProps) {
       tSpin: [8000,950],
       holdPiece: [9000,400],
       moveNotAllowed: [10000,400],
-      allClear: [11000,950],
-      lineClearDrop: [12000,600],
+      lineClearDrop: [11000,600],
+      allClear: [12000,3000],
     },
-    volume: (props.volume || 50) / 300,
+    volume: (Math.sqrt(sfxVolume.current) ?? props.volume ?? 0)/100,
     playbackRate: 1.0
   });
 
@@ -71,6 +94,7 @@ export function SoundBoard(props:SoundBoardProps) {
   });
 
   const handleSound = (e: MouseEvent) => {
+
     if(!soundEnabled) {
       return;
     }
@@ -137,6 +161,17 @@ export function SoundBoard(props:SoundBoardProps) {
       case ActionType.HOLD_PIECE:
         sfx_tetris({id:"holdPiece"});
         break;
+      case ActionType.PAUSE:
+        pause();
+        sfx_pause();
+        break;
+      case ActionType.RESUME:
+        sfx_resume();
+        if(musicEnabled){
+          pause();
+          sfx_t99Music();
+         }
+        break;
       case ActionType.GAME_OVER:
         sfx_gameOver();
         break;
@@ -161,7 +196,7 @@ export function SoundBoard(props:SoundBoardProps) {
   return (
     <>
       <div data-layout={props.layout} className="game-sounds">
-        <div style={{display:"none"}} ref={props.eventTargetRef} onClick={handleSound}>play</div>
+        <div style={{display:"none"}} ref={eventTargetRef} onClick={handleSound}>play</div>
           <div key="option1" className="sound-switch">
             { props.layout === LAYOUT_MOBILE &&
               <div className={`switch-icon sound ${soundEnabled ? 'enabled' : ''}`}
@@ -177,6 +212,20 @@ export function SoundBoard(props:SoundBoardProps) {
             </>
             }
           </div>
+          <Slider
+          // ref={sfxVolumeRef}
+          id="VolumeSFX" 
+          className="soundfx-volume" 
+          layout={props.layout}
+          min={0}
+          max={100}
+          value={sfxVolume.current ?? 50}
+          onChange={(value: number)=>{
+            sfxVolume.current = value;
+            forceUpdate(1);
+          }}
+          
+          ></Slider>
           <div key="option2" className="sound-switch">
           {props.layout === LAYOUT_MOBILE &&
             <div 
@@ -197,10 +246,26 @@ export function SoundBoard(props:SoundBoardProps) {
             </>
           }
           </div>
+          
+          <Slider
+          // ref={musicVolumeRef}
+          id="VolumeMusic" 
+          className="music-volume" 
+          layout={props.layout}
+          min={0}
+          max={100}
+          value={musicVolume.current || 50}
+          
+          onChange={(value: number)=>{
+            musicVolume.current = value;
+            forceUpdate(1);
+          }}
+
+          ></Slider>
         {/* </div> */}
       </div>
     </>
   );
-}
+});
 
-export default SoundBoard
+export default SoundBoard;
