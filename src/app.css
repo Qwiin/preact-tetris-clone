@@ -754,7 +754,7 @@ Keyboard Controls Map UI
 } */
 .filled-cell {
   position: relative;
-  border-radius: 0.125rem;
+  /* border-radius: 0.125rem; */
   overflow:hidden;
   /* transform: scale(0.9); */
   /* filter: url(#sandy180) contrast(1.2) blur(0.25px); */
