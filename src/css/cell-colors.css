@@ -4,7 +4,7 @@
 
   --cell-bg-op: 1;
   --cell-border-op: 1;
-  --cell-border-op-ghost: .4;
+  --cell-border-op-ghost: .8;
   --cell-radius-empty: none;
   --cell-radius-filled: 0.09375rem;
   --cell-radius-ghost: 0.125rem;
@@ -43,6 +43,7 @@
   border-style: var(--cell-border-style-ghost);
   border-width: var(--cell-border-width-ghost);
   z-index: 100;
+  
 }
 
 
