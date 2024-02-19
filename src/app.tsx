@@ -9,7 +9,7 @@ import {animate} from 'framer-motion';
 import { Filters } from './effects/Filters';
 import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
-import { DevPanel } from './components/DevPanel';
+// import { DevPanel } from './components/DevPanel';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
@@ -144,7 +144,7 @@ export function App() {
 
   return (
     <>
-      <DevPanel></DevPanel>
+      {/* <DevPanel></DevPanel> */}
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} 
         data-layout={appLayout}
