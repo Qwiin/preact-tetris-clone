@@ -192,9 +192,13 @@ const Game = (props: GameProps) => {
       ticker.current = null;
     }
     if(!discrete) {
+      if(!paused.current) {
+        props.actionCallback({type: ActionType.PAUSE});
+      }
       paused.current = true;
     }
     if(forceRender){
+      // changes "Pause" button label to "Resume"
       forceUpdate(1);
     }
   }
@@ -1074,10 +1078,10 @@ const Game = (props: GameProps) => {
     // if not gameover, pause should be allowed
     if(e.key === "Escape" && gameoverRef.current === false) {
       if(!paused.current) {
-        pauseGame();
-        forceUpdate(1); // changes "Pause" button label to "Resume"
+        pauseGame(false, true);
       }
       else {
+        props.actionCallback({type: ActionType.RESUME});
         resumeGame();
       }
     }
@@ -1136,10 +1140,10 @@ const Game = (props: GameProps) => {
             updateBoard(activePiece.current);
 
             p = activePiece.current;
-            props.actionCallback({type: ActionType.HOLD_PIECE})
+            props.actionCallback({type: ActionType.HOLD_PIECE});
           }
           else if(p.wasInHold) {
-            props.actionCallback({type: ActionType.MOVE_NOT_ALLOWED})
+            props.actionCallback({type: ActionType.MOVE_NOT_ALLOWED});
           }
         }
         break;
@@ -1450,7 +1454,7 @@ const Game = (props: GameProps) => {
       downArrowPressed.current = false;
       upArrowPressed.current = false;
       
-      console.log("Frame:", frameCount.current);
+      // console.log("Frame:", frameCount.current);
 
       tick.value = 1;
       
@@ -1499,14 +1503,6 @@ const Game = (props: GameProps) => {
     if(action === "restart") {    
       initRefs();
       initGame();
-      // if(!activePiece) {
-      //   // @ts-expect-error
-      //   activePiece.current = getNextPiece();
-      //   // activePiece = getPieceFromQue();
-      // }
-      
-      // setGameover(false);
-      // resumeGame();
       return;
     }
     if(action === "pause") {
@@ -1514,6 +1510,9 @@ const Game = (props: GameProps) => {
         pauseGame(false, true);
       }
       else {
+        if(paused.current) {
+          props.actionCallback({type: ActionType.RESUME});
+        }
         resumeGame();
       }
     }

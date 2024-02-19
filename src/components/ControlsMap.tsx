@@ -118,7 +118,7 @@ export function ControlsMap(props: ControlsMapProps) {
           <div id="BtnHold" className="btn-hold game-control-button hover-text subtext btn-hold"
           onMouseDown={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyHoldPiece})}}}
           >
-            <><p className="tw-mt-2" style={{paddingLeft: "0.2rem", paddingTop:"0.1rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>HOLD</p></>
+            <><p className="tw-mt-2" style={{paddingLeft: "0.1rem", paddingTop:"0.1rem",fontSize: '0.5rem', fontWeight: "bold", letterSpacing:"0.1rem", fontFamily: "Brick3DRegular"}}>HOLD</p></>
             {/* <span class="tooltip-text top tw-flex-none tw-p-0">{props.keyHoldPiece} ({props.keyHoldPiece ? KEY_CODE_MAP[props.keyHoldPiece] : props.keyHoldPiece?.toString()})</span> */}
             <span class="tooltip-text top tw-flex-none tw-p-0">Slash ({props?.keyHoldPiece && (KEY_CODE_MAP[props.keyHoldPiece] || props.keyHoldPiece)})</span>
           </div>

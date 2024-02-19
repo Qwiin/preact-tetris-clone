@@ -18,7 +18,7 @@ export function Filters() {
           </feMerge>
       </filter>
       <filter id="sandy0">
-        <feTurbulence baseFrequency="1.65,1.75" numOctaves={2} seed="3" result="noiseMapColor" />
+        <feTurbulence baseFrequency="0.6,0.4" numOctaves={2} seed="3" result="noiseMapColor" />
         <feColorMatrix in="noiseMapColor" type="matrix" values=".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0.8 0"/>
         <feComposite operator="in" in2="SourceGraphic" result="noiseMapMonochrome"/>
         <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />

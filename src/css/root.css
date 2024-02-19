@@ -13,11 +13,11 @@
 
   --scale-control-button-mobile: 1.25;
 
-  --cell-contrast: 1.0;
+  --cell-contrast: 1.05;
   /* --cell-blur: 0.03125rem; */
   --cell-blur: 0;
-  --cell-brightness: 1.1;
-  --cell-saturate: 1.0;
+  --cell-brightness: 1.25;
+  --cell-saturate: 1.1;
 
   /*
     galaxy theme 

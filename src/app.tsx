@@ -9,6 +9,7 @@ import {animate} from 'framer-motion';
 import { Filters } from './effects/Filters';
 import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
+import { DevPanel } from './components/DevPanel';
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
@@ -143,6 +144,7 @@ export function App() {
 
   return (
     <>
+      <DevPanel></DevPanel>
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} 
         data-layout={appLayout}
@@ -172,7 +174,7 @@ export function App() {
           // console.log("toastComplete");
         }}
         />  
-        <SoundBoard layout={appLayout} eventTargetRef={soundBoardDomRef} volume={50}/>
+        <SoundBoard layout={appLayout} ref={soundBoardDomRef} volume={50}/>
       </div>
       <Filters />
     </>
