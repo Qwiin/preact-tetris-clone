@@ -14,6 +14,23 @@
   user-select: none;
 }
 
+.dev-panel {
+  position: relative;
+  top: calc(50vh - 22.5rem);
+  left: 0.25rem;
+  transform: scaleY(0.6);
+
+  & .field {
+
+    & h5 {
+      font-family: "Premier2019";
+    }
+    & h5:nth-child(2) {
+      margin-left: 0.25rem;
+    }
+  }
+}
+
 #app {
   overflow: hidden;
   touch-action:manipulation;
