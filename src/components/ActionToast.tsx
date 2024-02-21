@@ -147,7 +147,7 @@ export function ActionToast(props: ActionToastProps) {
 
   return (
     <div className="tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center">
-      <div data-layout={props.layout} id="ToastOrigin" className='toast-action-origin'>
+      <div data-layout={props.layout} data-platform={props.platform} id="ToastOrigin" className='toast-action-origin'>
       {/* <TSpin id={props.actions && props.actions[0] ? props.actions[0].id || "123" : "123"}  
         animationComplete={props.toastComplete} 
         timestamp={performance.now()/1000}/>   */}

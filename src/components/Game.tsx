@@ -55,6 +55,7 @@ interface GameProps extends BaseComponentProps {
   actionCallback: (value: any) => void;
   setPieceCallback?: (value: any) => void;
   setStatsCallback?: (value: any) => void;
+  // boardUpdateCallback?: (value: any) => void;
 }
 
 interface Scoring {
@@ -1519,10 +1520,11 @@ const Game = (props: GameProps) => {
   }
 
   return (
-    <div data-layout={props.layout} className="panels-container">
+    <div data-layout={props.layout} data-platform={props.platform} className="panels-container">
       
       <MenuPanel 
       layout={props.layout}
+      platform={props.platform}
       gameover={gameoverRef.current}
       paused={paused.current}
       controlMapCallback={
@@ -1534,7 +1536,7 @@ const Game = (props: GameProps) => {
       ></MenuPanel>
 
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
-        <div id="GameContainer" data-layout={props.layout} className="game-container">
+        <div id="GameContainer" data-layout={props.layout} data-platform={props.platform} className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
 
           <div id="DevTools">
@@ -1605,7 +1607,7 @@ const Game = (props: GameProps) => {
 
         </div>
       </div>
-      <StatsPanel layout={props.layout} fields={[
+      <StatsPanel layout={props.layout} platform={props.platform} fields={[
         {
           name: "Score",
           value: stats.current?.score || 0

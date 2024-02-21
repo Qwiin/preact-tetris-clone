@@ -17,7 +17,7 @@
   visibility: visible;
 }
 
-div[data-layout="mobile"] .hover-text:hover .tooltip-text {
+div[data-layout="portrait"] .hover-text:hover .tooltip-text {
   visibility: hidden;
 }
 

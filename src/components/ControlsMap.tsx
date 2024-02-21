@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/hooks";
-import { BaseComponentProps, LAYOUT_DESKTOP } from "../BaseTypes";
+import { BaseComponentProps, LAYOUT_LANDSCAPE, PLATFORM_DESKTOP } from "../BaseTypes";
 import { Ref } from "preact";
 
 interface ControlsMapProps extends BaseComponentProps {
@@ -21,7 +21,8 @@ const DEFAULT_KEY_MAP: ControlsMapProps = {
   keyRotateRight: 'Shift',
   keyRotateLeft: 'Alt',
   keyHoldPiece: '/',
-  layout:'desktop'
+  layout: LAYOUT_LANDSCAPE,
+  platform: PLATFORM_DESKTOP,
 }
 
 const KEY_CODE_MAP: any = {
@@ -106,7 +107,7 @@ export function ControlsMap(props: ControlsMapProps) {
 
   return (
     <>
-      <div data-layout={props.layout} className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-rounded-lg tw-px-1">
+      <div data-layout={props.layout} data-platform={props.platform} className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-rounded-lg tw-px-1">
 
         <div className="btn-row">
           <div id="BtnRotLeft" className="game-control-button hover-text btn-rot-l" 
@@ -135,7 +136,7 @@ export function ControlsMap(props: ControlsMapProps) {
         <div className="btn-row">
           <div id="BtnMoveLeft" className="game-control-button hover-text btn-left"
             // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveLeft})}}}
-            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveLeft)}}}
+            onMouseDown={()=>{if(props.layout === LAYOUT_LANDSCAPE){startBtnRepeat(props?.keyMoveLeft)}}}
             onMouseUp={endBtnRepeat}
             onTouchStart={()=>{
               startBtnRepeat(props?.keyMoveLeft);
@@ -150,16 +151,16 @@ export function ControlsMap(props: ControlsMapProps) {
           <div className="btn-col">
             <div id="BtnDrop" className=" game-control-button hover-text subtext btn-drop"
             onTouchStart={()=>{ if(props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyDropPiece})}}}
-            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP && props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyDropPiece})}}}>
+            onMouseDown={()=>{if(props.layout === LAYOUT_LANDSCAPE && props.clickCallback) { endBtnRepeat(); props.clickCallback({key: props?.keyDropPiece})}}}>
               <>
-                {props?.keyDropPiece && props.layout === LAYOUT_DESKTOP && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
+                {props?.keyDropPiece && props.layout === LAYOUT_LANDSCAPE && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)}
                 <div className="tw-text-sm tw-text-s tw-p-0 tw-m-0">DROP</div>
               </>
               <span class="tooltip-text top tw-flex-none tw-p-0">Drop Piece ({props?.keyDropPiece && (KEY_CODE_MAP[props.keyDropPiece] || props.keyDropPiece)})</span>
             </div>
             <div id="BtnMoveDown" className="game-control-button hover-text btn-down"
               // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveDown})}}}
-              onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveDown)}}}
+              onMouseDown={()=>{if(props.layout === LAYOUT_LANDSCAPE){startBtnRepeat(props?.keyMoveDown)}}}
               onMouseUp={endBtnRepeat}
               onTouchStart={()=>{
                 startBtnRepeat(props?.keyMoveDown);
@@ -174,7 +175,7 @@ export function ControlsMap(props: ControlsMapProps) {
           </div>
           <div id="BtnMoveRight" className="game-control-button hover-text btn-right"
             // onClick={()=>{ if(props.clickCallback) { props.clickCallback({key: props?.keyMoveRight})}}}
-            onMouseDown={()=>{if(props.layout === LAYOUT_DESKTOP){startBtnRepeat(props?.keyMoveRight)}}}
+            onMouseDown={()=>{if(props.layout === LAYOUT_LANDSCAPE){startBtnRepeat(props?.keyMoveRight)}}}
               onMouseUp={endBtnRepeat}
               onTouchStart={()=>{
                 startBtnRepeat(props?.keyMoveRight);

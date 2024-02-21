@@ -1,10 +1,20 @@
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat"
 import imageSrc from "../assets/bg_cave18_hd.webp";
+import { BaseComponentProps, PLATFORM_DESKTOP } from "../BaseTypes";
 
 const WATER_SCALE:string = "3";
 
-const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>) {
+const BG_OFFSET_X:number = 0;
+const BG_OFFSET_Y:number = 0;
+
+interface Props extends BaseComponentProps {
+  tx: number;
+  ty: number;
+  scale: number;
+}
+
+const Filters = forwardRef( function Filters(props: Props, ref:Ref<SVGSVGElement>) {
   
   return (
     <>
@@ -118,7 +128,9 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
         <feBlend in="SourceGraphic" in2="GradientOverlay" mode="difference" />
         </filter>
       </defs>
-      <g style={{filter: "url(#BgBlend)", transform: `translate(${props.tx ?? 0}px, ${props.ty ?? 0}px) scale(${props.scale ?? 1})`}}>
+      <g style={{
+        filter: props.platform === PLATFORM_DESKTOP ? "url(#BgBlend)" : undefined, 
+        transform: `translate(calc(${props.tx ?? 0}px + ${BG_OFFSET_X}%), calc(${props.ty ?? 0}px + ${BG_OFFSET_Y}%)) scale(${props.scale ?? 1})`}}>
       <mask id="myMask" maskContentUnits="objectBoundingBox">
         <rect fill="white" x="0" y="0" width="100%" height="100%" />
         <polygon

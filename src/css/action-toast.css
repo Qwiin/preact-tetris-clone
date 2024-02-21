@@ -9,7 +9,7 @@ Where toast items are positioned from
   max-width: 22rem;
   height: 3.5rem;
 
-  &[data-layout="mobile"] {
+  &[data-layout="portrait"] {
     z-index: 3500;
     top: 5rem;
 

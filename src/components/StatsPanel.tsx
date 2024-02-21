@@ -1,4 +1,4 @@
-import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from "../BaseTypes";
+import { BaseComponentProps, LAYOUT_LANDSCAPE, LAYOUT_PORTRAIT } from "../BaseTypes";
 
 interface StatField {
   id?: string;
@@ -15,7 +15,7 @@ export function StatsPanel(props: StatsPanelProps) {
 
   return (
     <>
-      <div id="#StatsPanel" data-layout={props.layout} className={"stats-panel" + (props.className || "")}>
+      <div id="#StatsPanel" data-layout={props.layout} data-platform={props.platform} className={"stats-panel" + (props.className || "")}>
 
         {props.fields && 
           props.fields.map((field: StatField, index: number)=>{
@@ -26,7 +26,7 @@ export function StatsPanel(props: StatsPanelProps) {
                   {field.name}
                 </h3>
                 <div className="stats-field-value-bg">
-                {props.layout === LAYOUT_MOBILE &&
+                {props.layout === LAYOUT_PORTRAIT &&
                   <div className="tw-flex tw-items-center tw-justify-end"
                   style={{justifyContent: "flex-end",
                     width: `${4.3 - index*0.62}rem`}}>
@@ -35,7 +35,7 @@ export function StatsPanel(props: StatsPanelProps) {
                   </h3>
                   </div>
                 }
-                {props.layout === LAYOUT_DESKTOP &&
+                {props.layout === LAYOUT_LANDSCAPE &&
                   <h3 className="stats-field-value">
                     {field.value}
                   </h3>

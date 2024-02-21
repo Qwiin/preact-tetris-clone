@@ -7,7 +7,7 @@ import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
 import {animate} from 'framer-motion';
 import Filters from './effects/Filters';
-import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
+import { AppLayout, LAYOUT_LANDSCAPE, LAYOUT_PORTRAIT, PLATFORM_DESKTOP, PLATFORM_MOBILE, Platform } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
 import { DevPanel } from './components/DevPanel';
 
@@ -23,6 +23,9 @@ const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 465;
 const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 520;
 
+const BG_OFFSET_X_PCT: number = 5;
+const BG_OFFSET_Y_PCT: number = 0;
+
 const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
 
 export function App() {
@@ -33,7 +36,8 @@ export function App() {
   const appContainerRef: Ref<HTMLDivElement> = useRef(null);
   
   const [appScale, setAppScale] = useState(1);
-  const [appLayout, setAppLayout] = useState<AppLayout>("desktop");
+  const [appLayout, setAppLayout] = useState<AppLayout>(LAYOUT_LANDSCAPE);
+  const [appPlatform, setAppPlatform] = useState<Platform>(PLATFORM_DESKTOP);
 
   const bgRef: Ref<HTMLDivElement> = useRef(null);
   const bgSvgRef: Ref<SVGSVGElement> = useRef(null);
@@ -89,13 +93,13 @@ export function App() {
         bgImgSize.current = {width, height}
       }
 
-      let heightScale = window.innerHeight / bgImgSize.current.height;
-      let widthScale = window.innerWidth / bgImgSize.current.width;
+      let widthScale = window.innerWidth / (bgImgSize.current.width * (1 - (Math.abs(BG_OFFSET_X_PCT)/100)));
+      let heightScale = window.innerHeight / (bgImgSize.current.height * (1 - (Math.abs(BG_OFFSET_Y_PCT)/100)));
 
-      let bgScale = (widthScale / heightScale < 1) ? heightScale : widthScale;
+      let bgScale = ((widthScale / heightScale) < 1) ? heightScale : widthScale;
 
-      let tx = (window.innerWidth - bgImgSize.current.width * bgScale) / 2;
-      let ty = (window.innerHeight - bgImgSize.current.height * bgScale) / 2;
+      let tx = (window.innerWidth - bgImgSize.current.width * bgScale) / 2 + (bgImgSize.current.width * BG_OFFSET_X_PCT/100);
+      let ty = (window.innerHeight - bgImgSize.current.height * bgScale) / 2 + (bgImgSize.current.height * BG_OFFSET_Y_PCT/100);
 
       bgSvgRef.current.style.width = bgImgSize.current.width + "px";
       bgSvgRef.current.style.height = bgImgSize.current.height + "px";
@@ -104,49 +108,50 @@ export function App() {
       }
     }
 
-      // let windowAspectRatio = window.innerWidth / window.innerHeight;
-      let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
-      let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
-      console.log({hScale, vScale});
+    // let windowAspectRatio = window.innerWidth / window.innerHeight;
+    let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
+    let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
+    console.log({hScale, vScale});
 
     console.log({portraitRatio: window.innerHeight / window.innerWidth});
 
-      let scaleRatio: number = hScale/vScale;
-      let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) 
-        ? Math.min(Math.max(hScale, vScale), window.innerWidth/PORTRAIT_MODE_WIDTH_THRESHOLD * 1.56)  // PORTRAIT MODE
-        : Math.min(hScale, vScale);
+    let scaleRatio: number = hScale/vScale;
+    let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) 
+      ? Math.min(Math.max(hScale, vScale), window.innerWidth/PORTRAIT_MODE_WIDTH_THRESHOLD * 1.56)  // PORTRAIT MODE
+      : Math.min(hScale, vScale);
 
-      let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
-      setAppLayout( newAppLayout );
-      setAppScale(newAppScale);
+    let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_PORTRAIT : LAYOUT_LANDSCAPE;
+    setAppLayout( newAppLayout );
+    setAppPlatform( mobileCheck() ? PLATFORM_MOBILE : PLATFORM_DESKTOP );
+    setAppScale(newAppScale);
 
-      if(newAppLayout === LAYOUT_MOBILE || mobileCheck()) {
-        if((screen.orientation as any).hasOwnProperty("lock")) {
-          (screen.orientation as any).lock("portrait");
-        }
+    if(newAppLayout === LAYOUT_PORTRAIT || mobileCheck()) {
+      if((screen.orientation as any).hasOwnProperty("lock")) {
+        (screen.orientation as any).lock("portrait");
       }
-      else {
-        if((screen.orientation as any).hasOwnProperty("unlock")) {
-          (screen.orientation as any).unlock();
-        }
+    }
+    else {
+      if((screen.orientation as any).hasOwnProperty("unlock")) {
+        (screen.orientation as any).unlock();
       }
+    }
 
-      document.body.setAttribute('data-layout', newAppLayout);
+    document.body.setAttribute('data-layout', newAppLayout);
 
-      animate(
-        "#AppContainer", 
-        { 
-          transform: `scale(${newAppScale})`,
-        }, 
-        { 
-          duration: 0.3,
-          ease: "easeInOut",
-          delay: 0
-        }
-      );
+    animate(
+      "#AppContainer", 
+      { 
+        transform: `scale(${newAppScale})`,
+      }, 
+      { 
+        duration: 0.3,
+        ease: "easeInOut",
+        delay: 0
+      }
+    );
 
-      console.log({vScale, hScale, scaleRatio});
-      console.log(`scale(${newAppScale})`);
+    console.log({vScale, hScale, scaleRatio});
+    console.log(`scale(${newAppScale})`);
   }
 
   
@@ -155,11 +160,12 @@ export function App() {
     <>
       <div ref={bgRef} id="bg">
         <Filters ref={bgSvgRef} 
+        layout={appLayout} platform={appPlatform}
         tx={bgProps.current ? bgProps.current.tx : 0}
         ty={bgProps.current ? bgProps.current.ty : 0}
         scale={bgProps.current ? bgProps.current.scale : 1}/>
       </div>
-      <DevPanel layout={appLayout} enabled={true}></DevPanel>
+      <DevPanel layout={appLayout} platform={appPlatform} enabled={true}></DevPanel>
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} 
         data-layout={appLayout}
@@ -213,7 +219,7 @@ export const GameContainer = (props: any) => {
         actionCallback={actionCallback} 
         layout={props.layout} 
         startingLevel={1} />
-      <ActionToast layout={props.layout}
+      <ActionToast layout={props.layout} platform={props.platform}
         actions={actionQue.current || []} 
         toastComplete={(id?: string)=>{
           if(!actionQue.current || !id) {
@@ -227,7 +233,7 @@ export const GameContainer = (props: any) => {
           }
           // console.log("toastComplete");
         }}/>  
-      <SoundBoard layout={props.layout} ref={soundBoardDomRef} volume={50}/>
+      <SoundBoard layout={props.layout} platform={props.platform} ref={soundBoardDomRef} volume={50}/>
     </>
 
   );

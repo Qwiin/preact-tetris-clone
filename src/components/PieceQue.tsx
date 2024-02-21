@@ -1,4 +1,4 @@
-import { BaseComponentProps } from "../BaseTypes";
+import { BaseComponentProps, LAYOUT_LANDSCAPE, PLATFORM_DESKTOP } from "../BaseTypes";
 import { TETRONIMOES } from "../TetrisConfig";
 import { PieceQueItem } from "./Game";
 import {motion} from 'framer-motion';
@@ -29,7 +29,8 @@ const defaultPropsPieceQue: PieceQueProps = {
     {shapeEnum: 0, id: "6"},
     {shapeEnum: 0, id: "7"}
   ],
-  layout: "desktop",
+  layout: LAYOUT_LANDSCAPE,
+  platform: PLATFORM_DESKTOP,
 }
 
 export function PieceQue(props: PieceQueProps) {
@@ -48,8 +49,8 @@ export function PieceQue(props: PieceQueProps) {
 
   return (
     <>
-      <div id={props.id} data-layout={props.layout} className={`piece-que-container ${props.position === "left" ? "hold-que" : ""}`} 
-      // onTouchEnd={props.onTap !== undefined && props.layout === LAYOUT_MOBILE ? ()=>{ 
+      <div id={props.id} data-layout={props.layout} data-platform={props.platform} className={`piece-que-container ${props.position === "left" ? "hold-que" : ""}`} 
+      // onTouchEnd={props.onTap !== undefined && props.layout === LAYOUT_PORTRAIT ? ()=>{ 
       //   props.onTap ? props.onTap() : console.error("onTap() is undefined") } : undefined}
         
       onClick={

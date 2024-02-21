@@ -69,6 +69,7 @@ export function Slider(props: Props){
     <div ref={el}
       id={props.id} 
       data-layout={props.layout} 
+      data-platform={props.platform}
       data-value={props.value}
       className={`${props.className} slider-container`}
     >

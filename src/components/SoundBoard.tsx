@@ -14,7 +14,7 @@ import audio_resume from '@sounds/success_bell-6776.mp3';
 import audio_pause from '@sounds/notification-for-game-scenes-132473.mp3';
 
 
-import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from '../BaseTypes';
+import { BaseComponentProps, LAYOUT_LANDSCAPE, LAYOUT_PORTRAIT } from '../BaseTypes';
 import Slider from './Slider';
 
 interface SoundBoardProps extends BaseComponentProps {
@@ -195,15 +195,15 @@ const SoundBoard = forwardRef(
 
   return (
     <>
-      <div data-layout={props.layout} className="game-sounds">
+      <div data-layout={props.layout} data-platform={props.platform} className="game-sounds">
         <div style={{display:"none"}} ref={eventTargetRef} onClick={handleSound}>play</div>
           <div key="option1" className="sound-switch">
-            { props.layout === LAYOUT_MOBILE &&
+            { props.layout === LAYOUT_PORTRAIT &&
               <div className={`switch-icon sound ${soundEnabled ? 'enabled' : ''}`}
               onClick={toggleSound} 
               ></div>
             }
-            { props.layout === LAYOUT_DESKTOP && <>
+            { props.layout === LAYOUT_LANDSCAPE && <>
             <label for="EnableSoundFX">SoundFX</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableSoundFX" type="checkbox" onChange={toggleSound} checked={soundEnabled} />
@@ -217,6 +217,7 @@ const SoundBoard = forwardRef(
           id="VolumeSFX" 
           className="soundfx-volume" 
           layout={props.layout}
+          platform={props.platform}
           min={0}
           max={100}
           value={sfxVolume.current ?? 50}
@@ -227,7 +228,7 @@ const SoundBoard = forwardRef(
           
           ></Slider>
           <div key="option2" className="sound-switch">
-          {props.layout === LAYOUT_MOBILE &&
+          {props.layout === LAYOUT_PORTRAIT &&
             <div 
             style={{
               transform: "translateX(-0.1rem)"
@@ -235,7 +236,7 @@ const SoundBoard = forwardRef(
             onClick={toggleMusic} 
             ></div>
           }
-          { props.layout === LAYOUT_DESKTOP && <>
+          { props.layout === LAYOUT_LANDSCAPE && <>
             <label for="EnableMusic">Music</label>
             <div class="toggle-switch">
               <input class="toggle toggle-skewed" id="EnableMusic" type="checkbox" 
@@ -252,6 +253,7 @@ const SoundBoard = forwardRef(
           id="VolumeMusic" 
           className="music-volume" 
           layout={props.layout}
+          platform={props.platform}
           min={0}
           max={100}
           value={musicVolume.current || 50}
