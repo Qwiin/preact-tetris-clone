@@ -1,7 +1,6 @@
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat"
 import imageSrc from "../assets/bg_cave18_hd.webp";
-import overlaySrc from "../assets/radial_bg_blend.avif";
 
 const WATER_SCALE:string = "3";
 
