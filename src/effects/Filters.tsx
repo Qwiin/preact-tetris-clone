@@ -1,5 +1,72 @@
-export function Filters() {
+import { transform } from "framer-motion";
+import { Ref } from "preact";
+import { forwardRef } from "preact/compat"
+
+const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>) {
+  
   return (
+    <>
+    <svg ref={ref} id="BackgroundSVG2" xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <defs>
+        <filter id="WaveFilter">
+          <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01 0.04" seed="13" numOctaves="2" />
+          <animate xlinkHref="#feTurb" attributeName="baseFrequency" 
+          dur="40s" 
+          keyTimes="0;0.25;0.5;0.75;1"
+          values="
+          0.01 0.08;
+          0.0125 0.07;
+          0.015 0.06;
+          0.0175 0.05;
+          0.02 0.04" 
+          repeatCount="indefinite"/>
+          <feDisplacementMap id="feDisp" in="SourceGraphic" scale="5" />
+        </filter>
+        <filter id="WaveFilter2">
+          <feTurbulence id="feTurb2" type="fractalNoise" baseFrequency="0.02 0.06" seed="7" numOctaves="2" />
+          <animate xlinkHref="#feTurb2" 
+          attributeName="baseFrequency" 
+          dur="40s" 
+          keyTimes="0;0.25;0.5;0.75;1" 
+          values="
+          0.02 0.08;
+          0.025 0.07;
+          0.03 0.06;
+          0.035 0.05;
+          0.04 0.04" repeatCount="indefinite"/>
+          <feDisplacementMap id="feDisp" in="SourceGraphic" scale="8" />
+        </filter>
+      </defs>
+      <g style={{transform: `translate(${props.tx ?? 0}px, ${props.ty ?? 0}px) scale(${props.scale ?? 1})`}}>
+      <mask id="myMask" maskContentUnits="objectBoundingBox">
+        <rect fill="white" x="0" y="0" width="100%" height="100%" />
+        <polygon
+          fill="black"
+          points="0.0,0.0 1.0,0.0 1.0,0.643 0.66,0.5915 0.6,0.588  0.423,0.588 0.45,0.613 0.31,0.613 0.30,0.627 0.29,0.627 0.167,0.633 0.173,0.657 0.14,0.67 0.0,0.68
+          0.0,0.705
+          0.29,0.68 
+          0.45,0.655 
+          0.6,0.655  
+          1.0,0.7
+          1.0,1.0 
+          0.0,1.0" />
+      </mask>
+      <mask id="myMask2" maskContentUnits="objectBoundingBox">
+        <rect fill="white" x="0" y="0" width="100%" height="100%" />
+        <polygon
+          fill="black"
+          points="0.0,0.0 1.0,0.0 1.0,0.7 
+          0.6,0.65  
+          0.45,0.65 
+          0.29,0.675
+          0.14,0.69 0.0,0.7" 
+          />
+      </mask>
+      <image y="0" x="0" href='../src/assets/bg_cave18_hd.webp' scale={props.scale}></image>
+      <image y="0" x="0" filter="url(#WaveFilter)" mask="url(#myMask)" href='../src/assets/bg_cave18_hd.webp' scale={props.scale}></image>
+      <image y="0" x="0" filter="url(#WaveFilter2)" mask="url(#myMask2)" href='../src/assets/bg_cave18_hd.webp' scale={props.scale}></image>
+      </g>
+  </svg>
     <svg id="SVG_Filters" xmlns="http://www.w3.org/2000/svg" version="1.1"  
     style="position: absolute; width: 0; height: 0; overflow: hidden;">
     <defs>
@@ -104,8 +171,11 @@ export function Filters() {
                   0 0 1 0 0
                   0 0 0 0.8 0"/> --> */}
       </filter>
+      
     </defs>
-  
   </svg>
+  </>
   );
-  };
+  });
+
+  export default Filters;

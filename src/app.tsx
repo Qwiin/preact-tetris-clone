@@ -6,7 +6,7 @@ import ActionToast from './components/ActionToast';
 import Game from './components/Game';
 import SoundBoard from './components/SoundBoard';
 import {animate} from 'framer-motion';
-import { Filters } from './effects/Filters';
+import Filters from './effects/Filters';
 import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
 import { DevPanel } from './components/DevPanel';
@@ -37,6 +37,11 @@ export function App() {
   
   const [appScale, setAppScale] = useState(1);
   const [appLayout, setAppLayout] = useState<AppLayout>("desktop");
+
+  const bgRef: Ref<HTMLDivElement> = useRef(null);
+  const bgSvgRef: Ref<SVGSVGElement> = useRef(null);
+  const bgProps: Ref<any> = useRef(null);
+  const bgImgSize: Ref<any> = useRef(null);
 
   useEffect(() => {
     window.addEventListener("resize", handleWindowResize)
@@ -75,6 +80,32 @@ export function App() {
   }
 
   const resizeApp = () => {
+
+    if(bgRef.current && bgSvgRef.current) {
+      // bgRef.current.style.width = window.innerWidth + "px";
+      // console.log("bgSvgRef.current.clientWidth:", bgSvgRef.current.clientWidth);
+
+      if(!bgImgSize.current) {
+        const imageRect = bgSvgRef.current.children[1].getBoundingClientRect();
+        const width = imageRect.width;
+        const height = imageRect.height;
+        bgImgSize.current = {width, height}
+      }
+
+      let heightScale = window.innerHeight / bgImgSize.current.height;
+      let widthScale = window.innerWidth / bgImgSize.current.width;
+
+      let bgScale = (widthScale / heightScale < 1) ? heightScale : widthScale;
+
+      let tx = (window.innerWidth - bgImgSize.current.width * bgScale) / 2;
+      let ty = (window.innerHeight - bgImgSize.current.height * bgScale) / 2;
+
+      bgSvgRef.current.style.width = bgImgSize.current.width + "px";
+      bgSvgRef.current.style.height = bgImgSize.current.height + "px";
+      bgProps.current = {
+        scale: bgScale, tx, ty
+      }
+    }
 
       // let windowAspectRatio = window.innerWidth / window.innerHeight;
       let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
@@ -144,6 +175,12 @@ export function App() {
 
   return (
     <>
+      <div ref={bgRef} id="bg">
+        <Filters ref={bgSvgRef} 
+        tx={bgProps.current ? bgProps.current.tx : 0}
+        ty={bgProps.current ? bgProps.current.ty : 0}
+        scale={bgProps.current ? bgProps.current.scale : 1}/>
+      </div>
       <DevPanel layout={appLayout} enabled={false}></DevPanel>
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} 
@@ -176,7 +213,7 @@ export function App() {
         />  
         <SoundBoard layout={appLayout} ref={soundBoardDomRef} volume={50}/>
       </div>
-      <Filters />
+      
     </>
   )
 }

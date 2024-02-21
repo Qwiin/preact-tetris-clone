@@ -8,6 +8,7 @@
 @import 'css/tool-tip.css';
 @import 'css/checkbox.css';
 @import 'css/cell-colors.css';
+/* @import 'effects/BackgroundSvg.svg'; */
 
 
 *, :root, body, div {
@@ -36,31 +37,52 @@
   touch-action:manipulation;
 }
 
-body[data-layout="desktop"] {
-  /* min-width: 1000px; */
-  overflow: hidden;
-  
-  background:
-    url(/src/assets/bg_cave18_hd.webp),
-    /* url("/src/assets/tetris_bg_intergalactic09.webp"),  */
-    /* url("/src/assets/radial_bg_blend.avif"); */
-    radial-gradient(circle at center, #311F, #9999, #44222299, #334c, #313c);
-  /* background-repeat: repeat; */
-  background-size: auto 140%;
-  background-position:35% 10%;
-  
-  
-  /* background-blend-mode: color-dodge; */
-  /* background-blend-mode: overlay; */
+#bg {
+  position: absolute;
+  top:0;
+  z-index: -10;
+  width: 100%;
+}
+#BackgroundSVG2 {
+  height: 100vh;
+  width: 100vw;
+  /* left: calc(50vw - 50%); */
 
-  /* background: url(/src/assets/bg_cave18_hd.webp), radial-gradient(circle at center, #311F, #9999, #4229, #334c, #313c); */
-  /* background-repeat: no-repeat; */
-  /* back */
-  
-  background-blend-mode: multiply;
+  z-index: -10;
+
+  /* style="position: absolute; width: 100vw; height: 100vh; overflow: hidden; z-index:-10; padding:2rem;" */
 }
 
-body[data-layout="mobile"] {
+body[data-layout="desktop"] #bg{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  /* min-width: 1000px; */
+    overflow: hidden;
+    
+    /* opacity: 0.5; */
+    
+      /* url("/src/assets/tetris_bg_intergalactic09.webp"),  */
+      /* url("/src/assets/radial_bg_blend.avif"); */
+      /* radial-gradient(circle at center, #311F, #9999, #44222299, #334c, #313c); */
+    /* background-repeat: repeat; */
+    /* background-size: auto; */
+    /* background-position:35% 10%; */
+    /* filter: url(#simpleglitchfilter); */
+    
+    
+    /* background-blend-mode: color-dodge; */
+    /* background-blend-mode: overlay; */
+
+    /* background: url(/src/assets/bg_cave18_hd.webp), radial-gradient(circle at center, #311F, #9999, #4229, #334c, #313c); */
+    /* background-repeat: no-repeat; */
+    /* back */
+    
+    background-blend-mode: multiply;
+  
+}
+
+body[data-layout="mobile"] #bg {
   /* min-width: 1000px; */
   overflow: hidden;
   
@@ -69,11 +91,14 @@ body[data-layout="mobile"] {
   
   background-size: 180vh auto;
   background-position: 64% 22%; */
-  background: url(/src/assets/bg_cave18_hd.webp), radial-gradient(circle at center, #311F, #9999, #4229, #334c, #313c);
+  /* background-image: url(/src/effects/BackgroundSvg.svg); */
+  /* , radial-gradient(circle at center, #311F, #9999, #4229, #334c, #313c) */
+  ;
   
   background-size: 180vh auto;
   background-position: 40% 0%;
   
+  /* filter: url(#simpleglitchfilter); */
   /* background-blend-mode: color-dodge; */
   
 }
