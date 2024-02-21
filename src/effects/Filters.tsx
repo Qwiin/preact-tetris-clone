@@ -8,8 +8,8 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
     <>
     <svg ref={ref} id="BackgroundSVG2" xmlns="http://www.w3.org/2000/svg" version="1.1">
       <defs>
-        <filter id="WaveFilter">
-          <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01 0.04" seed="13" numOctaves="2" />
+        <filter id="WaveFilterQuality">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01 0.04" seed="13" numOctaves="2" />
           <animate xlinkHref="#feTurb" attributeName="baseFrequency" 
           dur="20s" 
           keyTimes="0;1"
@@ -19,10 +19,12 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
           repeatCount="indefinite"/>
           <feDisplacementMap id="feDisp" in="SourceGraphic" scale="5" />
         </filter>
-        <filter id="WaveFilter2">
+        <filter id="WaveFilterQuality2">
           <feTurbulence id="feTurb2" type="fractalNoise" baseFrequency="0.02 0.06" seed="7" numOctaves="2" />
           <animate xlinkHref="#feTurb2" 
           attributeName="baseFrequency" 
+
+
 
           dur="20s" 
           keyTimes="0;1" 
@@ -30,6 +32,37 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
           0.02 0.12;
           0.04 0.06" repeatCount="indefinite"/>
           <feDisplacementMap id="feDisp" in="SourceGraphic" scale="8" />
+        </filter>
+        <filter id="WaveFilter">
+          <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01 0.1" seed="13" numOctaves="2" result="turbBase"/>
+
+          <feColorMatrix in="turbBase" in2="SourceGraphic" type="hueRotate" values="0" result="waves">
+            <animate attributeName="values" from="0" to="360" dur="7s" repeatCount="indefinite"/>
+          </feColorMatrix>
+
+          <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.017 0.14" seed="5" numOctaves="2" result="turbBase2"/>
+          <feColorMatrix in="turbBase2" in2="SourceGraphic" type="hueRotate" values="0" result="waves2">
+            <animate attributeName="values" from="-180" to="180" dur="11s" repeatCount="indefinite"/>
+          </feColorMatrix>
+          <feDisplacementMap id="feDisp" in="waves" in2="waves2" scale="100" result="displacementMap"  xChannelSelector="R" yChannelSelector="B"/>
+          <feComposite operator="in" in="displacementMap" in2="SourceGraphic" result="noiseMapMonochrome"/>
+          <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
+        </filter>
+        <filter id="WaveFilter2">
+          <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01 0.1" seed="7" numOctaves="2" result="turbBase"/>
+          
+          <feColorMatrix in="turbBase" in2="SourceGraphic" type="hueRotate" values="0" result="waves">
+            <animate attributeName="values" from="0" to="360" dur="7s" repeatCount="indefinite"/>
+          </feColorMatrix>
+
+          <feTurbulence id="feTurb2" type="fractalNoise" baseFrequency="0.005 0.07" seed="19" numOctaves="2" result="turbBase2"/>
+          <feColorMatrix in="turbBase2" in2="SourceGraphic" type="hueRotate" values="0" result="waves2">
+            <animate attributeName="values" from="-180" to="180" dur="11s" repeatCount="indefinite"/>
+          </feColorMatrix>
+          <feDisplacementMap id="feDisp2" in="waves" in2="waves2" scale="100" result="displacementMap"  xChannelSelector="R" yChannelSelector="B"/>
+          <feComposite operator="in" in="displacementMap" in2="SourceGraphic" result="noiseMapMonochrome"/>
+          <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
+          {/* <feBlend in="SourceGraphic" in2="displacementMap" mode="screen" /> */}
         </filter>
       </defs>
       <g style={{transform: `translate(${props.tx ?? 0}px, ${props.ty ?? 0}px) scale(${props.scale ?? 1})`}}>
