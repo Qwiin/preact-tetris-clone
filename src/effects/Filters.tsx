@@ -1,5 +1,6 @@
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat"
+import imageSrc from "../assets/bg_cave18_hd.webp";
 
 const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>) {
   
@@ -61,9 +62,9 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
           0.14,0.69 0.0,0.7" 
           />
       </mask>
-      <image y="0" x="0" href='../src/assets/bg_cave18_hd.webp' scale={props.scale}></image>
-      <image y="0" x="0" filter="url(#WaveFilter)" mask="url(#myMask)" href='../src/assets/bg_cave18_hd.webp' scale={props.scale}></image>
-      <image y="0" x="0" filter="url(#WaveFilter2)" mask="url(#myMask2)" href='../src/assets/bg_cave18_hd.webp' scale={props.scale}></image>
+      <image y="0" x="0" href={imageSrc} scale={props.scale}></image>
+      <image y="0" x="0" filter="url(#WaveFilter)" mask="url(#myMask)" href={imageSrc} scale={props.scale}></image>
+      <image y="0" x="0" filter="url(#WaveFilter2)" mask="url(#myMask2)" href={imageSrc} scale={props.scale}></image>
       </g>
   </svg>
     <svg id="SVG_Filters" xmlns="http://www.w3.org/2000/svg" version="1.1"  
