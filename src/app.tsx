@@ -27,9 +27,6 @@ const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
 
 export function App() {
 
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
-  const soundBoardDomRef:Ref<HTMLDivElement> = useRef(null);
-  const actionQue: Ref<GameAction[]> = useRef([]);
   const [theme, setTheme] = useState(1);
   const resizeTimeout: Ref<NodeJS.Timeout> = useRef(null);
 
@@ -152,6 +149,42 @@ export function App() {
       console.log(`scale(${newAppScale})`);
   }
 
+  
+
+  return (
+    <>
+      <div ref={bgRef} id="bg">
+        <Filters ref={bgSvgRef} 
+        tx={bgProps.current ? bgProps.current.tx : 0}
+        ty={bgProps.current ? bgProps.current.ty : 0}
+        scale={bgProps.current ? bgProps.current.scale : 1}/>
+      </div>
+      <DevPanel layout={appLayout} enabled={false}></DevPanel>
+      <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
+        data-theme={theme} 
+        data-layout={appLayout}
+        data-app-scale={appScale}
+        // style={{
+        //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
+        // }}
+        >
+        <div id="NavHeader" className={`tw-opacity-1`}>
+          <h1 className="tw-m-0 tw-py-2 tw-font-thin game-title">TETRIS</h1>
+        </div>
+
+        <GameContainer layout={appLayout}/>
+      </div>
+      
+    </>
+  )
+}
+
+export const GameContainer = (props: any) => {
+
+  const actionQue: Ref<GameAction[]> = useRef([]);
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const soundBoardDomRef:Ref<HTMLDivElement> = useRef(null);
+
   const actionCallback = (a: GameAction) => {
     
     if (a.text || a.subtext || a.toast) {
@@ -175,28 +208,12 @@ export function App() {
 
   return (
     <>
-      <div ref={bgRef} id="bg">
-        <Filters ref={bgSvgRef} 
-        tx={bgProps.current ? bgProps.current.tx : 0}
-        ty={bgProps.current ? bgProps.current.ty : 0}
-        scale={bgProps.current ? bgProps.current.scale : 1}/>
-      </div>
-      <DevPanel layout={appLayout} enabled={false}></DevPanel>
-      <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
-        data-theme={theme} 
-        data-layout={appLayout}
-        data-app-scale={appScale}
-        // style={{
-        //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
-        // }}
-        >
-        <div id="NavHeader" className={`tw-opacity-1`}>
-          <h1 className="tw-m-0 tw-py-2 tw-font-thin game-title">TETRIS</h1>
-        </div>
-
-        {/* @ts-expect-error Preact Component */}
-        <Game init={true} actionCallback={actionCallback} layout={appLayout} startingLevel={1}/>
-        <ActionToast layout={appLayout}
+      {/* @ts-expect-error Preact Component */}
+      <Game init={true} 
+        actionCallback={actionCallback} 
+        layout={props.layout} 
+        startingLevel={1} />
+      <ActionToast layout={props.layout}
         actions={actionQue.current || []} 
         toastComplete={(id?: string)=>{
           if(!actionQue.current || !id) {
@@ -209,11 +226,9 @@ export function App() {
             }
           }
           // console.log("toastComplete");
-        }}
-        />  
-        <SoundBoard layout={appLayout} ref={soundBoardDomRef} volume={50}/>
-      </div>
-      
+        }}/>  
+      <SoundBoard layout={props.layout} ref={soundBoardDomRef} volume={50}/>
     </>
-  )
+
+  );
 }
