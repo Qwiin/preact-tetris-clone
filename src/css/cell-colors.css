@@ -131,15 +131,15 @@
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
   saturate(var(--cell-saturate))
-  brightness(calc(var(--cell-brightness) * 0.9));
+  brightness(calc(var(--cell-brightness) * 1.05));
 }
 .filled-cell.cell-color-2, .filled-cell.cell-color-22 {
   filter: 
   /* url(#sandy1)  */
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
-  saturate(calc(var(--cell-saturate)*1))
-  brightness(calc(var(--cell-brightness)*0.9));
+  saturate(calc(var(--cell-saturate)*0.9))
+  brightness(calc(var(--cell-brightness)*1.1));
 }
 .filled-cell.cell-color-3, .filled-cell.cell-color-33 {
   filter: 
@@ -147,15 +147,15 @@
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
   saturate(var(--cell-saturate))
-  brightness(var(--cell-brightness));
+  brightness(calc(var(--cell-brightness)*1.1));
 }
 .filled-cell.cell-color-4, .filled-cell.cell-color-44 {
   filter: 
   /* url(#sandy3)  */
   contrast(calc(var(--cell-contrast)*1.05))
   blur(var(--cell-blur))
-  saturate(calc(var(--cell-saturate)*1.1))
-  brightness(calc(var(--cell-brightness) * 1.1));
+  saturate(calc(var(--cell-saturate)*1))
+  brightness(calc(var(--cell-brightness) * 1.2));
 }
 .filled-cell.cell-color-5, .filled-cell.cell-color-55 {
   filter: 
@@ -171,7 +171,7 @@
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
   saturate(calc(var(--cell-saturate) * 1))
-  brightness(calc(var(--cell-brightness) * 1));
+  brightness(calc(var(--cell-brightness) * 1.2));
 }
 .filled-cell.cell-color-7, .filled-cell.cell-color-77 {
   filter: 
@@ -179,7 +179,7 @@
   contrast(var(--cell-contrast))
   blur(var(--cell-blur))
   saturate(calc(var(--cell-saturate) * 1))
-  brightness(calc(var(--cell-brightness)));
+  brightness(calc(var(--cell-brightness) * 1.1));
 }
 
 
