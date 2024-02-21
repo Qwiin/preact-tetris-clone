@@ -18,7 +18,7 @@ export default defineConfig({
     preact(),
     copy({flatten: false,
       targets: [
-        { src: "src/**/*.(html|svg|png|jpg|gif|json|mp3|eot|ttf|woff)", dest: "dist" }
+        { src: "src/**/*.(html|svg|png|webp|jpg|gif|json|mp3|eot|ttf|woff)", dest: "dist" }
       ],
     })
   ],
