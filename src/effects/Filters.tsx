@@ -11,13 +11,10 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
         <filter id="WaveFilter">
           <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01 0.04" seed="13" numOctaves="2" />
           <animate xlinkHref="#feTurb" attributeName="baseFrequency" 
-          dur="40s" 
-          keyTimes="0;0.25;0.5;0.75;1"
+          dur="20s" 
+          keyTimes="0;1"
           values="
           0.01 0.08;
-          0.0125 0.07;
-          0.015 0.06;
-          0.0175 0.05;
           0.02 0.04" 
           repeatCount="indefinite"/>
           <feDisplacementMap id="feDisp" in="SourceGraphic" scale="5" />
@@ -26,14 +23,12 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
           <feTurbulence id="feTurb2" type="fractalNoise" baseFrequency="0.02 0.06" seed="7" numOctaves="2" />
           <animate xlinkHref="#feTurb2" 
           attributeName="baseFrequency" 
-          dur="40s" 
-          keyTimes="0;0.25;0.5;0.75;1" 
+
+          dur="20s" 
+          keyTimes="0;1" 
           values="
-          0.02 0.08;
-          0.025 0.07;
-          0.03 0.06;
-          0.035 0.05;
-          0.04 0.04" repeatCount="indefinite"/>
+          0.02 0.12;
+          0.04 0.06" repeatCount="indefinite"/>
           <feDisplacementMap id="feDisp" in="SourceGraphic" scale="8" />
         </filter>
       </defs>
