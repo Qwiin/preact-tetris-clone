@@ -53,7 +53,7 @@
   /* style="position: absolute; width: 100vw; height: 100vh; overflow: hidden; z-index:-10; padding:2rem;" */
 }
 
-body[data-layout="desktop"] #bg{
+body[data-layout="desktop"] #bg {
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -80,6 +80,22 @@ body[data-layout="desktop"] #bg{
     
     background-blend-mode: multiply;
   
+}
+
+@keyframes water-animation {
+  0% { filter: url(#Water0) }
+  12.5% { filter: url(#Water05) }
+  25% { filter: url(#Water1) }
+  37.5% { filter: url(#Water15) }
+  50% { filter: url(#Water2) }
+  67.5% { filter: url(#Water25) }
+  75% { filter: url(#Water3) }
+  87.5% { filter: url(#Water35) }
+  100% { filter: url(#Water4) }
+}
+
+#BackgroundSVG2 .animate-water {
+  animation: water-animation 4s linear 0s infinite;
 }
 
 body[data-layout="mobile"] #bg {

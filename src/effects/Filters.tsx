@@ -2,6 +2,8 @@ import { Ref } from "preact";
 import { forwardRef } from "preact/compat"
 import imageSrc from "../assets/bg_cave18_hd.webp";
 
+const WATER_SCALE:string = "3";
+
 const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>) {
   
   return (
@@ -19,6 +21,35 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
           repeatCount="indefinite"/>
           <feDisplacementMap id="feDisp" in="SourceGraphic" scale="5" />
         </filter>
+
+        <filter id="Water0">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01 0.08" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water05">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01125 0.075" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water1">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.0125 0.07" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water15">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01375 0.065" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water2">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.015 0.06" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water25">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01625 0.055" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water3">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.0175 0.05" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water35">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.01875 0.045" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+        <filter id="Water4">
+        <feTurbulence id="feTurb" type="fractalNoise" baseFrequency="0.02 0.04" seed="13" numOctaves="2" />
+        <feDisplacementMap id="feDisp" in="SourceGraphic" scale={WATER_SCALE} /></filter>
+
         <filter id="WaveFilterQuality2">
           <feTurbulence id="feTurb2" type="fractalNoise" baseFrequency="0.02 0.06" seed="7" numOctaves="2" />
           <animate xlinkHref="#feTurb2" 
@@ -71,13 +102,9 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
         <polygon
           fill="black"
           points="0.0,0.0 1.0,0.0 1.0,0.643 0.66,0.5915 0.6,0.588  0.423,0.588 0.45,0.613 0.31,0.613 0.30,0.627 0.29,0.627 0.167,0.633 0.173,0.657 0.14,0.67 0.0,0.68
-          0.0,0.705
-          0.29,0.68 
-          0.45,0.655 
-          0.6,0.655  
-          1.0,0.7
-          1.0,1.0 
-          0.0,1.0" />
+         
+          " 
+          />
       </mask>
       <mask id="myMask2" maskContentUnits="objectBoundingBox">
         <rect fill="white" x="0" y="0" width="100%" height="100%" />
@@ -87,12 +114,13 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
           0.6,0.65  
           0.45,0.65 
           0.29,0.675
-          0.14,0.69 0.0,0.7" 
+          0.14,0.69 0.0,0.7
+          " 
           />
       </mask>
       <image y="0" x="0" href={imageSrc} scale={props.scale}></image>
-      <image y="0" x="0" filter="url(#WaveFilter)" mask="url(#myMask)" href={imageSrc} scale={props.scale}></image>
-      <image y="0" x="0" filter="url(#WaveFilter2)" mask="url(#myMask2)" href={imageSrc} scale={props.scale}></image>
+      <image className="animate-water" y="0" x="0" filter="url(#Water0)" mask="url(#myMask)" href={imageSrc} scale={props.scale} opacity={0.7}></image>
+      {/* <image className="animate-water" y="0" x="0" filter="url(#Water0)" mask="url(#myMask2)" href={imageSrc} scale={props.scale}></image> */}
       </g>
   </svg>
     <svg id="SVG_Filters" xmlns="http://www.w3.org/2000/svg" version="1.1"  

@@ -1,11 +1,13 @@
 import { useEffect, useReducer, useRef } from "preact/hooks"
 import { AppLayout } from "../BaseTypes";
+import { Ref } from "preact";
 
 const NUM_SAMPLES: number = 10;
 
 export function DevPanel(props:{layout: AppLayout, enabled: boolean}) {
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const samplingInterval: Ref<NodeJS.Timeout> = useRef(null);
 
   const fps = useRef(0);
   // const timestampPrev = useRef(window.performance.now());
@@ -13,14 +15,16 @@ export function DevPanel(props:{layout: AppLayout, enabled: boolean}) {
 
   useEffect(()=>{
     if(props.enabled) {
-          const samplingInterval = setInterval(()=>{
+
+        samplingInterval.current = setInterval(()=>{
           const frameTimes: number[] = [];
           frameAvg(NUM_SAMPLES,frameTimes);
         },2000);
-      
+    }
 
-      return ()=>{
-        clearInterval(samplingInterval);
+    return ()=>{
+      if(samplingInterval.current){
+        clearInterval(samplingInterval.current);
       }
     }
   }, []);
