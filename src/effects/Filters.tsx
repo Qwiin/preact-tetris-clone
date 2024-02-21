@@ -1,6 +1,7 @@
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat"
 import imageSrc from "../assets/bg_cave18_hd.webp";
+import overlaySrc from "../assets/radial_bg_blend.avif";
 
 const WATER_SCALE:string = "3";
 
@@ -95,14 +96,48 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
           <feBlend in="SourceGraphic" in2="noiseMapMonochrome" mode="multiply" />
           {/* <feBlend in="SourceGraphic" in2="displacementMap" mode="screen" /> */}
         </filter>
+        
+        <filter id="BgBlend">
+          <radialGradient id="GradientOverlay">
+            <stop stop-color="#311F" />
+            <stop stop-color="#9999" />
+            <stop stop-color="#44222299" />
+            <stop stop-color="#334C" />
+            <stop stop-color="#313C" />
+          </radialGradient>
+        <feColorMatrix 
+        in="GradientOverlay" 
+        in2="SourceGraphic"
+        
+          type="matrix" 
+          values="1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 0.6 0" 
+          result="overlay"/>
+        {/* <feComposite in="GradientOverlay" in2="SourceGraphic" result="overlayComposite"/> */}
+        <feBlend in="SourceGraphic" in2="GradientOverlay" mode="difference" />
+        </filter>
       </defs>
-      <g style={{transform: `translate(${props.tx ?? 0}px, ${props.ty ?? 0}px) scale(${props.scale ?? 1})`}}>
+      <g style={{filter: "url(#BgBlend)", transform: `translate(${props.tx ?? 0}px, ${props.ty ?? 0}px) scale(${props.scale ?? 1})`}}>
       <mask id="myMask" maskContentUnits="objectBoundingBox">
         <rect fill="white" x="0" y="0" width="100%" height="100%" />
         <polygon
           fill="black"
-          points="0.0,0.0 1.0,0.0 1.0,0.643 0.66,0.5915 0.6,0.588  0.423,0.588 0.45,0.613 0.31,0.613 0.30,0.627 0.29,0.627 0.167,0.633 0.173,0.657 0.14,0.67 0.0,0.68
-         
+          points="0.0,0.0 
+          1.0,0.0 
+          1.0,0.643 
+          0.66,0.5915 
+          0.6,0.588  
+          0.423,0.588 
+          0.45,0.613 
+          0.31,0.613 
+          0.30,0.627 
+          0.29,0.627 
+          0.167,0.633 
+          0.173,0.657 
+          0.14,0.67 
+          0.0,0.68
           " 
           />
       </mask>
@@ -110,15 +145,24 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
         <rect fill="white" x="0" y="0" width="100%" height="100%" />
         <polygon
           fill="black"
-          points="0.0,0.0 1.0,0.0 1.0,0.7 
+          points="0.0,0.0 
+          1.0,0.0 
+          1.0,0.7 
           0.6,0.65  
           0.45,0.65 
           0.29,0.675
-          0.14,0.69 0.0,0.7
+          0.14,0.69
+          0.0,0.7
           " 
           />
       </mask>
-      <image y="0" x="0" href={imageSrc} scale={props.scale}></image>
+      radial-gradient(circle at center, #311F, #9999, #44222299, #334c, #313c);
+
+      
+
+      <image y="0" x="0" href={imageSrc} scale={props.scale} 
+      // filter="url(#BgBlend)"
+      ></image>
       <image className="animate-water" y="0" x="0" filter="url(#Water0)" mask="url(#myMask)" href={imageSrc} scale={props.scale} opacity={0.7}></image>
       {/* <image className="animate-water" y="0" x="0" filter="url(#Water0)" mask="url(#myMask2)" href={imageSrc} scale={props.scale}></image> */}
       </g>
@@ -199,10 +243,13 @@ const Filters = forwardRef( function Filters(props: any, ref:Ref<SVGSVGElement>)
       <filter id="frosted-glass-light" x="0" y="0" width="120%" height="120%">
         {/* <!-- Gaussian Blur for the frosted glass effect --> */}
         
-        <feColorMatrix type="matrix" values=".33 .33 .33 0 0
-          .33 .33 .33 0 0
-          .33 .33 .33 0 0
-          0 0 0 1 0" in="SourceGraphic" result="colormatrix"/>
+        <feColorMatrix type="matrix" 
+        values=".33 .33 .33 0 0
+                .33 .33 .33 0 0
+                .33 .33 .33 0 0
+                  0   0   0 1 0" 
+          in="SourceGraphic" 
+          result="colormatrix"/>
   
         {/* <!-- <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blurred"/> --> */}
         {/* <!-- Specular lighting to simulate light coming from behind --> */}
