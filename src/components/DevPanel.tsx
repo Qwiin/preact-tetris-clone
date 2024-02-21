@@ -50,7 +50,7 @@ export function DevPanel(props:{layout: AppLayout, platform: Platform, enabled: 
   }
 
   const dragHandler = (e:MouseEvent) => {
-    if(!elRef.current){
+    if(!elRef.current || !isMouseDown.current){
       return;
     }
     tx.current = (tx.current ?? 0) + e.movementX;
@@ -58,6 +58,7 @@ export function DevPanel(props:{layout: AppLayout, platform: Platform, enabled: 
     elRef.current.style.transform = `translate(${tx.current}px,${ty.current}px)`;
   }
   const dragEndHandler = () => {  
+    isMouseDown.current = false;
     window.removeEventListener("mousemove", dragHandler);
     window.removeEventListener("mouseup", dragEndHandler);
   }
@@ -67,6 +68,7 @@ export function DevPanel(props:{layout: AppLayout, platform: Platform, enabled: 
     {props.enabled && 
       <div ref={elRef} data-layout={props.layout} data-platform={props.platform}
         onMouseDown={()=>{
+          isMouseDown.current = true;
           window.addEventListener("mouseup", dragEndHandler);
           window.addEventListener("mousemove", dragHandler);
         }}
