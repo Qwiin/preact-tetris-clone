@@ -355,7 +355,7 @@ body[data-layout="mobile"] #bg {
   padding-left: 0.25rem;
   font-family: 'Brick3DRegular';
   color:aliceblue;
-  text-shadow: rgba(0,128,196,0.9) 0rem 0.1rem 0.7rem;
+  text-shadow: rgba(0,0,0,0.9) 0.0625rem 0.0625rem 0.1rem;
   letter-spacing: 0.15em;
   opacity: 0.85;
 }
@@ -374,7 +374,9 @@ body[data-layout="mobile"] #bg {
   text-align: left;
   font-family: "Premier2019";
   transform: scaleX(1.5);
-  font-size: 1.3rem;
+  font-size: 1.2rem;
+  letter-spacing: 0.05rem;
+  text-shadow: rgba(0,0,0,0.9) 0.0625rem 0.0625rem 0.1rem;
 }
 
 .digital {
@@ -711,7 +713,7 @@ Keyboard Controls Map UI
   & .game-control-button {
     /* border: 1px rgba(255,255,255,0.6) solid; */
     border: 0.0625rem rgba(148, 163, 184, 0.8) solid;
-    background-color: rgb(26, 26, 26, 1);
+    background-color: rgb(26, 26, 26, 0.7);
     color: rgba(255,255,255,0.8);
     border-radius: 0.375rem;
     height: 2rem;
@@ -1082,7 +1084,7 @@ div[data-layout="mobile"] {
       /* background-color: rgb(26, 26, 26, 0.8); */
       color: rgba(255,255,255,0.8);
       box-shadow: inset 0rem 0.0rem 0 0.03125rem rgb(120 135 150 / 0.8);
-      background-color: rgb(17 24 39 / 1);
+      background-color: rgb(17 24 39 / 0.7);
       /* border-radius: 0.375rem; */
       border-radius: 30%;
       width: 2rem;
