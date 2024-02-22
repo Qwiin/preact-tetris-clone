@@ -27,7 +27,7 @@ Performance:
 import { Signal, signal } from '@preact/signals';
 
 import { Ref } from 'preact';
-import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { newUID } from '../utils/AppUtil';
@@ -1465,38 +1465,39 @@ const Game = (props: GameProps) => {
     
   }, [tick.value]);
 
-  const renderBoard = () => {
-    if(!board.current){
-      return
-    };
+  
+  // const renderBoard = () => {
+  //   if(!board.current){
+  //     return
+  //   };
 
-    const rows = board.current;
+  //   const rows = board.current;
     
-    return rows.map((row, index) => {
-      return (
-        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
+  //   return rows.map((row, index) => {
+  //     return (
+  //       <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
           
-          { 
-            row.map((cellValue, colIndex) => {
+  //         { 
+  //           row.map((cellValue, colIndex) => {
 
-            let isGhost = cellValue < -10;
-            // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
-            let cellColor =
-              cellValue === 0
-                ? 'empty-cell tw-border-gray-900'
-                : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
-            return (
-              <div
-                key={`c${colIndex}`}
-                className={`board-cell ${cellColor}`}
-              ></div>
-            );
-          })}
-        </div>
-      );
-    });
+  //           let isGhost = cellValue < -10;
+  //           // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
+  //           let cellColor =
+  //             cellValue === 0
+  //               ? 'empty-cell tw-border-gray-900'
+  //               : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
+  //           return (
+  //             <div
+  //               key={`c${colIndex}`}
+  //               className={`board-cell ${cellColor}`}
+  //             ></div>
+  //           );
+  //         })}
+  //       </div>
+  //     );
+  //   });
 
-  };
+  // };
 
   // const menuButtonCallback = (action: MenuButtonAction) => {
   function menuButtonCallback(action: MenuButtonAction) {
@@ -1583,9 +1584,8 @@ const Game = (props: GameProps) => {
                   }}/>
               }
               
-              <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
-                {renderBoard()}
-              </div>
+              <BoardGrid board={board.current} activePiece={activePiece.current}></BoardGrid>
+              <ActivePieceLayer activePiece={activePiece.current}/>
 
               { ( gameover || paused.current ) &&
                 <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
@@ -1624,3 +1624,143 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
+
+interface ActivePieceLayerProps {
+  activePiece: ActivePiece | null;
+}
+const ActivePieceLayer = (props: ActivePieceLayerProps) => {
+
+  // console.time('filter piece');
+  const piece = useMemo(
+    () => {
+      // console.log("... piece");
+      return {
+        coords: props.activePiece?.coords,
+        coordsGhost: props.activePiece?.coordsGhost,
+        cellValue: props.activePiece?.cellValue,
+        ghostValue: -(props.activePiece?.cellValue ?? 0), 
+      }
+    },
+    [props.activePiece, props.activePiece?.x,props.activePiece?.y,props.activePiece?.rotation]
+  );
+  // console.timeEnd('filter piece');
+
+  return (
+    <>
+    { piece &&
+      <div className="board-grid tw-absolute tw-bg-green-500 tw-bg-opacity-35 tw-top-0">
+        { piece.coords &&
+          <>
+            { 
+              piece.coords.map((coord: number[]) => {
+                let cellClasses = `cell-color-${piece.cellValue} filled-cell`;
+                return (
+                  <div key={`r${coord[0]}c${coord[1]}`}
+                      className={`board-cell ${cellClasses}`}
+                      style={{
+                        position: "absolute",
+                        top: 0, 
+                        left: 0, 
+                        transform: `translate(${coord[1]}rem,${coord[0]-4}rem)`
+                      }}
+                      ></div>
+                );
+              })
+            }
+          </>
+        }
+        { piece.coordsGhost &&
+          <>
+            { 
+              piece.coordsGhost.map((coord: number[]) => {
+                let cellClasses = `cell-color-${piece.ghostValue} ghost-cell`;
+                return (
+                  <div key={`r${coord[0]}c${coord[1]}`}
+                  className={`board-cell ${cellClasses}`}
+                  style={{
+                    position: "absolute",
+                    top: 0, 
+                    left: 0, 
+                    transform: `translate(${coord[1]}rem,${coord[0]-4}rem)`
+                  }}
+                  ></div>
+                );
+              })
+            }
+          </>
+        }
+      </div>
+    }
+    </>
+  );
+}
+
+interface BoardGridProps {
+  board: number[][] | null;
+  clearedRows?: number[];
+  activePiece: ActivePiece | null;
+}
+const BoardGrid = (props:BoardGridProps) => {
+
+  const filterSetPieces = (board: number[][] | null) => {
+
+    return board?.map((row: number[])=>{
+      return row.map((cellValue: number)=>{
+        if(cellValue < 10 && cellValue >= 0) {
+          return cellValue;
+        }
+        else {
+          return 0;
+        }
+      })
+    });
+  }
+
+  // console.time('filter board');
+  const setPieces = useMemo(
+    () => filterSetPieces(props.board),
+    [props.activePiece]
+  );
+  // console.timeEnd('filter board');
+  // ...
+
+  const renderBoard = () => {
+
+    const rows = setPieces || [];
+
+    return rows.map((row, index) => {
+      return (
+        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(props.clearedRows && props.clearedRows.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
+          
+          { 
+            row.map((cellValue, colIndex) => {
+
+            let isGhost = cellValue < -10;
+            // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
+            let cellColor =
+              cellValue === 0
+                ? 'empty-cell tw-border-gray-900'
+                : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
+            return (
+              <div
+                key={`c${colIndex}`}
+                className={`board-cell ${cellColor}`}
+              ></div>
+            );
+          })}
+        </div>
+      );
+    });
+
+  };
+
+  return (
+    <>
+    { setPieces &&    
+    <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
+      {renderBoard()}
+    </div>
+    }
+    </>
+  )
+}

@@ -144,7 +144,7 @@ export function App() {
 
   return (
     <>
-      <DevPanel layout={appLayout} enabled={false}></DevPanel>
+      <DevPanel layout={appLayout} enabled={true}></DevPanel>
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} 
         data-layout={appLayout}
