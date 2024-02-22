@@ -1,9 +1,9 @@
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat"
-import imageSrc from "../assets/bg_cave18_hd.webp";
+import imageSrc from "../assets/bg_cave18_768.png";
 import { BaseComponentProps, PLATFORM_DESKTOP } from "../BaseTypes";
 
-const WATER_SCALE:string = "3";
+const WATER_SCALE:string = "6";
 
 const BG_OFFSET_X:number = 0;
 const BG_OFFSET_Y:number = 0;
@@ -172,9 +172,9 @@ const Filters = forwardRef( function Filters(props: Props, ref:Ref<SVGSVGElement
       
 
       <image y="0" x="0" href={imageSrc} scale={props.scale} 
-      // filter="url(#BgBlend)"
+      // filter="url(#WaveFilter)"
       ></image>
-      <image className="animate-water" y="0" x="0" filter="url(#Water0)" mask="url(#myMask)" href={imageSrc} scale={props.scale} opacity={0.7}></image>
+      <image className="animate-water" y="0" x="0" filter="url(#WaveFilterQuality)" mask="url(#myMask)" href={imageSrc} scale={props.scale} opacity={0.7}></image>
       {/* <image className="animate-water" y="0" x="0" filter="url(#Water0)" mask="url(#myMask2)" href={imageSrc} scale={props.scale}></image> */}
       </g>
   </svg>

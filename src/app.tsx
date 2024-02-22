@@ -23,7 +23,7 @@ const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 465;
 const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 520;
 
-const BG_OFFSET_X_PCT: number = 5;
+const BG_OFFSET_X_PCT: number = 15;
 const BG_OFFSET_Y_PCT: number = 0;
 
 const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
@@ -93,16 +93,21 @@ export function App() {
         bgImgSize.current = {width, height}
       }
 
-      let widthScale = window.innerWidth / (bgImgSize.current.width * (1 - (Math.abs(BG_OFFSET_X_PCT)/100)));
-      let heightScale = window.innerHeight / (bgImgSize.current.height * (1 - (Math.abs(BG_OFFSET_Y_PCT)/100)));
+      let widthScale = window.innerWidth / (bgImgSize.current.width * (1 - (2*Math.abs(BG_OFFSET_X_PCT)/100)));
+      let heightScale = window.innerHeight / (bgImgSize.current.height * (1 - (2*Math.abs(BG_OFFSET_Y_PCT)/100)));
 
-      let bgScale = ((widthScale / heightScale) < 1) ? heightScale : widthScale;
+      let bgScale = ((heightScale) > widthScale) 
+        ? heightScale * Math.max(widthScale,1) 
+        // ? heightScale
+        : widthScale * Math.max(heightScale,1);
+        // : widthScale;
+        
 
       let tx = (window.innerWidth - bgImgSize.current.width * bgScale) / 2 + (bgImgSize.current.width * BG_OFFSET_X_PCT/100);
       let ty = (window.innerHeight - bgImgSize.current.height * bgScale) / 2 + (bgImgSize.current.height * BG_OFFSET_Y_PCT/100);
 
-      bgSvgRef.current.style.width = bgImgSize.current.width + "px";
-      bgSvgRef.current.style.height = bgImgSize.current.height + "px";
+      bgSvgRef.current.style.width = bgImgSize.current.width * bgScale + "px";
+      bgSvgRef.current.style.height = bgImgSize.current.height * bgScale + "px";
       bgProps.current = {
         scale: bgScale, tx, ty
       }

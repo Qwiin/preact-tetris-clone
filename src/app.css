@@ -107,7 +107,7 @@ body[data-layout="landscape"] #bg {
 }
 
 #BackgroundSVG2 .animate-water {
-  animation: water-animation 4s linear 0s infinite;
+  /* animation: water-animation 4s linear 0s infinite; */
 }
 
 body[data-layout="portrait"] #bg {
