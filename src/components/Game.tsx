@@ -27,7 +27,7 @@ Performance:
 import { Signal, signal } from '@preact/signals';
 
 import { Ref } from 'preact';
-import { useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { newUID } from '../utils/AppUtil';
@@ -38,6 +38,7 @@ import { BoardBackground } from './BoardBackground';
 import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
+import { memo } from 'preact/compat';
 
 
 const PIECE_QUE_LENGTH: number = 5;
@@ -1068,7 +1069,7 @@ const Game = (props: GameProps) => {
       return {xStart, yStart};
   }
 
-  const keydownHandler = (e:any) => {
+  const keydownHandler = useCallback((e:any) => {
     
     if(gameoverRef.current === true || !board.current) {
       // currently, no keyboard input should be processed if gameover (or board ref is null)
@@ -1243,7 +1244,7 @@ const Game = (props: GameProps) => {
         updatePosition();
         break;
     }
-  }
+  }, []);
 
   const initRefs = () => {
 
@@ -1519,6 +1520,76 @@ const Game = (props: GameProps) => {
     }
   }
 
+  const filterSetPieces = (board: number[][] | null) => {
+
+    return board?.map((row: number[])=>{
+      return row.map((cellValue: number)=>{
+        if(cellValue < 10 && cellValue >= 0) {
+          return cellValue;
+        }
+        else {
+          return 0;
+        }
+      })
+    });
+  }
+
+  // console.time('filter board');
+  const boardGridParams = useMemo(
+    () => {
+      // console.log("update board memo");
+      return {
+        board: filterSetPieces(board.current) ?? null,
+        clearedRows: clearedRows.current ?? null,
+        activePiece: activePiece.current ?? null
+      }
+    },
+    [activePiece.current]
+  );
+  // console.timeEnd('filter board');
+  
+
+  const pieceParams = useMemo(
+    () => {
+      const piece = activePiece.current;
+      if(!piece) {
+        return {
+          coords: [],
+          coordsGhost: [],
+          cellValue: 0,
+          ghostValue: 0, 
+        }
+      }
+
+      const coords = piece.coords ?? [];
+
+      // if remove ghost coords that overlap
+      const coordsGhost = piece.coordsGhost.filter(
+        (coordGhost:number[]) => {
+          for(let i=0; i<coords.length; i++) {
+            if(coords[i][0] === coordGhost[0] && coords[i][1] === coordGhost[1]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      ) ?? [];
+
+      return {
+        coords,
+        coordsGhost,
+        cellValue: piece.cellValue,
+        ghostValue: -(piece.cellValue ?? 0), 
+      }
+    },
+    [
+     activePiece.current, 
+     activePiece.current?.x, 
+     activePiece.current?.y,
+     activePiece.current?.rotation
+    ]
+  );
+
   return (
     <div data-layout={props.layout} className="panels-container">
       
@@ -1584,8 +1655,8 @@ const Game = (props: GameProps) => {
                   }}/>
               }
               
-              <BoardGrid board={board.current} activePiece={activePiece.current}></BoardGrid>
-              <ActivePieceLayer activePiece={activePiece.current}/>
+              <BoardGrid params={boardGridParams}></BoardGrid>
+              <ActivePieceLayer params={pieceParams}/>
 
               { ( gameover || paused.current ) &&
                 <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
@@ -1625,49 +1696,30 @@ const Game = (props: GameProps) => {
 
 export default Game;
 
-interface ActivePieceLayerProps {
-  activePiece: ActivePiece | null;
+interface ActivePieceParams {
+  coords: number[][],
+  coordsGhost: number[][],
+  cellValue: number,
+  ghostValue: number, 
 }
-const ActivePieceLayer = (props: ActivePieceLayerProps) => {
+interface ActivePieceProps {
+  params: ActivePieceParams
+}
+const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps){
 
-  // console.time('filter piece');
-  const piece = useMemo(
-    () => {
-      
-      const coords = props.activePiece?.coords ?? [];
+  const {params} = props;
 
-      // if remove ghost coords that overlap
-      const coordsGhost = props.activePiece?.coordsGhost.filter(
-        (coordGhost:number[]) => {
-          for(let i=0; i<coords.length; i++) {
-            if(coords[i][0] === coordGhost[0] && coords[i][1] === coordGhost[1]) {
-              return false;
-            }
-          }
-          return true;
-        }
-      ) ?? [];
-
-      return {
-        coords,
-        coordsGhost,
-        cellValue: props.activePiece?.cellValue,
-        ghostValue: -(props.activePiece?.cellValue ?? 0), 
-      }
-    },
-    [props.activePiece, props.activePiece?.x,props.activePiece?.y,props.activePiece?.rotation]
-  );
-  // console.timeEnd('filter piece');
+  console.log("active piece rendered");
 
   return (
     <>
-    { piece &&
+    { params &&
       <div className="board-grid tw-absolute tw-bg-green-500 tw-bg-opacity-35 tw-top-0">
-        { piece.coords &&
+        { params.coords &&
           <>
             { 
-              piece.coords.map((coord: number[]) => {
-                let cellClasses = `cell-color-${piece.cellValue} filled-cell`;
+              params.coords.map((coord: number[]) => {
+                let cellClasses = `cell-color-${params.cellValue} filled-cell`;
                 return (
                   <div key={`r${coord[0]}c${coord[1]}`}
                       className={`board-cell ${cellClasses}`}
@@ -1683,11 +1735,11 @@ const ActivePieceLayer = (props: ActivePieceLayerProps) => {
             }
           </>
         }
-        { piece.coordsGhost &&
+        { params.coordsGhost &&
           <>
             { 
-              piece.coordsGhost.map((coord: number[]) => {
-                let cellClasses = `cell-color-${piece.ghostValue} ghost-cell`;
+              params.coordsGhost.map((coord: number[]) => {
+                let cellClasses = `cell-color-${params.ghostValue} ghost-cell`;
                 return (
                   <div key={`r${coord[0]}c${coord[1]}`}
                   className={`board-cell ${cellClasses}`}
@@ -1707,50 +1759,33 @@ const ActivePieceLayer = (props: ActivePieceLayerProps) => {
     }
     </>
   );
-}
+});
 
 interface BoardGridProps {
-  board: number[][] | null;
-  clearedRows?: number[];
-  activePiece: ActivePiece | null;
-}
-const BoardGrid = (props:BoardGridProps) => {
-
-  const filterSetPieces = (board: number[][] | null) => {
-
-    return board?.map((row: number[])=>{
-      return row.map((cellValue: number)=>{
-        if(cellValue < 10 && cellValue >= 0) {
-          return cellValue;
-        }
-        else {
-          return 0;
-        }
-      })
-    });
+  params: {
+    board: number[][] | null;
+    clearedRows?: number[] | null;
+    activePiece: ActivePiece | null;
   }
+}
+const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
 
-  // console.time('filter board');
-  const setPieces = useMemo(
-    () => filterSetPieces(props.board),
-    [props.activePiece]
-  );
-  // console.timeEnd('filter board');
-  // ...
+  const { params } = props;
+
+  // console.log("render set pieces");
 
   const renderBoard = () => {
 
-    const rows = setPieces || [];
+    const rows = params.board || [];
 
     return rows.map((row, index) => {
       return (
-        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(props.clearedRows && props.clearedRows.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
+        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(params.clearedRows && params.clearedRows.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
           
           { 
             row.map((cellValue, colIndex) => {
 
             let isGhost = cellValue < -10;
-            // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
             let cellColor =
               cellValue === 0
                 ? 'empty-cell tw-border-gray-900'
@@ -1770,11 +1805,11 @@ const BoardGrid = (props:BoardGridProps) => {
 
   return (
     <>
-    { setPieces &&    
+    { params.board &&    
     <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
       {renderBoard()}
     </div>
     }
     </>
   )
-}
+});
