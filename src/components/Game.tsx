@@ -1633,10 +1633,24 @@ const ActivePieceLayer = (props: ActivePieceLayerProps) => {
   // console.time('filter piece');
   const piece = useMemo(
     () => {
-      // console.log("... piece");
+      
+      const coords = props.activePiece?.coords ?? [];
+
+      // if remove ghost coords that overlap
+      const coordsGhost = props.activePiece?.coordsGhost.filter(
+        (coordGhost:number[]) => {
+          for(let i=0; i<coords.length; i++) {
+            if(coords[i][0] === coordGhost[0] && coords[i][1] === coordGhost[1]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      ) ?? [];
+
       return {
-        coords: props.activePiece?.coords,
-        coordsGhost: props.activePiece?.coordsGhost,
+        coords,
+        coordsGhost,
         cellValue: props.activePiece?.cellValue,
         ghostValue: -(props.activePiece?.cellValue ?? 0), 
       }
