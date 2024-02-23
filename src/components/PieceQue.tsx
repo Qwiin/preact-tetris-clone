@@ -35,18 +35,6 @@ const defaultPropsPieceQue: PieceQueProps = {
 
 export function PieceQue(props: PieceQueProps) {
 
-  // const piecesPrev: Ref<PieceQueItem[]> = useRef([]);
-
-  // useEffect(()=>{
-
-  //   if(props.pieces && (piecesPrev.current && piecesPrev.current[0] !== props.pieces[0])) {
-  //     if(!piecesPrev.current) {piecesPrev.current = [];}
-  //     piecesPrev.current.length = 0;
-  //     piecesPrev.current.push(...props.pieces);
-  //     console.log({props});
-  //   }
-  // });
-
   return (
     <>
       <div id={props.id} data-layout={props.layout} data-platform={props.platform} className={`piece-que-container ${props.position === "left" ? "hold-que" : ""}`} 
@@ -105,7 +93,11 @@ export function PieceQue(props: PieceQueProps) {
                               <>
                                 <div
                                   className={`board-cell ${cellColor} tw-box-border`}
-                                  style={{ borderStyle: (cellValue === 0 ? 'none' : 'outset') }}
+                                  style={{ 
+                                    display: "block",
+                                    position: "relative",
+                                    borderStyle: (cellValue === 0 ? 'none' : 'outset')
+                                  }}
                                 ></div>
                               </>
                             );

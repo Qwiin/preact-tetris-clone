@@ -8,9 +8,9 @@ Where toast items are positioned from
   width: 22rem;
   max-width: 22rem;
   height: 3.5rem;
+  z-index: 3500;
 
   &[data-layout="portrait"] {
-    z-index: 3500;
     top: 5rem;
 
     & .toast-combo {
