@@ -96,7 +96,7 @@ export function PieceQue(props: PieceQueProps) {
                       
                       <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length * 4}`}>
                         {
-                          row.map((cellValue: number)=>{
+                          row.map((cellValue: number, index: number)=>{
                             let cellColor: string = (cellValue !== 0)
                                 ? `filled-cell cell-color-${cellValue}`
                                 : 'tw-bg-transparent'
@@ -104,7 +104,11 @@ export function PieceQue(props: PieceQueProps) {
                               <>
                                 <div
                                   className={`board-cell ${cellColor} tw-box-border`}
-                                  style={{ borderStyle: (cellValue === 0 ? 'none' : 'outset') }}
+                                  style={{ 
+                                    display: "block",
+                                    position: "relative",
+                                    borderStyle: (cellValue === 0 ? 'none' : 'outset')
+                                  }}
                                 ></div>
                               </>
                             );

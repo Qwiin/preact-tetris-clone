@@ -1774,7 +1774,7 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
 
   const { params } = props;
 
-  // console.log("render set pieces");
+  console.log("render set pieces");
 
   const wereLinesCleared = (params.clearedRows?.length ?? 0) > 0;
 
@@ -1816,11 +1816,8 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
 
   return (
     <div key={`r${params.index}`} 
-         className={`tw-box-border`}
-         style={{
-          position:"absolute",
-          top:0, left: 0, 
-          transform: `translateY(${params.index}rem)`}}>
+         className="board-row"
+         style={{transform: `translateY(${params.index}rem)`}}>
     
     { params.row.map((cellValue, colIndex) => {
 
@@ -1828,14 +1825,8 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
           return (
             <div data-coord={`r${params.index}c${colIndex}`}
                   key={"c" + colIndex}
-                  className={`empty-cell`}
-                  style={{
-                  position: "absolute",
-                  opacity:0,
-                  top: 0,
-                  left: 0,
-                  transform: `translateX(${colIndex}rem)`
-                  }}
+                  className={`board-cell empty-cell`}
+                  style={{transform: `translateX(${colIndex}rem)`}}
             ></div>
           );
         }
@@ -1845,12 +1836,7 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
           <div data-coord={`r${params.index}c${colIndex}`}
                 key={"c" + colIndex}
                 className={`board-cell filled-cell ${cellColor}`}
-                style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                transform: `translateX(${colIndex}rem)`
-                }}
+                style={{transform: `translateX(${colIndex}rem)`}}
           ></div>
         );
       })

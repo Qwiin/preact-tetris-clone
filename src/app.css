@@ -713,7 +713,7 @@ Keyboard Controls Map UI
   height: 24rem;
   width: 10rem;
   background-color: #0000;
-  display: flex;
+  display: block;
   flex-direction: column;
   gap: none;
   box-sizing: content-box;
