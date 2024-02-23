@@ -1716,7 +1716,7 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
   return (
     <>
     { params &&
-      <div className="board-grid tw-absolute tw-bg-green-500 tw-bg-opacity-35 tw-top-0">
+      <div className="board-grid-layer-0 tw-absolute tw-top-0">
         { params.coords &&
           <>
             { 

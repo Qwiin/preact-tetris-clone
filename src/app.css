@@ -709,6 +709,7 @@ Keyboard Controls Map UI
 }
 
 .board-grid {
+  z-index:3000;
   height: 24rem;
   width: 10rem;
   background-color: #0000;
