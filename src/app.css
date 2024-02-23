@@ -824,6 +824,9 @@ Keyboard Controls Map UI
   width: 21rem;
 }
 
+.pause-overlay {
+  z-index: 3600;
+}
 
 .board-background {
   position: absolute;

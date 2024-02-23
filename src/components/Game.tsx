@@ -1661,7 +1661,7 @@ const Game = (props: GameProps) => {
               <ActivePieceLayer params={pieceParams}/>
 
               { ( gameover || paused.current ) &&
-                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
+                <div className="pause-overlay tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
