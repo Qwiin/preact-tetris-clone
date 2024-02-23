@@ -701,13 +701,15 @@ const Game = (props: GameProps) => {
         activePiece.current = null; 
         pieceWasSet.current = true;
 
+        
+
         requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-      
-          syncFrameOnNextTick.current = true;
-          let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
-          activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+          requestAnimationFrame(()=>{
+            requestAnimationFrame(()=>{
+              
+              let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
+              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+              syncFrameOnNextTick.current = true;
 
           // add piece to board
           updatePosition();
@@ -1540,11 +1542,11 @@ const Game = (props: GameProps) => {
       // console.log("update board memo");
       return {
         board: filterSetPieces(board.current) ?? null,
-        clearedRows: clearedRows.current ?? null,
+        clearedRows: clearedRows.current?.filter(row => row >= 0) ?? null,
         activePiece: activePiece.current ?? null
       }
     },
-    [activePiece.current]
+    [activePiece.current, clearEffectData.current]
   );
   // console.timeEnd('filter board');
   
@@ -1774,13 +1776,15 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
 
   // console.log("render set pieces");
 
+  const wereLinesCleared = (params.clearedRows?.length ?? 0) > 0;
+
   const renderBoard = () => {
     const rows = params.board ?? [];
     return rows.map((row, rowIndex) => {
         const wasCleared = !!params.clearedRows && params.clearedRows.includes(rowIndex);
         
         return (
-          <BoardRow params={{row, index: rowIndex, cleared: wasCleared}}/>
+          <BoardRow params={{row, index: rowIndex, cleared: wasCleared, forceUpdate: wereLinesCleared}}/>
         );
     });
   };
@@ -1801,6 +1805,7 @@ interface BoardRowProps {
     row: number[];
     index: number;
     cleared: boolean;
+    forceUpdate: boolean;
   }
 }
 // const BoardRow = memo( function BoardRow(props: BoardRowProps){
@@ -1818,11 +1823,7 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
           top:0, left: 0, 
           transform: `translateY(${params.index}rem)`}}>
     
-    { params.cleared &&
-      <></>
-    }
-    { !params.cleared &&
-      params.row.map((cellValue, colIndex) => {
+    { params.row.map((cellValue, colIndex) => {
 
         if(cellValue === 0) {
           return <></>;
@@ -1844,11 +1845,14 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
     }
     </div>
   );
-}, 
+}
+,
 (oldProps: BoardRowProps, newProps: BoardRowProps) => {
-    return (
-      oldProps.params.row && newProps.params.row
-      && oldProps.params.row.toString() === newProps.params.row.toString()
-      && oldProps.params.index === newProps.params.index
-    );
-});
+  return (
+    !oldProps.params.forceUpdate &&
+    oldProps.params.row && newProps.params.row
+    && oldProps.params.row.toString() === newProps.params.row.toString()
+    && oldProps.params.index === newProps.params.index
+  );
+}
+);
