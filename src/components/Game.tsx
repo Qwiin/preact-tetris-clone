@@ -1629,7 +1629,7 @@ const Game = (props: GameProps) => {
 
           <div>
             <BoardBackground/>
-            <div class="board-grid-mask">
+            <div data-layer="effects" class="board-grid-mask">
               
               {/* Effects go here until Effect Layer is implemented */}
               { dropEffectData.current && 
@@ -1716,7 +1716,7 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
   return (
     <>
     { params &&
-      <div className="board-grid-layer-0 tw-absolute tw-top-0">
+      <div data-layer="active-piece" className="board-grid tw-absolute tw-top-0">
         { params.coords &&
           <>
             { 
@@ -1782,9 +1782,8 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
     const rows = params.board ?? [];
     return rows.map((row, rowIndex) => {
         const wasCleared = !!params.clearedRows && params.clearedRows.includes(rowIndex);
-        
         return (
-          <BoardRow params={{row, index: rowIndex, cleared: wasCleared, forceUpdate: wereLinesCleared}}/>
+          <BoardRow key={rowIndex} params={{row, index: rowIndex, cleared: wasCleared, forceUpdate: wereLinesCleared}}/>
         );
     });
   };
@@ -1792,7 +1791,7 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
   return (
     <>
     { params.board &&    
-    <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
+    <div data-layer="static-pieces" className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
       {renderBoard()}
     </div>
     }
@@ -1826,12 +1825,25 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
     { params.row.map((cellValue, colIndex) => {
 
         if(cellValue === 0) {
-          return <></>;
+          return (
+            <div data-coord={`r${params.index}c${colIndex}`}
+                  key={"c" + colIndex}
+                  className={`empty-cell`}
+                  style={{
+                  position: "absolute",
+                  opacity:0,
+                  top: 0,
+                  left: 0,
+                  transform: `translateX(${colIndex}rem)`
+                  }}
+            ></div>
+          );
         }
 
         const cellColor = `cell-color-${cellValue}`;
         return (
-          <div key={`r${params.index}c${colIndex}`}
+          <div data-coord={`r${params.index}c${colIndex}`}
+                key={"c" + colIndex}
                 className={`board-cell filled-cell ${cellColor}`}
                 style={{
                 position: "absolute",
@@ -1852,7 +1864,6 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
     !oldProps.params.forceUpdate &&
     oldProps.params.row && newProps.params.row
     && oldProps.params.row.toString() === newProps.params.row.toString()
-    && oldProps.params.index === newProps.params.index
   );
 }
 );
