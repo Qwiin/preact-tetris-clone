@@ -1711,7 +1711,7 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
 
   const {params} = props;
 
-  console.log("active piece rendered");
+  // console.log("active piece rendered");
 
   return (
     <>
@@ -1774,7 +1774,7 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
 
   const { params } = props;
 
-  console.log("render set pieces");
+  // console.log("render set pieces");
 
   const wereLinesCleared = (params.clearedRows?.length ?? 0) > 0;
 
@@ -1812,7 +1812,7 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
   const {params} = props;
 
   // if this is done correctly, only the rows that change will be re-rendered;
-  console.log(`Row ${params.index} rendered`);
+  // console.log(`Row ${params.index} rendered`);
 
   return (
     <div key={`r${params.index}`} 

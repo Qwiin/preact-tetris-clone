@@ -34,18 +34,6 @@ const defaultPropsPieceQue: PieceQueProps = {
 
 export function PieceQue(props: PieceQueProps) {
 
-  // const piecesPrev: Ref<PieceQueItem[]> = useRef([]);
-
-  // useEffect(()=>{
-
-  //   if(props.pieces && (piecesPrev.current && piecesPrev.current[0] !== props.pieces[0])) {
-  //     if(!piecesPrev.current) {piecesPrev.current = [];}
-  //     piecesPrev.current.length = 0;
-  //     piecesPrev.current.push(...props.pieces);
-  //     console.log({props});
-  //   }
-  // });
-
   return (
     <>
       <div id={props.id} data-layout={props.layout} className={`piece-que-container ${props.position === "left" ? "hold-que" : ""}`} 
