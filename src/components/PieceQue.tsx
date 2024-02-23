@@ -96,7 +96,7 @@ export function PieceQue(props: PieceQueProps) {
                       
                       <div className={`tw-flex tw-flex-row tw-gap-0 tw-box-content tw-w-${row.length * 4}`}>
                         {
-                          row.map((cellValue: number, index: number)=>{
+                          row.map((cellValue: number)=>{
                             let cellColor: string = (cellValue !== 0)
                                 ? `filled-cell cell-color-${cellValue}`
                                 : 'tw-bg-transparent'
