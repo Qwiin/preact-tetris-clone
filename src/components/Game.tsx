@@ -27,7 +27,7 @@ Performance:
 import { Signal, signal } from '@preact/signals';
 
 import { Ref } from 'preact';
-import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { newUID } from '../utils/AppUtil';
@@ -38,6 +38,7 @@ import { BoardBackground } from './BoardBackground';
 import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
+import { memo } from 'preact/compat';
 
 
 const PIECE_QUE_LENGTH: number = 5;
@@ -700,13 +701,15 @@ const Game = (props: GameProps) => {
         activePiece.current = null; 
         pieceWasSet.current = true;
 
+        
+
         requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-      
-          syncFrameOnNextTick.current = true;
-          let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
-          activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+          requestAnimationFrame(()=>{
+            requestAnimationFrame(()=>{
+              
+              let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
+              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+              syncFrameOnNextTick.current = true;
 
           // add piece to board
           updatePosition();
@@ -1068,7 +1071,7 @@ const Game = (props: GameProps) => {
       return {xStart, yStart};
   }
 
-  const keydownHandler = (e:any) => {
+  const keydownHandler = useCallback((e:any) => {
     
     if(gameoverRef.current === true || !board.current) {
       // currently, no keyboard input should be processed if gameover (or board ref is null)
@@ -1243,7 +1246,7 @@ const Game = (props: GameProps) => {
         updatePosition();
         break;
     }
-  }
+  }, []);
 
   const initRefs = () => {
 
@@ -1465,38 +1468,39 @@ const Game = (props: GameProps) => {
     
   }, [tick.value]);
 
-  const renderBoard = () => {
-    if(!board.current){
-      return
-    };
+  
+  // const renderBoard = () => {
+  //   if(!board.current){
+  //     return
+  //   };
 
-    const rows = board.current;
+  //   const rows = board.current;
     
-    return rows.map((row, index) => {
-      return (
-        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
+  //   return rows.map((row, index) => {
+  //     return (
+  //       <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
           
-          { 
-            row.map((cellValue, colIndex) => {
+  //         { 
+  //           row.map((cellValue, colIndex) => {
 
-            let isGhost = cellValue < -10;
-            // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
-            let cellColor =
-              cellValue === 0
-                ? 'empty-cell tw-border-gray-900'
-                : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
-            return (
-              <div
-                key={`c${colIndex}`}
-                className={`board-cell ${cellColor}`}
-              ></div>
-            );
-          })}
-        </div>
-      );
-    });
+  //           let isGhost = cellValue < -10;
+  //           // let ShapeColorsVal = Math.abs(cellValue) > 10 ? ShapeColors[Math.abs(cellValue)/11] : ShapeColors[cellValue]
+  //           let cellColor =
+  //             cellValue === 0
+  //               ? 'empty-cell tw-border-gray-900'
+  //               : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
+  //           return (
+  //             <div
+  //               key={`c${colIndex}`}
+  //               className={`board-cell ${cellColor}`}
+  //             ></div>
+  //           );
+  //         })}
+  //       </div>
+  //     );
+  //   });
 
-  };
+  // };
 
   // const menuButtonCallback = (action: MenuButtonAction) => {
   function menuButtonCallback(action: MenuButtonAction) {
@@ -1517,6 +1521,76 @@ const Game = (props: GameProps) => {
       }
     }
   }
+
+  const filterSetPieces = (board: number[][] | null) => {
+
+    return board?.map((row: number[])=>{
+      return row.map((cellValue: number)=>{
+        if(cellValue < 10 && cellValue >= 0) {
+          return cellValue;
+        }
+        else {
+          return 0;
+        }
+      })
+    });
+  }
+
+  // console.time('filter board');
+  const boardGridParams = useMemo(
+    () => {
+      // console.log("update board memo");
+      return {
+        board: filterSetPieces(board.current) ?? null,
+        clearedRows: clearedRows.current?.filter(row => row >= 0) ?? null,
+        activePiece: activePiece.current ?? null
+      }
+    },
+    [activePiece.current, clearEffectData.current]
+  );
+  // console.timeEnd('filter board');
+  
+
+  const pieceParams = useMemo(
+    () => {
+      const piece = activePiece.current;
+      if(!piece) {
+        return {
+          coords: [],
+          coordsGhost: [],
+          cellValue: 0,
+          ghostValue: 0, 
+        }
+      }
+
+      const coords = piece.coords ?? [];
+
+      // if remove ghost coords that overlap
+      const coordsGhost = piece.coordsGhost.filter(
+        (coordGhost:number[]) => {
+          for(let i=0; i<coords.length; i++) {
+            if(coords[i][0] === coordGhost[0] && coords[i][1] === coordGhost[1]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      ) ?? [];
+
+      return {
+        coords,
+        coordsGhost,
+        cellValue: piece.cellValue,
+        ghostValue: -(piece.cellValue ?? 0), 
+      }
+    },
+    [
+     activePiece.current, 
+     activePiece.current?.x, 
+     activePiece.current?.y,
+     activePiece.current?.rotation
+    ]
+  );
 
   return (
     <div data-layout={props.layout} className="panels-container">
@@ -1555,7 +1629,7 @@ const Game = (props: GameProps) => {
 
           <div>
             <BoardBackground/>
-            <div class="board-grid-mask">
+            <div data-layer="effects" class="board-grid-mask">
               
               {/* Effects go here until Effect Layer is implemented */}
               { dropEffectData.current && 
@@ -1583,12 +1657,11 @@ const Game = (props: GameProps) => {
                   }}/>
               }
               
-              <div className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
-                {renderBoard()}
-              </div>
+              <BoardGrid params={boardGridParams}></BoardGrid>
+              <ActivePieceLayer params={pieceParams}/>
 
               { ( gameover || paused.current ) &&
-                <div className="tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
+                <div className="pause-overlay tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
                   <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
                 </div>
               }
@@ -1624,3 +1697,159 @@ const Game = (props: GameProps) => {
 };
 
 export default Game;
+
+interface ActivePieceParams {
+  coords: number[][],
+  coordsGhost: number[][],
+  cellValue: number,
+  ghostValue: number, 
+}
+interface ActivePieceProps {
+  params: ActivePieceParams
+}
+const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps){
+
+  const {params} = props;
+
+  // console.log("active piece rendered");
+
+  return (
+    <>
+    { params &&
+      <div data-layer="active-piece" className="board-grid tw-absolute tw-top-0">
+        { params.coords &&
+          <>
+            { 
+              params.coords.map((coord: number[]) => {
+                let cellClasses = `cell-color-${params.cellValue} filled-cell`;
+                return (
+                  <div key={`r${coord[0]}c${coord[1]}`}
+                      className={`board-cell ${cellClasses}`}
+                      style={{
+                        position: "absolute",
+                        top: 0, 
+                        left: 0, 
+                        transform: `translate(${coord[1]}rem,${coord[0]-4}rem)`
+                      }}
+                      ></div>
+                );
+              })
+            }
+          </>
+        }
+        { params.coordsGhost &&
+          <>
+            { 
+              params.coordsGhost.map((coord: number[]) => {
+                let cellClasses = `cell-color-${params.ghostValue} ghost-cell`;
+                return (
+                  <div key={`r${coord[0]}c${coord[1]}`}
+                  className={`board-cell ${cellClasses}`}
+                  style={{
+                    position: "absolute",
+                    top: 0, 
+                    left: 0, 
+                    transform: `translate(${coord[1]}rem,${coord[0]-4}rem)`
+                  }}
+                  ></div>
+                );
+              })
+            }
+          </>
+        }
+      </div>
+    }
+    </>
+  );
+});
+
+interface BoardGridProps {
+  params: {
+    board: number[][] | null;
+    clearedRows?: number[] | null;
+    activePiece: ActivePiece | null;
+  }
+}
+const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
+
+  const { params } = props;
+
+  // console.log("render set pieces");
+
+  const wereLinesCleared = (params.clearedRows?.length ?? 0) > 0;
+
+  const renderBoard = () => {
+    const rows = params.board ?? [];
+    return rows.map((row, rowIndex) => {
+        const wasCleared = !!params.clearedRows && params.clearedRows.includes(rowIndex);
+        return (
+          <BoardRow key={rowIndex} params={{row, index: rowIndex, cleared: wasCleared, forceUpdate: wereLinesCleared}}/>
+        );
+    });
+  };
+
+  return (
+    <>
+    { params.board &&    
+    <div data-layer="static-pieces" className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
+      {renderBoard()}
+    </div>
+    }
+    </>
+  )
+});
+
+interface BoardRowProps {
+  params:{
+    row: number[];
+    index: number;
+    cleared: boolean;
+    forceUpdate: boolean;
+  }
+}
+// const BoardRow = memo( function BoardRow(props: BoardRowProps){
+const BoardRow = memo( function BoardRow(props: BoardRowProps){
+  const {params} = props;
+
+  // if this is done correctly, only the rows that change will be re-rendered;
+  // console.log(`Row ${params.index} rendered`);
+
+  return (
+    <div key={`r${params.index}`} 
+         className="board-row"
+         style={{transform: `translateY(${params.index}rem)`}}>
+    
+    { params.row.map((cellValue, colIndex) => {
+
+        if(cellValue === 0) {
+          return (
+            <div data-coord={`r${params.index}c${colIndex}`}
+                  key={"c" + colIndex}
+                  className={`board-cell empty-cell`}
+                  style={{transform: `translateX(${colIndex}rem)`}}
+            ></div>
+          );
+        }
+
+        const cellColor = `cell-color-${cellValue}`;
+        return (
+          <div data-coord={`r${params.index}c${colIndex}`}
+                key={"c" + colIndex}
+                className={`board-cell filled-cell ${cellColor}`}
+                style={{transform: `translateX(${colIndex}rem)`}}
+          ></div>
+        );
+      })
+    }
+    </div>
+  );
+}
+,
+(oldProps: BoardRowProps, newProps: BoardRowProps) => {
+  return (
+    !oldProps.params.forceUpdate &&
+    oldProps.params.row && newProps.params.row
+    && oldProps.params.row.toString() === newProps.params.row.toString()
+  );
+}
+);

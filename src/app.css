@@ -670,7 +670,7 @@ Keyboard Controls Map UI
   & .game-control-button {
     /* border: 1px rgba(255,255,255,0.6) solid; */
     border: 0.0625rem rgba(148, 163, 184, 0.8) solid;
-    background-color: rgb(26, 26, 26, 1);
+    background-color: rgb(26, 26, 26, 0.7);
     color: rgba(255,255,255,0.8);
     border-radius: 0.375rem;
     height: 2rem;
@@ -681,14 +681,19 @@ Keyboard Controls Map UI
         background-color: rgb(107, 107, 107);
       }
       
+      &.btn-hold {
+        line-height: 0.9rem;
+        padding: 0; 
+      }
+
       &.btn-drop {
-        line-height: 1rem;
+        line-height: 1.1rem;
         padding: 0;
         /* height: 0rem; */
 
         & >div {
           padding-left: 0.1rem;
-          margin: 0rem;
+          margin-top: -0.2rem;
           font-size: 0.5rem;
           font-weight: bold; 
           letter-spacing: 0.1rem; 
@@ -709,10 +714,11 @@ Keyboard Controls Map UI
 }
 
 .board-grid {
+  z-index:3000;
   height: 24rem;
   width: 10rem;
   background-color: #0000;
-  display: flex;
+  display: block;
   flex-direction: column;
   gap: none;
   box-sizing: content-box;
@@ -823,6 +829,9 @@ Keyboard Controls Map UI
   width: 21rem;
 }
 
+.pause-overlay {
+  z-index: 3600;
+}
 
 .board-background {
   position: absolute;
