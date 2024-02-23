@@ -1775,32 +1775,14 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
   // console.log("render set pieces");
 
   const renderBoard = () => {
-
-    const rows = params.board || [];
-
-    return rows.map((row, index) => {
-      return (
-        <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(params.clearedRows && params.clearedRows.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
-          
-          { 
-            row.map((cellValue, colIndex) => {
-
-            let isGhost = cellValue < -10;
-            let cellColor =
-              cellValue === 0
-                ? 'empty-cell tw-border-gray-900'
-                : `cell-color-${cellValue} ${!isGhost ? `filled-cell` : `ghost-cell`}`;
-            return (
-              <div
-                key={`c${colIndex}`}
-                className={`board-cell ${cellColor}`}
-              ></div>
-            );
-          })}
-        </div>
-      );
+    const rows = params.board ?? [];
+    return rows.map((row, rowIndex) => {
+        const wasCleared = !!params.clearedRows && params.clearedRows.includes(rowIndex);
+        
+        return (
+          <BoardRow params={{row, index: rowIndex, cleared: wasCleared}}/>
+        );
     });
-
   };
 
   return (
@@ -1812,4 +1794,61 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
     }
     </>
   )
+});
+
+interface BoardRowProps {
+  params:{
+    row: number[];
+    index: number;
+    cleared: boolean;
+  }
+}
+// const BoardRow = memo( function BoardRow(props: BoardRowProps){
+const BoardRow = memo( function BoardRow(props: BoardRowProps){
+  const {params} = props;
+
+  // if this is done correctly, only the rows that change will be re-rendered;
+  console.log(`Row ${params.index} rendered`);
+
+  return (
+    <div key={`r${params.index}`} 
+         className={`tw-box-border`}
+         style={{
+          position:"absolute",
+          top:0, left: 0, 
+          transform: `translateY(${params.index}rem)`}}>
+    
+    { params.cleared &&
+      <></>
+    }
+    { !params.cleared &&
+      params.row.map((cellValue, colIndex) => {
+
+        if(cellValue === 0) {
+          return <></>;
+        }
+
+        const cellColor = `cell-color-${cellValue}`;
+        return (
+          <div key={`r${params.index}c${colIndex}`}
+                className={`board-cell filled-cell ${cellColor}`}
+                style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                transform: `translateX(${colIndex}rem)`
+                }}
+          ></div>
+        );
+      })
+    }
+    </div>
+  );
+}, 
+(oldProps: BoardRowProps, newProps: BoardRowProps) => {
+    return (
+      oldProps.params.row && newProps.params.row
+      && oldProps.params.row.toString() === newProps.params.row.toString()
+      && oldProps.params.index === newProps.params.index
+    );
 });
