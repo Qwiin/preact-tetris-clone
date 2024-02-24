@@ -19,6 +19,9 @@
   --cell-brightness: 1.25;
   --cell-saturate: 1.1;
 
+  --board-grid-mask-border-width: 0.0625rem;
+  --board-grid-mask-padding: 0.03125rem;
+
   /*
     galaxy theme 
   */

@@ -11,7 +11,7 @@
   --cell-border-op: 1;
   --cell-border-op-ghost: .8;
   --cell-radius-empty: none;
-  --cell-radius-filled: 0.1875rem;
+  --cell-radius-filled: 0.09375rem;
   --cell-radius-ghost: 0.25rem;
   --cell-border-width-ghost: 0.0625rem;
 
@@ -30,8 +30,8 @@
 
 .empty-cell {
   opacity: 0;
+  display: none;
   border-radius: none;
-  opacity: 0.5; 
   box-sizing: border-box;
   /* filter: blur(0.25px); */
   position:relative;
@@ -44,13 +44,17 @@
   /* box-shadow:  inset 0.2rem 0.4rem 0.2rem 0rem rgba(30,45,60, 0.75); */
   /* box-shadow: inset 1px 1px 1px 1px rgb(0, 0, 0, 0.5); */
 }
+.empty-cell-shadow {
+  display:none;
+  opacity: 0;
+}
 
 .ghost-cell {
   
   border-radius: var(--cell-radius-ghost);
   border-style: var(--cell-border-style-ghost);
   border-width: var(--cell-border-width-ghost);
-  z-index: 100;
+  z-index: 150;
 
   /* opacity: 0.8; */
   filter: url('#sandy0') contrast(0.95) blur(0.05rem) saturate(1.3) brightness(1.5);
@@ -73,21 +77,23 @@
     /* #9996 0.03125rem 0.03125rem 0.03125rem,  */
     /* #FFF6 -0.03125rem -0.03125rem 0.03125rem; */
 
-  transform: scale(1);  
+  transform: scale(0.90);  
 }
 
 .filled-cell {
+  
   border-radius: var(--cell-radius-filled);
   border-style: var(--cell-border-style-filled);
   /* box-shadow: inset 0.25em 0.167em 1em gold; */
 
   /* position: relative; */
-  overflow:hidden;
+  /* overflow:hidden; */
   /* transform: scale(0.9); */
   /* filter: url(#sandy180) contrast(1.2) blur(0.25px); */
   /* filter: url('#dancing2'); */
   border-width: 0.0rem;
 
+  z-index: 100;
   /* glowing opaque2 */
   box-shadow: 
   /* inset 0.0rem 0.03125rem 0.0rem 0.02rem hsla(28, 29%, 50%, 0.2), */
@@ -125,7 +131,18 @@
   /* box-shadow:  
   inset 0.03125rem 0.0625rem 0.09375rem 0.03125rem hsla(0, 80%, 90%, 0.2),
   inset -0.03125rem -0.0625rem  0.09375rem 0.03125rem hsl(0,20%,20%, 0.3); */
+  transform: scale(0.90);  
 
+}
+
+.filled-cell-shadow {
+  position: absolute;
+  /* content: ' '; */
+  left: 0;
+  top: 0;
+  z-index: -100;
+  border-radius: calc(var(--cell-radius-filled));
+  box-shadow: 0 0.03125rem .0625rem 0.0625rem #1a1a1a99;
 }
 
 /*

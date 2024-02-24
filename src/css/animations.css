@@ -94,10 +94,10 @@ GAME OVER animations
     transform: translateX(-6rem) rotate(0deg) skew(20deg);
   }
   40% {
-    transform: translateX(-1rem) rotate(0deg) translateZ(0rem) rotateY(0deg) skew(20deg);
+    transform: translateX(-1rem) rotate(0deg) translateZ(0.1rem) rotateY(0deg) skew(20deg);
   }
   52% {
-    transform: translateX(0.5rem) rotateZ(-2deg) translateZ(1rem) rotateY(-15deg) skew(-2deg) scaleX(90%) scaleY(110%);
+    transform: translateX(0.5rem) rotateZ(-2deg) translateZ(0.5rem) rotateY(-10deg) skew(-2deg) scaleX(90%) scaleY(110%);
   }
   70% {
     transform: translateX(0rem) rotateZ(0deg) translateZ(-0rem) rotateY(0deg) skew(0deg) scaleX(1) scaleY(1);
@@ -114,12 +114,12 @@ GAME OVER animations
     transform: translateX(6rem) rotateZ(0deg) skew(-20deg);
   }
   40% {
-    transform: translateX(1rem) rotateZ(0deg) translateZ(0rem) rotateY(0deg) skew(-20deg);
+    transform: translateX(1rem) rotateZ(0deg) translateZ(0.1rem) rotateY(0deg) skew(-20deg);
   }
   52% {
     /* 2d animation */
     /* transform: translateX(-0.25rem) rotate(-2deg) skew(0deg) scaleX(90%) scaleY(110%); */ 
-    transform: translateX(-0.5rem) rotateZ(2deg) translateZ(1rem) rotateY(15deg) skew(2deg) scaleX(90%) scaleY(110%);
+    transform: translateX(-0.5rem) rotateZ(2deg) translateZ(0.5rem) rotateY(10deg) skew(2deg) scaleX(90%) scaleY(110%);
   }
   70% {
     transform: translateX(0rem) rotateZ(0deg) translateZ(0rem) rotateY(0deg) skew(0deg) scaleX(1) scaleY(1);
