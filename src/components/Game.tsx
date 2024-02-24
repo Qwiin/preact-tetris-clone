@@ -1860,7 +1860,7 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
                         position: "absolute",
                         top: 0, 
                         left: 0, 
-                        transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`
+                        transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.96)`
                       }}
                       ></div>
                   <div key={`r${coord[0]}c${coord[1]}`}
@@ -1890,7 +1890,7 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
                     position: "absolute",
                     top: 0, 
                     left: 0, 
-                    transform: `translate(${coord[1]}rem,${coord[0]-4}rem)`,
+                    transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`,
                     zIndex: 3000
                   }}
                   ></div>
@@ -1966,11 +1966,6 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
         if(cellValue === 0) {
           return (
             <>
-            <div data-coord={`r${params.index}c${colIndex}_shadow`}
-                  key={"c" + colIndex}
-                  className={`board-cell empty-cell`}
-                  style={{transform: `translateX(${colIndex}rem)`}}
-            ></div>
             <div data-coord={`r${params.index}c${colIndex}`}
                   key={"c" + colIndex}
                   className={`board-cell empty-cell`}
@@ -1983,11 +1978,6 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
         const cellColor = `cell-color-${cellValue}`;
         return (
           <>
-            <div data-coord={`r${params.index}c${colIndex}_shadow`}
-                  key={"c" + colIndex + "shadow"}
-                  className={`board-cell filled-cell-shadow`}
-                  style={{transform: `translateX(${colIndex}rem) scale(0.92)`}}
-            ></div>
             <div data-coord={`r${params.index}c${colIndex}`}
                   key={"c" + colIndex}
                   className={`board-cell filled-cell ${cellColor}`}
