@@ -325,7 +325,7 @@ const Game = (props: GameProps) => {
     const rows = board.current;
     const p: ActivePiece = activePiece.current;
     let perm: number[][] = p.permutation;
-    let permPrev: number[][] = p.permutationPrev;
+    // let permPrev: number[][] = p.permutationPrev;
     let h: number = p.height;
     let w: number = p.width;
     
