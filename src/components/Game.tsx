@@ -163,9 +163,9 @@ const Game = (props: GameProps) => {
   const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
 
   const stats: Ref<Scoring> = useRef(null);
-  const pieceSetTimeout: Ref<NodeJS.Timeout> = useRef(null);
-  const pieceSetTimeoutMax: Ref<NodeJS.Timeout> = useRef(null);
-  const setOnNextContact = useRef(false);
+  // const pieceSetTimeout: Ref<NodeJS.Timeout> = useRef(null);
+  // const pieceSetTimeoutMax: Ref<NodeJS.Timeout> = useRef(null);
+  // const setOnNextContact = useRef(false);
   
   
   const holdQuePressed = useRef(false);
@@ -626,68 +626,68 @@ const Game = (props: GameProps) => {
         props.actionCallback({type: ActionType.THUD});
       }
 
-      if(!canMoveDownTwice) {
-        if(setOnNextContact.current === true) {
+      // if(!canMoveDownTwice) {
+      //   if(setOnNextContact.current === true) {
 
-          if(pieceSetTimeout.current) {
-            clearTimeout(pieceSetTimeout.current);
-          }
-          if(pieceSetTimeoutMax.current) {
-            clearTimeout(pieceSetTimeoutMax.current);
-          }
+      //     if(pieceSetTimeout.current) {
+      //       clearTimeout(pieceSetTimeout.current);
+      //     }
+      //     if(pieceSetTimeoutMax.current) {
+      //       clearTimeout(pieceSetTimeoutMax.current);
+      //     }
 
-          console.log("setOnNextContact");
-          p.xPrev = p.x;
-          p.yPrev = p.y;
-          p.rotation = p.rotationPrev;
-          updateBoard(p);  
-          setOnNextContact.current = false;
-        }
+      //     console.log("setOnNextContact");
+      //     p.xPrev = p.x;
+      //     p.yPrev = p.y;
+      //     p.rotation = p.rotationPrev;
+      //     updateBoard(p);  
+      //     setOnNextContact.current = false;
+      //   }
       
-        else {
-          if(!pieceSetTimeoutMax.current) {
-            console.log("pieceSetTimeoutMax started");
-            pieceSetTimeoutMax.current = setTimeout(() => {
-              console.log("pieceSetTimeoutMax completed");
-              if(pieceSetTimeout.current) {
-                clearTimeout(pieceSetTimeout.current);
-              }
-              if(!canMoveDownTwice) {
-                p.xPrev = p.x;
-                p.yPrev = p.y;
-                p.rotation = p.rotationPrev;
-                updateBoard(p);  
-              }
-              else{
-                console.log("pieceSetTimeoutMax setOnNextContact");
-                setOnNextContact.current = true;
-              }
-            }, 3500);
-          }
+      //   else {
+      //     if(!pieceSetTimeoutMax.current) {
+      //       console.log("pieceSetTimeoutMax started");
+      //       pieceSetTimeoutMax.current = setTimeout(() => {
+      //         console.log("pieceSetTimeoutMax completed");
+      //         if(pieceSetTimeout.current) {
+      //           clearTimeout(pieceSetTimeout.current);
+      //         }
+      //         if(!canMoveDownTwice) {
+      //           p.xPrev = p.x;
+      //           p.yPrev = p.y;
+      //           p.rotation = p.rotationPrev;
+      //           updateBoard(p);  
+      //         }
+      //         else{
+      //           console.log("pieceSetTimeoutMax setOnNextContact");
+      //           setOnNextContact.current = true;
+      //         }
+      //       }, 3500);
+      //     }
 
-          if(pieceSetTimeout.current){
-            console.log("pieceSetTimeout reset");
-            clearTimeout(pieceSetTimeout.current);
-          }
+      //     if(pieceSetTimeout.current){
+      //       console.log("pieceSetTimeout reset");
+      //       clearTimeout(pieceSetTimeout.current);
+      //     }
           
-          pieceSetTimeout.current = setTimeout(() => {
-            console.log("pieceSetTimeout complete");
-            if(pieceSetTimeoutMax.current) {
-              clearTimeout(pieceSetTimeoutMax.current);
-            }
-            if(!canMoveDownTwice) {
-              p.xPrev = p.x;
-              p.yPrev = p.y;
-              p.rotation = p.rotationPrev;
-              updateBoard(p);  
-            }
-            else {
-              console.log("pieceSetTimeout setOnNextContact");
-              setOnNextContact.current = true;
-            }
-          }, 500);
-        }
-      }
+      //     pieceSetTimeout.current = setTimeout(() => {
+      //       console.log("pieceSetTimeout complete");
+      //       if(pieceSetTimeoutMax.current) {
+      //         clearTimeout(pieceSetTimeoutMax.current);
+      //       }
+      //       if(!canMoveDownTwice) {
+      //         p.xPrev = p.x;
+      //         p.yPrev = p.y;
+      //         p.rotation = p.rotationPrev;
+      //         updateBoard(p);  
+      //       }
+      //       else {
+      //         console.log("pieceSetTimeout setOnNextContact");
+      //         setOnNextContact.current = true;
+      //       }
+      //     }, 500);
+      //   }
+      // }
     }
   }
 
@@ -714,12 +714,12 @@ const Game = (props: GameProps) => {
       // set piece in place
       if((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
         
-        if(pieceSetTimeout.current) {
-          clearTimeout(pieceSetTimeout.current);
-        }
-        if(pieceSetTimeoutMax.current) {
-          clearTimeout(pieceSetTimeoutMax.current);
-        }
+        // if(pieceSetTimeout.current) {
+        //   clearTimeout(pieceSetTimeout.current);
+        // }
+        // if(pieceSetTimeoutMax.current) {
+        //   clearTimeout(pieceSetTimeoutMax.current);
+        // }
 
         let coords = piece.coords;
         let colHeights = columnHeights.current;
