@@ -117,7 +117,8 @@ GAME OVER animations
     transform: translateX(1rem) rotateZ(0deg) translateZ(0rem) rotateY(0deg) skew(-20deg);
   }
   52% {
-    /* transform: translateX(-0.25rem) rotate(-2deg) skew(0deg) scaleX(90%) scaleY(110%); */
+    /* 2d animation */
+    /* transform: translateX(-0.25rem) rotate(-2deg) skew(0deg) scaleX(90%) scaleY(110%); */ 
     transform: translateX(-0.5rem) rotateZ(2deg) translateZ(1rem) rotateY(15deg) skew(2deg) scaleX(90%) scaleY(110%);
   }
   70% {
