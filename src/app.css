@@ -829,8 +829,44 @@ Keyboard Controls Map UI
   width: 21rem;
 }
 
+div#GameoverLeft {
+  opacity: 0;
+  animation: slam-left-to-right 0.6s ease-in 2.0s;
+  margin: 0.25rem;
+}
+div#GameoverRight {
+  opacity: 0;
+  animation: slam-right-to-left 0.6s ease-in 3.0s;
+  margin: 0.25rem;
+}
+
+#PauseOverlay.animate-gameover {
+  
+  perspective-origin: 50%;
+  perspective: 10rem;
+
+  animation: waterfall 1.0s ease-in;
+}
+
 .pause-overlay {
+  
   z-index: 3600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  width: 10rem;
+  height: 20rem;
+  background-color: rgb(0 0 0 / 0.4);
+  top: 0;
+  left: 0;
+
+  & h2,div {
+    color: hsl(240, 5%, 85%);
+    font-size: 1.5rem/* 20px */;
+    line-height: 2.0rem/* 28px */;
+    text-align: center;
+  }
 }
 
 .board-background {

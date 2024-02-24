@@ -8,7 +8,8 @@ import {useSound} from 'use-sound';
 
 import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
-import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
+// import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
+import audio_gameOver from '@sounds/gameover.mp3';
 import audio_resume from '@sounds/success_bell-6776.mp3';
 // import audio_pause from '@sounds/interface-124464.mp3';
 import audio_pause from '@sounds/notification-for-game-scenes-132473.mp3';
@@ -89,7 +90,7 @@ const SoundBoard = forwardRef(
   });
 
   const [sfx_gameOver] = useSound(audio_gameOver, {
-    volume: 0.4,
+    volume: (Math.sqrt(sfxVolume.current) ?? props.volume ?? 0)/120,
     playbackRate: 1.0
   });
 

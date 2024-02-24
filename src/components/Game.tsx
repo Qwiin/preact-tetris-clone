@@ -1661,8 +1661,25 @@ const Game = (props: GameProps) => {
               <ActivePieceLayer params={pieceParams}/>
 
               { ( gameover || paused.current ) &&
-                <div className="pause-overlay tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
-                  <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
+                <div id="PauseOverlay" className={`pause-overlay ${gameover ? 'animate-gameover' : ''}`}>
+                  {gameover && <>
+                  <div id="GameoverLeft" className="tetris-font" onAnimationEnd={(e:AnimationEvent)=>{
+                    let targetEl = (e.target as HTMLDivElement);
+                    if(targetEl && targetEl.style) {
+                      targetEl.style.opacity = "1";
+                    }
+                    }}>Game</div>
+                  <div id="GameoverRight" className="tetris-font" onAnimationEnd={(e:AnimationEvent)=>{
+                    let targetEl = (e.target as HTMLDivElement);
+                    if(targetEl && targetEl.style) {
+                      targetEl.style.opacity = "1";
+                    }
+                    }}>Over</div>
+                  </>
+                  }
+                  { !gameover &&
+                    <h2 className="tetris-font">'Paused'</h2>
+                  }
                 </div>
               }
 

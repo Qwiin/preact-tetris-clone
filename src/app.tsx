@@ -11,6 +11,8 @@ import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
 import { DevPanel } from './components/DevPanel';
 
+const DEV_PANEL_ENABLED: boolean = true;
+
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
   bubbles: true,
@@ -144,7 +146,7 @@ export function App() {
 
   return (
     <>
-      <DevPanel layout={appLayout} enabled={false}></DevPanel>
+      <DevPanel layout={appLayout} enabled={DEV_PANEL_ENABLED}></DevPanel>
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} 
         data-layout={appLayout}
