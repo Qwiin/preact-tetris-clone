@@ -1855,12 +1855,12 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
                 return (
                   <>
                   <div key={`r${coord[0]}c${coord[1]}`}
-                      className={`board-cell filled-cell cell-color-${params.cellValue}`}
+                      className={`board-cell filled-cell c${coord[1]} r${coord[0]-4} cell-color-${params.cellValue}`}
                       style={{
-                        position: "absolute",
-                        top: 0, 
-                        left: 0, 
-                        transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`
+                        // position: "absolute",
+                        // top: 0, 
+                        // left: 0, 
+                        // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`
                       }}
                       ></div>
                   </>
@@ -1873,15 +1873,15 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
           <>
             { 
               params.coordsGhost.map((coord: number[]) => {
-                let cellClasses = `cell-color-${params.ghostValue} ghost-cell`;
+                let cellColorClass = `cell-color-${params.ghostValue}`;
                 return (
                   <div key={`r${coord[0]}c${coord[1]}`}
-                  className={`board-cell ${cellClasses}`}
+                  className={`ghost-cell board-cell c${coord[1]} r${coord[0]-4} ${cellColorClass}`}
                   style={{
-                    position: "absolute",
-                    top: 0, 
-                    left: 0, 
-                    transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`,
+                    // position: "absolute",
+                    // top: 0, 
+                    // left: 0, 
+                    // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`,
                     zIndex: 3000
                   }}
                   ></div>
@@ -1949,8 +1949,8 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
 
   return (
     <div key={`r${params.index}`} 
-         className="board-row"
-         style={{transform: `translateY(${params.index}rem)`}}>
+        // style={{transform: `translateY(${params.index}rem)`}}
+         className={`board-row r${params.index}`}>
     
     { params.row.map((cellValue, colIndex) => {
 
@@ -1959,20 +1959,19 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
             <>
             <div data-coord={`r${params.index}c${colIndex}`}
                   key={"c" + colIndex}
-                  className={`board-cell empty-cell`}
-                  style={{transform: `translateX(${colIndex}rem)`}}
+                  className={`board-cell empty-cell c${colIndex}`}
+                  // style={{transform: `translateX(${colIndex}rem)`}}
             ></div>
             </>
           );
         }
 
-        const cellColor = `cell-color-${cellValue}`;
         return (
           <>
             <div data-coord={`r${params.index}c${colIndex}`}
                   key={"c" + colIndex}
-                  className={`board-cell filled-cell ${cellColor}`}
-                  style={{transform: `translateX(${colIndex}rem) scale(0.92)`}}
+                  className={`board-cell filled-cell c${colIndex} cell-color-${cellValue}`}
+                  // style={{transform: `translateX(${colIndex}rem) scale(0.92)`}}
             ></div>
           </>
         );
