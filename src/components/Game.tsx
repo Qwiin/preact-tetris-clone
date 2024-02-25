@@ -1854,15 +1854,6 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
               params.coords.map((coord: number[]) => {
                 return (
                   <>
-                  <div key={`r${coord[0]}c${coord[1]}_shadow`}
-                      className={`board-cell filled-cell-shadow cell-color-${params.cellValue}`}
-                      style={{
-                        position: "absolute",
-                        top: 0, 
-                        left: 0, 
-                        transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.96)`
-                      }}
-                      ></div>
                   <div key={`r${coord[0]}c${coord[1]}`}
                       className={`board-cell filled-cell cell-color-${params.cellValue}`}
                       style={{
