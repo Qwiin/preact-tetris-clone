@@ -8,7 +8,8 @@ import {useSound} from 'use-sound';
 
 import audio_t99_music from '@sounds/t99-music.mp3'
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
-import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
+// import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
+import audio_gameOver from '@sounds/gameover.mp3';
 import audio_resume from '@sounds/success_bell-6776.mp3';
 // import audio_pause from '@sounds/interface-124464.mp3';
 import audio_pause from '@sounds/notification-for-game-scenes-132473.mp3';
@@ -33,7 +34,7 @@ const SoundBoard = forwardRef(
   const sfxVolume = useRef(props.volume !== undefined ? props.volume : 50);
   const musicVolume = useRef(props.volume !== undefined ? props.volume : 50);
 
-  const [sfx_t99Music, {pause}] = useSound(audio_t99_music, {
+  const [sfx_t99Music, {pause, sound}] = useSound(audio_t99_music, {
     volume: (Math.sqrt(musicVolume.current) ?? props.volume ?? 0)/100,
     playbackRate: 1
   });
@@ -89,7 +90,7 @@ const SoundBoard = forwardRef(
   });
 
   const [sfx_gameOver] = useSound(audio_gameOver, {
-    volume: 0.4,
+    volume: (Math.sqrt(sfxVolume.current) ?? props.volume ?? 0)/120,
     playbackRate: 1.0
   });
 
@@ -165,6 +166,7 @@ const SoundBoard = forwardRef(
         pause();
         sfx_pause();
         break;
+      case ActionType.NEW_GAME:
       case ActionType.RESUME:
         sfx_resume();
         if(musicEnabled){
@@ -173,11 +175,34 @@ const SoundBoard = forwardRef(
          }
         break;
       case ActionType.GAME_OVER:
+
+        if(musicEnabled) {
+          fadeOut(sound, (Math.sqrt(musicVolume.current)/100), ()=>{
+            console.log("fadeOut complete");
+          });
+        }
         sfx_gameOver();
         break;
     }
   }
 
+  const fadeOut = (sound: any, currentVolume: number, callback: ()=>void) => {
+    console.log(currentVolume);
+    if(currentVolume <= 0.02) {
+      sound.stop();
+      callback();
+      return;
+    }
+    setTimeout(()=>{
+      sound.pause();
+      const lowerVolume = currentVolume/Math.SQRT2;
+      sound.volume(lowerVolume);
+      sfx_t99Music();
+      fadeOut(sound, lowerVolume, callback);
+    }, 100);
+  }
+
+  
   const toggleSound = () => {
     if(!soundEnabled) {
       sfx_tetris({id:"holdPiece"});

@@ -44,6 +44,8 @@ import { memo } from 'preact/compat';
 const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
+const RESUME_DELAY: number = 400;
+
 const tick: Signal<number> = signal(0);
 
 // const actionSignal: Signal<string> = signal("action");
@@ -141,6 +143,7 @@ const Game = (props: GameProps) => {
 
   // const lineClearAnimating: Ref<boolean >= useRef(true);
   const paused = useRef(false);
+  const unpaused = useRef(true);
   const gameoverRef = useRef(false);
   const [gameover, setGameover] = useState(false);
 
@@ -160,6 +163,10 @@ const Game = (props: GameProps) => {
   const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
 
   const stats: Ref<Scoring> = useRef(null);
+  // const pieceSetTimeout: Ref<NodeJS.Timeout> = useRef(null);
+  // const pieceSetTimeoutMax: Ref<NodeJS.Timeout> = useRef(null);
+  // const setOnNextContact = useRef(false);
+  
   
   const holdQuePressed = useRef(false);
   const downArrowPressed = useRef(false);
@@ -187,6 +194,11 @@ const Game = (props: GameProps) => {
     props.actionCallback({type: ActionType.GAME_OVER});
   }
 
+  /**
+   * 
+   * @param discrete - internal, used to pause the game while line clear effect plays
+   * @param forceRender 
+   */
   const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
     if(ticker.current){
       clearInterval(ticker.current);
@@ -197,32 +209,35 @@ const Game = (props: GameProps) => {
         props.actionCallback({type: ActionType.PAUSE});
       }
       paused.current = true;
+      unpaused.current = false;
     }
     if(forceRender){
       // changes "Pause" button label to "Resume"
       forceUpdate(1);
     }
   }
-  const resumeGame = () => {
+  const resumeGame = (delay: number = 0) => {
     if(!ticker.current){
 
       // when game is resumed, the piece will start at the beginning of a game tick;
       syncFrameOnNextTick.current = true;
       
-      ticker.current = setInterval(()=>{
-        
-        if(syncFrameOnNextTick.current) {
-          // let speedIndex = Math.min((stats.current?.level || 1)-1,9);
-          // let ticksPerGameFrame = Math.round(1/GAME_SPEEDS[speedIndex]);
-          // let tickOffset = ticksPerGameFrame - ((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]))
-          tick.value = 1;
-          syncFrameOnNextTick.current = false;
-        }
-        else {
-          tick.value = tick.value + 1;
-        }
-        
-      },TICK_INTERVAL)
+      setTimeout(()=>{
+        ticker.current = setInterval(()=>{
+          
+          if(syncFrameOnNextTick.current) {
+            // let speedIndex = Math.min((stats.current?.level || 1)-1,9);
+            // let ticksPerGameFrame = Math.round(1/GAME_SPEEDS[speedIndex]);
+            // let tickOffset = ticksPerGameFrame - ((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]))
+            tick.value = 1;
+            syncFrameOnNextTick.current = false;
+          }
+          else {
+            tick.value = tick.value + 1;
+          }
+          
+        },TICK_INTERVAL);
+      }, delay);
     }
     paused.current = false;
     forceUpdate(1);
@@ -310,6 +325,7 @@ const Game = (props: GameProps) => {
     const rows = board.current;
     const p: ActivePiece = activePiece.current;
     let perm: number[][] = p.permutation;
+    // let permPrev: number[][] = p.permutationPrev;
     let h: number = p.height;
     let w: number = p.width;
     
@@ -366,13 +382,36 @@ const Game = (props: GameProps) => {
               // }
               canTSpin = false;
             }
+
+            /**
+             * 
+             * 
+             *      xxx
+             *      xxx0
+             *      xx000
+             */
             if(canTSpinLeft) {
+              
+              // if( w<h && permPrev[0][h-1] === 0 && (rows[p.yPrev-(w-2)][p.xPrev + h-1] !== 0)) {  // note w = permPrev height
+              //   canTSpinLeft = false;   
+              //  }
+              // else 
               if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && rows[i+dy][j-1] > 0 && rows[i+dy][j-1] !== perm[i_sss][j_sss])) {
                 canTSpinLeft = false;
               }
             }
-            if(canTSpinRight && j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] > 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
-              canTSpinRight = false;
+            if(canTSpinRight){ 
+
+              // if( w<h && permPrev[0][0] === 0 && (rows[p.yPrev-(w-2)][p.xPrev] !== 0)) {  // note w = permPrev height
+              //  canTSpinRight = false;   
+              // }
+              // if( w>h && permPrev[0][h-1] !== 0 || (rows[p.yPrev-(w-2)][p.xPrev] !== 0)) {  // note w = permPrev height
+              //  canTSpinRight = false;   
+              // }
+              // else 
+              if(j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] > 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
+                canTSpinRight = false;
+              }
             }
           }
           j_sss++;
@@ -586,6 +625,69 @@ const Game = (props: GameProps) => {
         // console.log("can't move down twice...");
         props.actionCallback({type: ActionType.THUD});
       }
+
+      // if(!canMoveDownTwice) {
+      //   if(setOnNextContact.current === true) {
+
+      //     if(pieceSetTimeout.current) {
+      //       clearTimeout(pieceSetTimeout.current);
+      //     }
+      //     if(pieceSetTimeoutMax.current) {
+      //       clearTimeout(pieceSetTimeoutMax.current);
+      //     }
+
+      //     console.log("setOnNextContact");
+      //     p.xPrev = p.x;
+      //     p.yPrev = p.y;
+      //     p.rotation = p.rotationPrev;
+      //     updateBoard(p);  
+      //     setOnNextContact.current = false;
+      //   }
+      
+      //   else {
+      //     if(!pieceSetTimeoutMax.current) {
+      //       console.log("pieceSetTimeoutMax started");
+      //       pieceSetTimeoutMax.current = setTimeout(() => {
+      //         console.log("pieceSetTimeoutMax completed");
+      //         if(pieceSetTimeout.current) {
+      //           clearTimeout(pieceSetTimeout.current);
+      //         }
+      //         if(!canMoveDownTwice) {
+      //           p.xPrev = p.x;
+      //           p.yPrev = p.y;
+      //           p.rotation = p.rotationPrev;
+      //           updateBoard(p);  
+      //         }
+      //         else{
+      //           console.log("pieceSetTimeoutMax setOnNextContact");
+      //           setOnNextContact.current = true;
+      //         }
+      //       }, 3500);
+      //     }
+
+      //     if(pieceSetTimeout.current){
+      //       console.log("pieceSetTimeout reset");
+      //       clearTimeout(pieceSetTimeout.current);
+      //     }
+          
+      //     pieceSetTimeout.current = setTimeout(() => {
+      //       console.log("pieceSetTimeout complete");
+      //       if(pieceSetTimeoutMax.current) {
+      //         clearTimeout(pieceSetTimeoutMax.current);
+      //       }
+      //       if(!canMoveDownTwice) {
+      //         p.xPrev = p.x;
+      //         p.yPrev = p.y;
+      //         p.rotation = p.rotationPrev;
+      //         updateBoard(p);  
+      //       }
+      //       else {
+      //         console.log("pieceSetTimeout setOnNextContact");
+      //         setOnNextContact.current = true;
+      //       }
+      //     }, 500);
+      //   }
+      // }
     }
   }
 
@@ -612,6 +714,13 @@ const Game = (props: GameProps) => {
       // set piece in place
       if((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
         
+        // if(pieceSetTimeout.current) {
+        //   clearTimeout(pieceSetTimeout.current);
+        // }
+        // if(pieceSetTimeoutMax.current) {
+        //   clearTimeout(pieceSetTimeoutMax.current);
+        // }
+
         let coords = piece.coords;
         let colHeights = columnHeights.current;
         for(let i=0; i<coords.length; i++){
@@ -695,7 +804,7 @@ const Game = (props: GameProps) => {
         }
 
         if(piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
-          props.actionCallback({type: ActionType.SET_PIECE})
+          props.actionCallback({type: ActionType.SET_PIECE});
         }
 
         activePiece.current = null; 
@@ -1085,7 +1194,7 @@ const Game = (props: GameProps) => {
       }
       else {
         props.actionCallback({type: ActionType.RESUME});
-        resumeGame();
+        resumeGame(RESUME_DELAY);
       }
     }
 
@@ -1517,7 +1626,7 @@ const Game = (props: GameProps) => {
         if(paused.current) {
           props.actionCallback({type: ActionType.RESUME});
         }
-        resumeGame();
+        resumeGame(RESUME_DELAY);
       }
     }
   }
@@ -1657,12 +1766,34 @@ const Game = (props: GameProps) => {
                   }}/>
               }
               
-              <BoardGrid params={boardGridParams}></BoardGrid>
               <ActivePieceLayer params={pieceParams}/>
+              <BoardGrid params={boardGridParams}></BoardGrid>
 
-              { ( gameover || paused.current ) &&
-                <div className="pause-overlay tw-flex tw-items-center tw-justify-center tw-absolute tw-w-40 tw-h-80 tw-bg-black tw-bg-opacity-40 tw-z-10 tw-top-0 tw-left-0">
-                  <h2 className="tw-text-center tetris-font tw-text-xl tw-text-zinc-400">{gameover ? 'Game Over' : 'Paused'}</h2>
+              { ( gameover || paused.current || !unpaused.current ) &&
+                <div id="PauseOverlay" className={`pause-overlay ${gameover ? 'animate-gameover' : paused.current ? 'animate-pause' : !unpaused.current ? 'animate-unpause' : ''}`}
+                 onAnimationEnd={()=>{
+                  if(!paused.current && !unpaused.current) {
+                    unpaused.current = true;
+                  }
+                 }}>
+                  {gameover && <>
+                  <div id="GameoverLeft" className="tetris-font" onAnimationEnd={(e:AnimationEvent)=>{
+                    let targetEl = (e.target as HTMLDivElement);
+                    if(targetEl && targetEl.style) {
+                      targetEl.style.opacity = "1";
+                    }
+                    }}>Game</div>
+                  <div id="GameoverRight" className="tetris-font" onAnimationEnd={(e:AnimationEvent)=>{
+                    let targetEl = (e.target as HTMLDivElement);
+                    if(targetEl && targetEl.style) {
+                      targetEl.style.opacity = "1";
+                    }
+                    }}>Over</div>
+                  </>
+                  }
+                  { !gameover &&
+                    <div className=" pause-text tetris-font">Paused</div>
+                  }
                 </div>
               }
 
@@ -1716,22 +1847,23 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
   return (
     <>
     { params &&
-      <div data-layer="active-piece" className="board-grid tw-absolute tw-top-0">
+      <div data-layer="active-piece" className="board-grid active-piece-layer">
         { params.coords &&
           <>
             { 
               params.coords.map((coord: number[]) => {
-                let cellClasses = `cell-color-${params.cellValue} filled-cell`;
                 return (
+                  <>
                   <div key={`r${coord[0]}c${coord[1]}`}
-                      className={`board-cell ${cellClasses}`}
+                      className={`board-cell filled-cell c${coord[1]} r${coord[0]-4} cell-color-${params.cellValue}`}
                       style={{
-                        position: "absolute",
-                        top: 0, 
-                        left: 0, 
-                        transform: `translate(${coord[1]}rem,${coord[0]-4}rem)`
+                        // position: "absolute",
+                        // top: 0, 
+                        // left: 0, 
+                        // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`
                       }}
                       ></div>
+                  </>
                 );
               })
             }
@@ -1741,15 +1873,16 @@ const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps
           <>
             { 
               params.coordsGhost.map((coord: number[]) => {
-                let cellClasses = `cell-color-${params.ghostValue} ghost-cell`;
+                let cellColorClass = `cell-color-${params.ghostValue}`;
                 return (
                   <div key={`r${coord[0]}c${coord[1]}`}
-                  className={`board-cell ${cellClasses}`}
+                  className={`ghost-cell board-cell c${coord[1]} r${coord[0]-4} ${cellColorClass}`}
                   style={{
-                    position: "absolute",
-                    top: 0, 
-                    left: 0, 
-                    transform: `translate(${coord[1]}rem,${coord[0]-4}rem)`
+                    // position: "absolute",
+                    // top: 0, 
+                    // left: 0, 
+                    // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`,
+                    zIndex: 3000
                   }}
                   ></div>
                 );
@@ -1816,28 +1949,31 @@ const BoardRow = memo( function BoardRow(props: BoardRowProps){
 
   return (
     <div key={`r${params.index}`} 
-         className="board-row"
-         style={{transform: `translateY(${params.index}rem)`}}>
+        // style={{transform: `translateY(${params.index}rem)`}}
+         className={`board-row r${params.index}`}>
     
     { params.row.map((cellValue, colIndex) => {
 
         if(cellValue === 0) {
           return (
+            <>
             <div data-coord={`r${params.index}c${colIndex}`}
                   key={"c" + colIndex}
-                  className={`board-cell empty-cell`}
-                  style={{transform: `translateX(${colIndex}rem)`}}
+                  className={`board-cell empty-cell c${colIndex}`}
+                  // style={{transform: `translateX(${colIndex}rem)`}}
             ></div>
+            </>
           );
         }
 
-        const cellColor = `cell-color-${cellValue}`;
         return (
-          <div data-coord={`r${params.index}c${colIndex}`}
-                key={"c" + colIndex}
-                className={`board-cell filled-cell ${cellColor}`}
-                style={{transform: `translateX(${colIndex}rem)`}}
-          ></div>
+          <>
+            <div data-coord={`r${params.index}c${colIndex}`}
+                  key={"c" + colIndex}
+                  className={`board-cell filled-cell c${colIndex} cell-color-${cellValue}`}
+                  // style={{transform: `translateX(${colIndex}rem) scale(0.92)`}}
+            ></div>
+          </>
         );
       })
     }

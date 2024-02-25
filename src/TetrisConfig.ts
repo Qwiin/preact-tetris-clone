@@ -64,6 +64,7 @@ export enum ActionType {
   GAME_OVER,
   PAUSE,
   RESUME,
+  NEW_GAME,
   MENU_SETTINGS,
   DEV_TOOLS,
   HOLD_PIECE,

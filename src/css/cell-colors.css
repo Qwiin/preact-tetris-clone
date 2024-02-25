@@ -3,7 +3,45 @@
   position: absolute;
   top: 0;
   left: 0;
+  width: 10rem;
+  height: 1rem;
 }
+
+.c0 { left: 0 }
+.c1 { left: 1rem }
+.c2 { left: 2rem }
+.c3 { left: 3rem }
+.c4 { left: 4rem }
+.c5 { left: 5rem }
+.c6 { left: 6rem }
+.c7 { left: 7rem }
+.c8 { left: 8rem }
+.c9 { left: 9rem }
+
+.r0  { top: 0 }
+.r1  { top: 1rem }
+.r2  { top: 2rem }
+.r3  { top: 3rem }
+.r4  { top: 4rem }
+.r5  { top: 5rem }
+.r6  { top: 6rem }
+.r7  { top: 7rem }
+.r8  { top: 8rem }
+.r9  { top: 9rem }
+.r10 { top: 10rem }
+.r11 { top: 11rem }
+.r12 { top: 12rem }
+.r13 { top: 13rem }
+.r14 { top: 14rem }
+.r15 { top: 15rem }
+.r16 { top: 16rem }
+.r17 { top: 17rem }
+.r18 { top: 18rem }
+.r19 { top: 19rem }
+.r20 { top: 20rem }
+.r21 { top: 21rem }
+.r22 { top: 22rem }
+.r23 { top: 23rem }
 
 .board-cell {
 
@@ -11,17 +49,20 @@
   --cell-border-op: 1;
   --cell-border-op-ghost: .8;
   --cell-radius-empty: none;
-  --cell-radius-filled: 0.1875rem;
-  --cell-radius-ghost: 0.25rem;
+  --cell-radius-filled: 0.09375rem;
+  --cell-radius-ghost: 0.125rem;
   --cell-border-width-ghost: 0.0625rem;
 
   --cell-border-style-ghost: solid;
   --cell-border-style-filled: outset;
   --cell-border-style-empty: inset;
 
+  --filled-cell-scale: 0.94;
+  --ghost-cell-scale: 0.9;
+
   position: absolute;
-  top: 0;
-  left: 0;
+  /* top: 0;
+  left: 0; */
   box-sizing: border-box;
   height: 1rem;
   width: 1rem;
@@ -30,8 +71,8 @@
 
 .empty-cell {
   opacity: 0;
+  display: none;
   border-radius: none;
-  opacity: 0.5; 
   box-sizing: border-box;
   /* filter: blur(0.25px); */
   position:relative;
@@ -44,16 +85,21 @@
   /* box-shadow:  inset 0.2rem 0.4rem 0.2rem 0rem rgba(30,45,60, 0.75); */
   /* box-shadow: inset 1px 1px 1px 1px rgb(0, 0, 0, 0.5); */
 }
+.empty-cell-shadow {
+  display:none;
+  opacity: 0;
+}
 
 .ghost-cell {
   
   border-radius: var(--cell-radius-ghost);
   border-style: var(--cell-border-style-ghost);
   border-width: var(--cell-border-width-ghost);
-  z-index: 100;
+  z-index: -150;
 
   /* opacity: 0.8; */
-  filter: url('#sandy0') contrast(0.95) blur(0.05rem) saturate(1.3) brightness(1.5);
+  filter: url('#sandy0') contrast(0.95) blur(0.03125rem) saturate(1.4) brightness(1.4);
+  /* filter: url('#sandy0') contrast(0.95) blur(0.05rem) saturate(1.3) brightness(1.5); */
   /* filter: url('#ghostly') brightness(1.7) contrast(0.6) saturate(1.5); */
   background-size: 140% 100%;
   background-position: 50% -30%;
@@ -73,27 +119,32 @@
     /* #9996 0.03125rem 0.03125rem 0.03125rem,  */
     /* #FFF6 -0.03125rem -0.03125rem 0.03125rem; */
 
-  transform: scale(1);  
+  transform: scale(var(--ghost-cell-scale));  
 }
 
-.filled-cell {
+.filled-cell, .active-cell, .empty-cell {
+  position: absolute;
+  transform: scale(var(--filled-cell-scale));
+  
   border-radius: var(--cell-radius-filled);
   border-style: var(--cell-border-style-filled);
   /* box-shadow: inset 0.25em 0.167em 1em gold; */
 
   /* position: relative; */
-  overflow:hidden;
+  /* overflow:hidden; */
   /* transform: scale(0.9); */
   /* filter: url(#sandy180) contrast(1.2) blur(0.25px); */
   /* filter: url('#dancing2'); */
   border-width: 0.0rem;
 
+  z-index: 100;
   /* glowing opaque2 */
   box-shadow: 
   /* inset 0.0rem 0.03125rem 0.0rem 0.02rem hsla(28, 29%, 50%, 0.2), */
-  inset -0.03125rem -0.03125rem 0.36rem 0.24rem hsla(0, 30%, 10%, 0.6), 
+  0 0.03125rem .0625rem 0.0625rem #1a1a1a99,
+  /* inset -0.03125rem -0.03125rem 0.36rem 0.24rem hsla(0, 30%, 10%, 0.6),  */
   inset -0.03125rem -0.03125rem 0.12rem 0.12rem hsla(0, 30%, 10%, 0.25),
-  inset -0.03125rem -0.03125rem 0.03125rem 0.0rem hsl(0,20%,00%, 0.5)
+  inset -0.03125rem -0.03125rem 0.03125rem 0.03125rem hsl(0,20%,00%, 0.5)
   ;
   /* 0 0 0.0625rem #0009; */
   
@@ -125,6 +176,7 @@
   /* box-shadow:  
   inset 0.03125rem 0.0625rem 0.09375rem 0.03125rem hsla(0, 80%, 90%, 0.2),
   inset -0.03125rem -0.0625rem  0.09375rem 0.03125rem hsl(0,20%,20%, 0.3); */
+  transform: scale(0.90);  
 
 }
 

@@ -722,6 +722,13 @@ Keyboard Controls Map UI
   flex-direction: column;
   gap: none;
   box-sizing: content-box;
+
+  &.active-piece-layer {
+    z-index: 0;
+    position: absolute;
+    top: calc(var(--board-grid-mask-padding));
+    left: calc(var(--board-grid-mask-padding));
+  }
 }
 
 .piece-que-container {
@@ -789,12 +796,12 @@ Keyboard Controls Map UI
 }
 
 .board-grid-mask {
-  padding:0.03125rem;
+  padding: var(--board-grid-mask-padding);
   height: 20rem;
   overflow: hidden;
   box-sizing: content-box;
   position: relative;
-  border: 0.0625rem solid rgba(200,200,200,0.6);
+  border: var(--board-grid-mask-border-width) solid rgba(200,200,200,0.6);
 }
 
 .game-container {
@@ -829,8 +836,110 @@ Keyboard Controls Map UI
   width: 21rem;
 }
 
+div#GameoverLeft {
+  opacity: 0;
+  animation: slam-left-to-right 0.6s ease-in 2.0s;
+  margin: 0.25rem;
+}
+div#GameoverRight {
+  opacity: 0;
+  animation: slam-right-to-left 0.6s ease-in 3.0s;
+  margin: 0.25rem;
+}
+
+#PauseOverlay.animate-gameover {
+  
+  perspective-origin: 50%;
+  perspective: 10rem;
+
+  animation: waterfall 1.0s ease-in;
+}
+#PauseOverlay {
+  
+  perspective-origin: 50%;
+  perspective: 10rem;
+
+  &.animate-pause {
+    animation: pause-in 0.4s ease-in;
+
+    & .pause-text {
+      text-shadow: 0.1rem 0.2rem 0.3rem #000C;
+      animation: pause-in-text 0.4s ease-in;
+    }
+  }
+  &.animate-unpause {
+    transform: scale(0);
+    animation: unpause-out 0.4s ease-out;
+
+    & .pause-text {
+      text-shadow: 0.1rem 0.2rem 0.3rem #000C;
+      animation: pause-in-text 0.4s ease-out;
+      animation-direction: reverse;
+    }
+  }
+}
+
+@keyframes pause-in {
+  0%{
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.0);
+    opacity: 1;
+  }
+}
+
+@keyframes unpause-out {
+  0%{
+    transform: scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes pause-in-text {
+  0%{
+    text-shadow: 0.1rem 0.2rem 0.3rem #000C;
+  }
+  60% {
+    text-shadow: 0.2rem 0.5rem 0.4rem #000F;
+  }
+  100% {
+    text-shadow: 0.1rem 0.2rem 0.3rem #000C;
+  }
+}
+
 .pause-overlay {
+  
   z-index: 3600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  width: 10rem;
+  height: 20rem;
+  background-color: rgb(0 0 0 / 0.4);
+  top: 0;
+  left: 0;
+
+  & div {
+    color: hsl(240, 5%, 85%);
+    font-size: 1.5rem/* 20px */;
+    line-height: 2.0rem/* 28px */;
+    text-align: center;
+  }
 }
 
 .board-background {
