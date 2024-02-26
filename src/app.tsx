@@ -1,5 +1,5 @@
-import { Ref, createContext } from 'preact';
-import { useContext, useEffect, useReducer, useRef, useState } from 'preact/hooks';
+import { Ref } from 'preact';
+import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import { GameAction } from './TetrisConfig';
 import './app.css';
 import ActionToast from './components/ActionToast';
@@ -12,16 +12,16 @@ import { mobileCheck } from './utils/AppUtil';
 import { DevPanel } from './components/DevPanel';
 // import { TetrisLogo } from './components/TetrisLogo';
 import { TetrisLogoSvg } from './components/TetrisLogoSvg';
-import { StatsPanel } from './components/StatsPanel';
-import { MenuPanel } from './components/MenuPanel';
-import AppProvider, { AppContext } from './AppProvider';
+// import { StatsPanel } from './components/StatsPanel';
+// import { MenuPanel } from './components/MenuPanel';
+import AppProvider from './AppProvider';
 
 
 
 // Import the functions you need from the SDKs you need
 import { FirebaseApp, initializeApp } from "firebase/app";
 import { Analytics, getAnalytics, logEvent } from "firebase/analytics";
-import { eventNames } from 'process';
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 

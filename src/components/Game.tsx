@@ -39,7 +39,7 @@ import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
 import { memo } from 'preact/compat';
-import AppProvider, { AppContext, GameState } from '../AppProvider';
+import { AppContext } from '../AppProvider';
 
 
 const PIECE_QUE_LENGTH: number = 5;
