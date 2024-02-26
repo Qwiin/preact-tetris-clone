@@ -1,4 +1,4 @@
-import { CSSColors } from "../BaseTypes";
+// import { CSSColors } from "../BaseTypes";
 
 interface Props {
   strokeColor: string;
