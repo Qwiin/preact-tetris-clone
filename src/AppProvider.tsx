@@ -92,6 +92,7 @@ const appReducer = (state: GameState, action: any) => {
       const gameResults = JSON.stringify(obj);
       localStorage.setItem(gameId, gameResults);
       console.log(gameResults);
+      return state;
     }
     default: {
       return state;
