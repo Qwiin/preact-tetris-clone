@@ -2,6 +2,75 @@ import { createContext } from "preact";
 import { useReducer } from "preact/hooks";
 import { newUID } from "./utils/AppUtil";
 
+
+
+// Import the functions you need from the SDKs you need
+import { FirebaseApp, initializeApp } from "firebase/app";
+import { Analytics, getAnalytics, logEvent } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
+import { Firestore } from 'firebase/firestore/lite';
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyA8JwDY65KIkmQlF-_8r4OfDCXHAOExf_8",
+  authDomain: "preacttetris.firebaseapp.com",
+  projectId: "preacttetris",
+  storageBucket: "preacttetris.appspot.com",
+  messagingSenderId: "565558573654",
+  appId: "1:565558573654:web:b177a05d715b774621d9f7",
+  measurementId: "G-B0NBKWX8WT"
+};
+
+// Initialize Firebase
+const app: FirebaseApp = initializeApp(firebaseConfig);
+const analytics: Analytics = getAnalytics(app);
+
+// Initialize Cloud Firestore and get a reference to the service
+const db: Firestore = getFirestore(app);
+
+import { collection, addDoc } from "firebase/firestore"; 
+
+try {
+  const docRef = await addDoc(collection(db, "users"), {
+    first: "Devon",
+    last: "Quinn",
+    born: 1984
+  });
+  console.log("Document written with ID: ", docRef.id);
+} catch (e) {
+  console.error("Error adding document: ", e);
+}
+
+logEvent(analytics, "page_view", {
+  page_title: "Preact Tetris :: App Provider",
+  page_path: "app.tsx",
+  "log_data": {logValue: "this is a test log message"},
+  "modifiable_param": "original-text"
+});
+
+export interface PiecePoints {
+  base: number;
+  softDrop: number;
+  hardDrop: number;
+  combo: number;
+  tSpin: number;
+  total: number;
+  backToBack: number;
+  levelMultiplier: number;
+}
+export interface PieceMove {
+  linesCleared: number;
+  comboCount: number;
+  pieceType: number;
+  points: PiecePoints;
+  timeStart: number;
+  timeEnd: number;
+}
+
 export interface GameState {
   timeStart: number;
   elapsedTime: number;
@@ -11,22 +80,7 @@ export interface GameState {
     level: number;
     lines: number;
     score: number;
-    pieceMoves: {
-      pieceType: string;
-      points: {
-        base: number;
-        softDrop: number;
-        hardDrop: number;
-        combo: number;
-        tSpin: number;
-        total: number;
-      }
-      basePoints: number;
-      backToBack: number;
-      comboCount: number;
-      timeStart: number;
-      timeEnd: number;
-    }[];
+    pieceMoves: PieceMove[];
   };
   gamePaused: boolean;
   gameOver: boolean;

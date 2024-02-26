@@ -16,31 +16,6 @@ import { TetrisLogoSvg } from './components/TetrisLogoSvg';
 // import { MenuPanel } from './components/MenuPanel';
 import AppProvider from './AppProvider';
 
-
-
-// Import the functions you need from the SDKs you need
-import { FirebaseApp, initializeApp } from "firebase/app";
-import { Analytics, getAnalytics, logEvent } from "firebase/analytics";
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA8JwDY65KIkmQlF-_8r4OfDCXHAOExf_8",
-  authDomain: "preacttetris.firebaseapp.com",
-  projectId: "preacttetris",
-  storageBucket: "preacttetris.appspot.com",
-  messagingSenderId: "565558573654",
-  appId: "1:565558573654:web:b177a05d715b774621d9f7",
-  measurementId: "G-B0NBKWX8WT"
-};
-
-// Initialize Firebase
-const app: FirebaseApp = initializeApp(firebaseConfig);
-const analytics: Analytics = getAnalytics(app);
-
 const DEV_PANEL_ENABLED: boolean = true;
 
 const fakeMouseEventArgs:[string, any] = ["click",{
@@ -75,21 +50,6 @@ export function App() {
 
     // scale on mount
     handleWindowResize();
-
-    logEvent(analytics, "page_view", {
-      page_title: "Preact Tetris Start Screen",
-      page_path: "app.tsx",
-      "log_data": {logValue: "this is a test log message"},
-      "modifiable_param": "original-text"
-    })
-
-  //   export declare function logEvent(analyticsInstance: Analytics, eventName: 'page_view', eventParams?: {
-  //     page_title?: string;
-  //     page_location?: string;
-  //     page_path?: string;
-  //     [key: string]: any;
-  // }, options?: AnalyticsCallOptions): void;
-    
 
     return () => {
       window.removeEventListener("resize",handleWindowResize);

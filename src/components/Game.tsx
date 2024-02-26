@@ -39,7 +39,7 @@ import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
 import { memo } from 'preact/compat';
-import { AppContext } from '../AppProvider';
+import { AppContext, PieceMove } from '../AppProvider';
 
 
 const PIECE_QUE_LENGTH: number = 5;
@@ -61,24 +61,6 @@ interface GameProps extends BaseComponentProps {
   setStatsCallback?: (value: any) => void;
 }
 
-interface PiecePoints {
-  base: number;
-  softDrop: number;
-  hardDrop: number;
-  combo: number;
-  tSpin: number;
-  total: number;
-  backToBack: number;
-  levelMultiplier: number;
-}
-interface PieceMove {
-  linesCleared: number;
-  comboCount: number;
-  pieceType: number;
-  points: PiecePoints;
-  timeStart: number;
-  timeEnd: number;
-}
 export interface Scoring {
   score: number;
   lines: number;
