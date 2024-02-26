@@ -1,3 +1,5 @@
+import { CSSColors } from "../BaseTypes";
+
 export function Filters() {
   return (
     <svg id="SVG_Filters" xmlns="http://www.w3.org/2000/svg" version="1.1"  
@@ -104,6 +106,26 @@ export function Filters() {
                   0 0 1 0 0
                   0 0 0 0.8 0"/> --> */}
       </filter>
+      
+        <filter id="shadow">
+          <feDropShadow dx="0.2" dy="0.4" stdDeviation="0.2" />
+        </filter>
+        <filter id="shadow2">
+          <feDropShadow dx="0" dy="0" stdDeviation="0.1rem" floodColor={CSSColors.Chocolate} />
+        </filter>
+        <filter id="shadow3">
+          <feDropShadow dx="1rem" dy="1.0rem" stdDeviation="1.0rem" floodColor={CSSColors.BlueViolet} />
+        </filter>
+        <filter id="shadow3">
+          <feDropShadow
+            dx="-0.8"
+            dy="-0.8"
+            stdDeviation="0"
+            floodColor="pink"
+            floodOpacity="0.5" />
+        </filter>
+        
+      
     </defs>
   
   </svg>

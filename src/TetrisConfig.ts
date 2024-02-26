@@ -159,7 +159,7 @@ export enum TetronimoShape {
   [][]
   [][]
 */
-const TETRONIMO_O = `[[11, 11],[11, 11]]`;
+export const TETRONIMO_O = `[[11, 11],[11, 11]]`;
 
 /*
 
@@ -167,7 +167,7 @@ const TETRONIMO_O = `[[11, 11],[11, 11]]`;
   [][]
 
 */
-const TETRONIMO_Z = `[[22, 22, 0],[0, 22, 22]]`;
+export const TETRONIMO_Z = `[[22, 22, 0],[0, 22, 22]]`;
 
 /*
  
@@ -175,7 +175,7 @@ const TETRONIMO_Z = `[[22, 22, 0],[0, 22, 22]]`;
 [][]
 
 */
-const TETRONIMO_S = `[[ 0, 33, 33],[33, 33,  0]]`;
+export const TETRONIMO_S = `[[ 0, 33, 33],[33, 33,  0]]`;
 
 /*
  
@@ -183,7 +183,7 @@ const TETRONIMO_S = `[[ 0, 33, 33],[33, 33,  0]]`;
 [][][]
 
 */
-const TETRONIMO_J = `[[44,  0,  0],[44, 44, 44]]`;
+export const TETRONIMO_J = `[[44,  0,  0],[44, 44, 44]]`;
 
 /*
 
@@ -191,7 +191,7 @@ const TETRONIMO_J = `[[44,  0,  0],[44, 44, 44]]`;
 [][][]
 
 */
-const TETRONIMO_L = `[[0,  0, 55],[55, 55, 55]]`;
+export const TETRONIMO_L = `[[0,  0, 55],[55, 55, 55]]`;
 
 /*
 
@@ -199,14 +199,14 @@ const TETRONIMO_L = `[[0,  0, 55],[55, 55, 55]]`;
 [][][]
 
 */
-const TETRONIMO_T = `[[0, 66, 0],[66, 66, 66]]`;
+export const TETRONIMO_T = `[[0, 66, 0],[66, 66, 66]]`;
 
 /*
 
 [][][][]
 
 */
-const TETRONIMO_I = `[[77, 77, 77, 77]]`;
+export const TETRONIMO_I = `[[77, 77, 77, 77]]`;
 
 /* 
 

@@ -9,6 +9,12 @@ export default {
   safelist: [
     'tw-bg-transparent',
     {
+      pattern: /tw-justify-(start|end|center)/
+    },
+    {
+      pattern: /tw-items-(start|end|center)/
+    },
+    {
       pattern: /tw-box-(content|border)/
     },
     {

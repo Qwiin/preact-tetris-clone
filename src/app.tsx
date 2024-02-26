@@ -10,6 +10,8 @@ import { Filters } from './effects/Filters';
 import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
 import { DevPanel } from './components/DevPanel';
+// import { TetrisLogo } from './components/TetrisLogo';
+import { TetrisLogoSvg } from './components/TetrisLogoSvg';
 
 const DEV_PANEL_ENABLED: boolean = true;
 
@@ -20,10 +22,10 @@ const fakeMouseEventArgs:[string, any] = ["click",{
   buttons: 0,
 }];
 
-const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 465;
+const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 540;
 
 const MIN_DESKTOP_WIDTH: number = 803;
-const MIN_DESKTOP_HEIGHT: number = 520;
+const MIN_DESKTOP_HEIGHT: number = 404;
 
 const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
 
@@ -87,7 +89,7 @@ export function App() {
 
       let scaleRatio: number = hScale/vScale;
       let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) 
-        ? Math.min(Math.max(hScale, vScale), window.innerWidth/PORTRAIT_MODE_WIDTH_THRESHOLD * 1.56)  // PORTRAIT MODE
+        ? Math.min(Math.max(hScale, vScale), window.innerWidth/PORTRAIT_MODE_WIDTH_THRESHOLD * 1.68)  // PORTRAIT MODE
         : Math.min(hScale, vScale);
 
       let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
@@ -155,8 +157,23 @@ export function App() {
         //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
         // }}
         >
-        <div id="NavHeader" className={`tw-opacity-1`}>
-          <h1 className="tw-m-0 tw-py-2 tw-font-thin game-title">TETRIS</h1>
+        <div id="NavHeader" className={`tw-opacity-1`} style={{zIndex: 4000}}>
+          {/* <h1 className="tw-m-0 tw-py-2 tw-font-thin game-title">TETRIS</h1> */}
+          {/* <TetrisLogo scale={appLayout === LAYOUT_DESKTOP ? 0.4 : 0.25}></TetrisLogo> */}
+          <TetrisLogoSvg id="HeaderSVG"
+            // strokeColor='#89A6D3' 
+            strokeColor='#999' 
+            strokeLinecap='round' 
+            strokeLinejoin='round' 
+            fillColor="#00000000" 
+            fillOpacity={1} 
+            strokeWidth={appLayout===LAYOUT_DESKTOP ? "0.25rem" : "0.2rem"} 
+            height={appLayout===LAYOUT_DESKTOP ? "5.2rem" : "3.5rem"}
+            letterFilter={ 
+              // undefined
+              'url(#shadow2)'
+            }
+            ></TetrisLogoSvg>
         </div>
 
         {/* @ts-expect-error Preact Component */}
