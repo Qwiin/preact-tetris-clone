@@ -20,6 +20,9 @@ export default class ActivePiece {
 
   // dropped: boolean = false;
 
+  softDropPoints: number = 0;
+  hardDropPoints: number = 0;
+
   readonly xMax: number = 10;
   readonly xMin: number = 0;
   readonly yMax: number = 24;
@@ -77,6 +80,7 @@ export default class ActivePiece {
   constructor(item?: PieceQueItem, rotation?: Direction, coords?: number[][], x?: number, y?: number) {
 
     if(item) {
+      this.softDropPoints = item.softDropPoints ?? 0;
       this.shapeEnum = item.shapeEnum;
       this.shape = JSON.parse(TETRONIMO_STRINGS[item.shapeEnum]);
       this.cellValue = Math.max(...this.shape.flat());  // standard values 11,22,33,44,55,66,77

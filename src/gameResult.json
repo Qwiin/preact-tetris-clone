@@ -1,0 +1,271 @@
+{
+  "stats": {
+    "level": 3,
+    "lines": 21,
+    "score": 6599,
+    "pieceMoves": [
+      {
+        "comboCount": 0,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940469059,
+        "pieceType": 3,
+        "points": {
+          "backToBack": 1,
+          "base": 100,
+          "combo": 0,
+          "total": 100,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 26,
+          "levelMultiplier": 1
+        }
+      },
+      {
+        "comboCount": 1,
+        "linesCleared": 2,
+        "timeStart": 0,
+        "timeEnd": 1708940471002,
+        "pieceType": 5,
+        "points": {
+          "backToBack": 1,
+          "base": 300,
+          "combo": 50,
+          "total": 350,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 34,
+          "levelMultiplier": 1
+        }
+      },
+      {
+        "comboCount": 0,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940474870,
+        "pieceType": 2,
+        "points": {
+          "backToBack": 1,
+          "base": 100,
+          "combo": 0,
+          "total": 100,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 24,
+          "levelMultiplier": 1
+        }
+      },
+      {
+        "comboCount": 1,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940477992,
+        "pieceType": 4,
+        "points": {
+          "backToBack": 1,
+          "base": 100,
+          "combo": 50,
+          "total": 150,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 20,
+          "levelMultiplier": 1
+        }
+      },
+      {
+        "comboCount": 2,
+        "linesCleared": 2,
+        "timeStart": 0,
+        "timeEnd": 1708940480236,
+        "pieceType": 5,
+        "points": {
+          "backToBack": 1,
+          "base": 300,
+          "combo": 100,
+          "total": 400,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 24,
+          "levelMultiplier": 1
+        }
+      },
+      {
+        "comboCount": 3,
+        "linesCleared": 2,
+        "timeStart": 0,
+        "timeEnd": 1708940482894,
+        "pieceType": 3,
+        "points": {
+          "backToBack": 1,
+          "base": 300,
+          "combo": 150,
+          "total": 450,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 26,
+          "levelMultiplier": 1
+        }
+      },
+      {
+        "comboCount": 0,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940489715,
+        "pieceType": 6,
+        "points": {
+          "backToBack": 1,
+          "base": 100,
+          "combo": 0,
+          "total": 100,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 26,
+          "levelMultiplier": 1
+        }
+      },
+      {
+        "comboCount": 0,
+        "linesCleared": 3,
+        "timeStart": 0,
+        "timeEnd": 1708940494724,
+        "pieceType": 6,
+        "points": {
+          "backToBack": 1,
+          "base": 1000,
+          "combo": 0,
+          "total": 1000,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 28,
+          "levelMultiplier": 2
+        }
+      },
+      {
+        "comboCount": 1,
+        "linesCleared": 2,
+        "timeStart": 0,
+        "timeEnd": 1708940497673,
+        "pieceType": 3,
+        "points": {
+          "backToBack": 1,
+          "base": 600,
+          "combo": 100,
+          "total": 700,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 32,
+          "levelMultiplier": 2
+        }
+      },
+      {
+        "comboCount": 2,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940502879,
+        "pieceType": 5,
+        "points": {
+          "backToBack": 1,
+          "base": 200,
+          "combo": 200,
+          "total": 400,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 30,
+          "levelMultiplier": 2
+        }
+      },
+      {
+        "comboCount": 3,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940505203,
+        "pieceType": 1,
+        "points": {
+          "backToBack": 1,
+          "base": 200,
+          "combo": 300,
+          "total": 500,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 34,
+          "levelMultiplier": 2
+        }
+      },
+      {
+        "comboCount": 0,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940511861,
+        "pieceType": 1,
+        "points": {
+          "backToBack": 1,
+          "base": 200,
+          "combo": 0,
+          "total": 200,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 32,
+          "levelMultiplier": 2
+        }
+      },
+      {
+        "comboCount": 0,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940516148,
+        "pieceType": 0,
+        "points": {
+          "backToBack": 1,
+          "base": 200,
+          "combo": 0,
+          "total": 200,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 34,
+          "levelMultiplier": 2
+        }
+      },
+      {
+        "comboCount": 1,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940520622,
+        "pieceType": 6,
+        "points": {
+          "backToBack": 1,
+          "base": 200,
+          "combo": 100,
+          "total": 300,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 36,
+          "levelMultiplier": 2
+        }
+      },
+      {
+        "comboCount": 0,
+        "linesCleared": 1,
+        "timeStart": 0,
+        "timeEnd": 1708940527045,
+        "pieceType": 3,
+        "points": {
+          "backToBack": 1,
+          "base": 300,
+          "combo": 0,
+          "total": 300,
+          "tSpin": 0,
+          "softDrop": 0,
+          "hardDrop": 32,
+          "levelMultiplier": 3
+        }
+      }
+    ]
+  },
+  "gameOver": false,
+  "gamePaused": false,
+  "gameSpeed": 1,
+  "startingLevel": 1,
+  "gameMode": "marathon",
+  "timeStart": 1708940408567,
+  "elapsedTime": 0
+}

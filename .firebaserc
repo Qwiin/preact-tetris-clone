@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "preacttetris",
+    "firebase-connect": "preacttetris",
+    "preacttetris": "preacttetris"
+  },
+  "targets": {},
+  "etags": {}
+}

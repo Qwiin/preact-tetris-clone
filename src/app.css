@@ -105,6 +105,9 @@ body[data-layout="mobile"] {
   width: 50.75rem;
   height: 26rem;
   /* background-color: rgb(var(--app-container-bg-color) / var(--app-container-bg-op)); */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   transform: scale(var(--app-container-scale));
   /* background-color: gray; */
@@ -118,7 +121,7 @@ body[data-layout="mobile"] {
 #NavHeader {
   --header-scale-desktop: 0.4;
   --header-cell-border-width: 0.0625rem;
-  position: relative;
+  position: absolute;
   top:0;
   font-size: 1rem;
   width: 21rem;
@@ -128,7 +131,7 @@ body[data-layout="mobile"] {
   align-items: center;
   justify-content: center;
   /* background-image: linear-gradient(rgba(16, 22, 28, 0.5),rgba(53, 69, 85, 0.5),rgba(16, 22, 28, 0.5)); */
-  height: 4rem;
+  height: 50pt;
   margin-bottom: -2rem;
 
   /* box-shadow: 0rem 0.05rem 0 0.03125rem rgba(167, 166, 166, 0.5); */
@@ -253,38 +256,39 @@ body[data-layout="mobile"] {
   border-radius: 15%;
 }
 
+[data-layout="mobile"] #NavHeader {
+  position: absolute;
+  top:0;
+  font-size: 1rem;
+  width: 100%;
+  left:0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(rgba(16, 22, 28, 0.7),rgba(53, 69, 85, 0.9),rgba(16, 22, 28, 0.7));
+  height: 50pt;
+
+  /* box-shadow: 0rem 0.05rem 0 0.03125rem rgba(167, 166, 166, 0.5); */
+  box-shadow: 0rem 0.05rem 0 0.03125rem rgb(50 40 60 / 80%);
+
+  & #HeaderSVG {
+    position: relative;
+    top: -0.1rem;
+  }
+
+  & .game-title {
+    font-size: 1.4rem;
+    padding: 0;
+    margin: 0;
+    padding-left: 0.25rem;
+    padding-top: 0.4rem;
+    line-height: 2rem;    
+  }
+}
+
 .app-container[data-layout="mobile"] {
   height: 33.5rem;
-  & #NavHeader {
-    position: relative;
-    top:0;
-    font-size: 1rem;
-    width: 21rem;
-    left: calc(50% - 10.5rem);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-image: linear-gradient(rgba(16, 22, 28, 0.7),rgba(53, 69, 85, 0.9),rgba(16, 22, 28, 0.7));
-    height: 2.75rem;
-
-    /* box-shadow: 0rem 0.05rem 0 0.03125rem rgba(167, 166, 166, 0.5); */
-    box-shadow: 0rem 0.05rem 0 0.03125rem rgb(50 40 60 / 80%);
-
-    & #HeaderSVG {
-      position: relative;
-      top: -0.1rem;
-    }
-
-    & .game-title {
-      font-size: 1.4rem;
-      padding: 0;
-      margin: 0;
-      padding-left: 0.25rem;
-      padding-top: 0.4rem;
-      line-height: 2rem;    
-    }
-  }
 }
 
 .que-item {
@@ -1288,6 +1292,7 @@ div[data-layout="mobile"] {
   }
 }
 .menu-panel[data-layout="mobile"] {
+  position:fixed;
   pointer-events: none;
   z-index: 4000;
   width: 15rem;
@@ -1330,10 +1335,10 @@ div[data-layout="mobile"] {
   }
 
   & .menu-button.btn-pause {
-    position: relative;
+    position: fixed;
     line-height: 1.5rem;
-    left: -7.6rem;
-    top: -5.65rem;
+    left: 0rem;
+    top: 0rem;
     padding: 0.275rem 0.2rem 0.15rem 0.3rem;
     /* height: 2rem; */
     /* letter-spacing: 0; */

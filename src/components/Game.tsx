@@ -27,7 +27,7 @@ Performance:
 import { Signal, signal } from '@preact/signals';
 
 import { Ref } from 'preact';
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
+import { MutableRef, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { newUID } from '../utils/AppUtil';
@@ -39,6 +39,7 @@ import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
 import { memo } from 'preact/compat';
+import AppProvider, { AppContext, GameState } from '../AppProvider';
 
 
 const PIECE_QUE_LENGTH: number = 5;
@@ -60,7 +61,25 @@ interface GameProps extends BaseComponentProps {
   setStatsCallback?: (value: any) => void;
 }
 
-interface Scoring {
+interface PiecePoints {
+  base: number;
+  softDrop: number;
+  hardDrop: number;
+  combo: number;
+  tSpin: number;
+  total: number;
+  backToBack: number;
+  levelMultiplier: number;
+}
+interface PieceMove {
+  linesCleared: number;
+  comboCount: number;
+  pieceType: number;
+  points: PiecePoints;
+  timeStart: number;
+  timeEnd: number;
+}
+export interface Scoring {
   score: number;
   lines: number;
   level: number;
@@ -69,6 +88,7 @@ interface Scoring {
 export interface PieceQueItem {
   shapeEnum: TetronimoShape;
   id: string;
+  softDropPoints?: number;
 }
 
 /**
@@ -133,11 +153,14 @@ function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistribu
 }
 
 
+
 const Game = (props: GameProps) => {
 
   if(!props.init) {
     return;
   }
+
+  const appContext = useContext(AppContext);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -152,6 +175,7 @@ const Game = (props: GameProps) => {
   const syncFrameOnNextTick = useRef(false);
   
   const clearedRows: Ref<number[]> = useRef(null);
+  const dropPoints: MutableRef<any> = useRef(null);
   // const clearedRowIndexesDesc: Ref<number[]> = useRef(null);
   const clearEffectData: Ref<any> = useRef(null);
   const dropEffectData: Ref<any> = useRef(null);
@@ -177,6 +201,7 @@ const Game = (props: GameProps) => {
 
   const comboCount: Ref<number> = useRef(0);
   const lastPieceAction: Ref<ActionType> = useRef(0);
+  const lastPieceType: MutableRef<TetronimoShape> = useRef(TetronimoShape.NULL);
   const lastPiecePosition: Ref<any> = useRef(null);
   const lastLineClearAction: Ref<ActionType> = useRef(null);
 
@@ -192,6 +217,9 @@ const Game = (props: GameProps) => {
     paused.current = true;
     pauseGame();
     props.actionCallback({type: ActionType.GAME_OVER});
+    if(appContext.saveResults) {
+      appContext.saveResults();
+    }
   }
 
   /**
@@ -207,6 +235,7 @@ const Game = (props: GameProps) => {
     if(!discrete) {
       if(!paused.current) {
         props.actionCallback({type: ActionType.PAUSE});
+        appContext.pauseGame ? appContext.pauseGame() : console.error("no such function `pauseGame() in appContext`");
       }
       paused.current = true;
       unpaused.current = false;
@@ -223,6 +252,7 @@ const Game = (props: GameProps) => {
       syncFrameOnNextTick.current = true;
       
       setTimeout(()=>{
+        appContext.resumeGame ? appContext.resumeGame() : console.error("no such function `resumeGame() in appContext`");
         ticker.current = setInterval(()=>{
           
           if(syncFrameOnNextTick.current) {
@@ -610,6 +640,7 @@ const Game = (props: GameProps) => {
       // }
 
       if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
+        p.softDropPoints += 1;
         stats.current.score += 1;
       }
 
@@ -807,17 +838,18 @@ const Game = (props: GameProps) => {
           props.actionCallback({type: ActionType.SET_PIECE});
         }
 
+        dropPoints.current = {soft: piece.softDropPoints, hard: piece.hardDropPoints};
+        lastPieceType.current = piece.shapeEnum;
         activePiece.current = null; 
         pieceWasSet.current = true;
-
-        
 
         requestAnimationFrame(()=>{
           requestAnimationFrame(()=>{
             requestAnimationFrame(()=>{
               
               let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
-              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;   
+              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null; 
+              dropPoints.current = null;  
               syncFrameOnNextTick.current = true;
 
           // add piece to board
@@ -1037,27 +1069,32 @@ const Game = (props: GameProps) => {
         // console.log("updatePoints");
         stats.current.lines += numCleared;
 
-        const level: number = Math.max(Math.floor(stats.current.lines / 10) + 1, props.startingLevel);
-        const comboBonus: number = comboCount.current * level * 50;
+        const currentLevel: number = stats.current.level; 
+        const newLevel: number = Math.max(Math.floor(stats.current.lines / 10) + 1, props.startingLevel);
+        const comboBonus: number = comboCount.current * currentLevel * 50;
 
-        // update level
-        if(stats.current.level !== level){
-          stats.current.level = level;
+        // level-up
+        if(newLevel !== currentLevel){
+          stats.current.level = newLevel;
           props.actionCallback({type: ActionType.LEVEL_UP});  
         }
   
         if(isTSpinMini.current) {
-          points += ((numCleared > 0) ? (numCleared * 200) : 100) * level; 
+          points += ((numCleared > 0) ? (numCleared * 200) : 100) * currentLevel; 
         }
         else if(isTSpin.current) {
-          points += (400 + (numCleared * 400)) * level; 
+          points += (400 + (numCleared * 400)) * currentLevel; 
         }
         else {
-          points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * level);
+          points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * currentLevel);
         }
 
+        const basePoints: number = points;
+        const comboPoints: number = comboBonus;
+        const totalPoints: number = (points * (backToBack ? 1.5 : 1)) + comboBonus;
+
         // add bonuses
-        stats.current.score += (points * (backToBack ? 1.5 : 1)) + comboBonus;
+        stats.current.score += totalPoints;
 
 
         //TODO: implement all clear
@@ -1078,6 +1115,62 @@ const Game = (props: GameProps) => {
           transitioning: true,
         } as GameAction);
           
+
+        /**
+         * 
+interface PiecePoints {
+  base: number;
+  softDrop: number;
+  hardDrop: number;
+  combo: number;
+  tSpin: number;
+  total: number;
+  backToBack: number;
+}
+interface PieceMove {
+  linesCleared: number;
+  comboCount: number;
+  pieceType: string;
+  points: PiecePoints;
+  timeStart: number;
+  timeEnd: number;
+}
+         * 
+         */
+
+
+        if(appContext.updateStats !== undefined) {
+          /**
+            UPDATE STATS
+          */
+          appContext.updateStats(
+            {
+              ...stats.current, 
+              pieceMove: {
+                comboCount: comboCount.current,
+                linesCleared: numCleared,
+                timeStart: 0,
+                timeEnd: Date.now(),
+                pieceType: lastPieceType.current ?? TetronimoShape.NULL,
+                points: {
+                  backToBack: backToBack ? totalPoints / 3 : 1.0, // totalPoints / 3 = backToBack bonus points
+                  base: basePoints,
+                  combo: comboPoints,
+                  total: totalPoints,
+                  tSpin: isTSpin.current
+                    ? ActionType.T_SPIN 
+                    : isTSpinMini.current
+                      ? ActionType.T_SPIN_MINI 
+                      : 0,
+                  softDrop: dropPoints.current?.soft ?? 0,
+                  hardDrop: dropPoints.current?.hard ?? 0,
+                  levelMultiplier: currentLevel 
+                  // note: points are calculated from level prior to current line clears
+                }
+              } as PieceMove
+            }
+          );
+        }
 
         if(clearEffectData.current && clearEffectData.current.length > 0) {
           // console.log(clearEffectData.current.toString())
@@ -1234,7 +1327,7 @@ const Game = (props: GameProps) => {
             }
 
             if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
-              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
+              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id, softDropPoints: p.softDropPoints});
               const {xStart, yStart} = getStartingXY(heldPieceItem);
               activePiece.current = new ActivePiece(heldPieceItem, Direction.N, undefined, xStart, (yStart || 5) - 1);  
               activePiece.current.wasInHold = true; 
@@ -1335,6 +1428,7 @@ const Game = (props: GameProps) => {
         if(dropDistance > 0) {
           props.actionCallback({type: ActionType.DROP, data: e.key});
           if(stats.current) {   
+            p.hardDropPoints = (dropDistance * 2);
             stats.current.score += (dropDistance * 2);
           }
           // console.log(minDistance);
@@ -1465,6 +1559,7 @@ const Game = (props: GameProps) => {
         level: 1,
         lines: 0,
         score: 0,
+
       }
     }
     else {
@@ -1702,12 +1797,17 @@ const Game = (props: GameProps) => {
   );
 
   return (
+    
     <div data-layout={props.layout} className="panels-container">
-      
+      {/* <AppContext.Consumer>
+          {(gameState: GameState) => (<>
+              <div><p>{JSON.stringify(gameState)}</p></div>
+            </>)}
+      </AppContext.Consumer>   */}
       <MenuPanel 
       layout={props.layout}
       gameover={gameoverRef.current}
-      paused={paused.current}
+      paused={appContext.gamePaused}
       controlMapCallback={
         (e: any)=>{
           keydownHandler(e)
@@ -1812,15 +1912,15 @@ const Game = (props: GameProps) => {
       <StatsPanel layout={props.layout} fields={[
         {
           name: "Score",
-          value: stats.current?.score || 0
+          value: stats.current?.score ?? 0
         },
         {
           name: "Level",
-          value: stats.current?.level || 1
+          value: stats.current?.level ?? 1
         },
         {
           name: "Lines",
-          value: stats.current?.lines || 0
+          value: stats.current?.lines ?? 0
         },
       ]}></StatsPanel>
     </div>
