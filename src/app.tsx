@@ -79,7 +79,8 @@ export function App() {
     logEvent(analytics, "page_view", {
       page_title: "Preact Tetris Start Screen",
       page_path: "app.tsx",
-      ["log_data"]: {logValue: "this is a test log message"}
+      "log_data": {logValue: "this is a test log message"},
+      "modifiable_param": "original-text"
     })
 
   //   export declare function logEvent(analyticsInstance: Analytics, eventName: 'page_view', eventParams?: {
