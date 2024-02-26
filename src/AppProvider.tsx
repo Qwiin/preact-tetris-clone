@@ -34,16 +34,20 @@ const db: Firestore = getFirestore(app);
 
 import { collection, addDoc } from "firebase/firestore"; 
 
-try {
-  const docRef = await addDoc(collection(db, "users"), {
-    first: "Devon",
-    last: "Quinn",
-    born: 1984
-  });
-  console.log("Document written with ID: ", docRef.id);
-} catch (e) {
-  console.error("Error adding document: ", e);
+async function connect() {
+  try {
+    const docRef = await addDoc(collection(db, "users"), {
+      first: "Devon",
+      last: "Quinn",
+      born: 1984
+    });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
 }
+
+connect();
 
 logEvent(analytics, "page_view", {
   page_title: "Preact Tetris :: App Provider",
