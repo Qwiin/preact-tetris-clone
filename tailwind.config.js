@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./src/**/*.{ttf,html,ts,js,tsx,jsx,wav,mp3}'],
+  content: ['./**/*.{ttf,html,ts,js,tsx,jsx,wav,mp3}'],
   theme: {
     extend: {},
   },
@@ -28,6 +28,6 @@ export default {
     }
   ],
   corePlugins: {
-    preflight: false
+    preflight: true
   }
 }

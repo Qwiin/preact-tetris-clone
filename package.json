@@ -19,6 +19,8 @@
     "firebase": "^10.8.0",
     "framer-motion": "^11.0.3",
     "preact": "^10.19.3",
+    "preact-async-route": "^2.2.1",
+    "preact-router": "^4.1.2",
     "rollup-plugin-copy": "^3.5.0",
     "tailwindcss": "^3.4.1",
     "use-sound": "^4.0.1"

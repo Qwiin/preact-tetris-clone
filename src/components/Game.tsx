@@ -39,7 +39,7 @@ import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
 import { memo } from 'preact/compat';
-import { AppContext, PieceMove } from '../AppProvider';
+import { AppContext, PieceMove, UserContext } from '../AppProvider';
 
 
 const PIECE_QUE_LENGTH: number = 5;
@@ -143,6 +143,7 @@ const Game = (props: GameProps) => {
   }
 
   const appContext = useContext(AppContext);
+  const userContext = useContext(UserContext);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -217,6 +218,7 @@ const Game = (props: GameProps) => {
     if(!discrete) {
       if(!paused.current) {
         props.actionCallback({type: ActionType.PAUSE});
+        console.log(userContext.user?.displayName);
         appContext.pauseGame ? appContext.pauseGame() : console.error("no such function `pauseGame() in appContext`");
       }
       paused.current = true;
@@ -1689,24 +1691,7 @@ interface PieceMove {
   // };
 
   // const menuButtonCallback = (action: MenuButtonAction) => {
-  function menuButtonCallback(action: MenuButtonAction) {
-    if(action === "restart") {    
-      initRefs();
-      initGame();
-      return;
-    }
-    if(action === "pause") {
-      if(!paused.current) {
-        pauseGame(false, true);
-      }
-      else {
-        if(paused.current) {
-          props.actionCallback({type: ActionType.RESUME});
-        }
-        resumeGame(RESUME_DELAY);
-      }
-    }
-  }
+  
 
   const filterSetPieces = (board: number[][] | null) => {
 
@@ -1781,22 +1766,8 @@ interface PieceMove {
   return (
     
     <div data-layout={props.layout} className="panels-container">
-      {/* <AppContext.Consumer>
-          {(gameState: GameState) => (<>
-              <div><p>{JSON.stringify(gameState)}</p></div>
-            </>)}
-      </AppContext.Consumer>   */}
-      <MenuPanel 
-      layout={props.layout}
-      gameover={gameoverRef.current}
-      paused={appContext.gamePaused}
-      controlMapCallback={
-        (e: any)=>{
-          keydownHandler(e)
-        }
-      }
-      menuButtonCallback={ menuButtonCallback }
-      ></MenuPanel>
+    
+      
 
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
         <div id="GameContainer" data-layout={props.layout} className="game-container">
@@ -1891,20 +1862,6 @@ interface PieceMove {
 
         </div>
       </div>
-      <StatsPanel layout={props.layout} fields={[
-        {
-          name: "Score",
-          value: stats.current?.score ?? 0
-        },
-        {
-          name: "Level",
-          value: stats.current?.level ?? 1
-        },
-        {
-          name: "Lines",
-          value: stats.current?.lines ?? 0
-        },
-      ]}></StatsPanel>
     </div>
   );
 };

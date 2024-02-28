@@ -1,6 +1,6 @@
 import { Ref } from 'preact';
-import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
-import { GameAction } from './TetrisConfig';
+import { useContext, useEffect, useReducer, useRef, useState } from 'preact/hooks';
+import { DEFAULT_VOLUME_PCT, GameAction } from './TetrisConfig';
 import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
@@ -11,10 +11,12 @@ import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
 import { DevPanel } from './components/DevPanel';
 // import { TetrisLogo } from './components/TetrisLogo';
-import { TetrisLogoSvg } from './components/TetrisLogoSvg';
+// import { TetrisLogoSvg } from './components/TetrisLogoSvg';
 // import { StatsPanel } from './components/StatsPanel';
 // import { MenuPanel } from './components/MenuPanel';
-import AppProvider from './AppProvider';
+import AppProvider, { AppContext, GameStateAPI } from './AppProvider';
+import { MenuButtonAction, MenuPanel } from './components/MenuPanel';
+import { StatsPanel } from './components/StatsPanel';
 
 const DEV_PANEL_ENABLED: boolean = true;
 
@@ -39,6 +41,7 @@ export function App() {
   const actionQue: Ref<GameAction[]> = useRef([]);
   const [theme, setTheme] = useState(1);
   const resizeTimeout: Ref<NodeJS.Timeout> = useRef(null);
+  const appContext = useContext(AppContext) as GameStateAPI;
 
   const appContainerRef: Ref<HTMLDivElement> = useRef(null);
   
@@ -113,7 +116,7 @@ export function App() {
       document.body.setAttribute('data-layout', newAppLayout);
 
       animate(
-        "#AppContainer", 
+        ".app-wrapper", 
         { 
           // transform: `scale(${newAppScale})`
           height: window.innerHeight,
@@ -149,18 +152,34 @@ export function App() {
     const mouseEventArgs:[string, any] = [...fakeMouseEventArgs];
     mouseEventArgs[1].buttons = a.type;
     soundBoardDomRef.current?.dispatchEvent(new MouseEvent(...mouseEventArgs));  
-  }
+  };
+
+  // const menuButtonCallback = (action: MenuButtonAction) => {
+  //   if(action === "restart") {    
+  //     appContext.restartGame();
+  //     return;
+  //   }
+  //   if(action === "pause") {
+  //     appContext.pauseGame();
+  //   }
+  //   else {
+  //     if(appContext.gamePaused) {
+  //       appContext.resumeGame();
+  //     }
+  //     // resumeGame(RESUME_DELAY);
+  //   }
+  // }
 
   return (
     <>
 
     <AppProvider>    
-      <DevPanel layout={appLayout} enabled={DEV_PANEL_ENABLED}></DevPanel>
+      
 
-      <div id="NavHeader" className={`tw-opacity-1`} style={{zIndex: 4000}}>
+      {/* <div id="NavHeader" className={`tw-opacity-1`} style={{zIndex: 4000}}> */}
           {/* <h1 className="tw-m-0 tw-py-2 tw-font-thin game-title">TETRIS</h1> */}
           {/* <TetrisLogo scale={appLayout === LAYOUT_DESKTOP ? 0.4 : 0.25}></TetrisLogo> */}
-          <TetrisLogoSvg id="HeaderSVG"
+          {/* <TetrisLogoSvg id="HeaderSVG"
             // strokeColor='#89A6D3' 
             strokeColor='#999' 
             strokeLinecap='round' 
@@ -173,8 +192,8 @@ export function App() {
               // undefined
               'url(#shadow2)'
             }
-            ></TetrisLogoSvg>
-        </div>
+            ></TetrisLogoSvg> */}
+        {/* </div> */}
 
       <div id="AppContainer" ref={appContainerRef} className={`app-container theme-${theme}`} 
         data-theme={theme} 
@@ -184,59 +203,56 @@ export function App() {
         //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
         // }}
         >
-        
 
-        
-
-        {/* <div data-layout={appLayout} className="panels-container">
-      
-          <MenuPanel 
+          <MenuPanel
             layout={appLayout}
-            gameover={gameoverRef.current}
-            paused={paused.current}
-            controlMapCallback={
-              (e: any)=>{
-                keydownHandler(e)
+            gameover={appContext.gameOver}
+            paused={appContext.gamePaused}
+            // menuButtonCallback={ menuButtonCallback }
+            ></MenuPanel>
+
+          <div id="GamePanel" style={{
+            transform: `scale(${appScale})`
+          }}>
+            {/* @ts-expect-error Preact Component */}
+            <Game init={true} actionCallback={actionCallback} layout={appLayout} startingLevel={1}/>
+            <ActionToast layout={appLayout}
+            actions={actionQue.current || []} 
+            toastComplete={(id?: string)=>{
+              if(!actionQue.current || !id) {
+                return;
               }
-            }
-            menuButtonCallback={ menuButtonCallback }
-          ></MenuPanel> */}
-          {/* @ts-expect-error Preact Component */}
-          <Game init={true} actionCallback={actionCallback} layout={appLayout} startingLevel={1}/>
-          <ActionToast layout={appLayout}
-          actions={actionQue.current || []} 
-          toastComplete={(id?: string)=>{
-            if(!actionQue.current || !id) {
-              return;
-            }
-            for(let i=0; i<actionQue.current.length; i++) {
-              if(id === actionQue.current[i].id) {
-                actionQue.current.splice(i,1);
-                break;
+              for(let i=0; i<actionQue.current.length; i++) {
+                if(id === actionQue.current[i].id) {
+                  actionQue.current.splice(i,1);
+                  break;
+                }
               }
-            }
-            // console.log("toastComplete");
-          }}
-          />
+              // console.log("toastComplete");
+            }}
+            />
+          </div>
+          <StatsPanel layout={appLayout} fields={[
+            {
+              name: "Score",
+              // value: stats.current?.score ?? 0
+              value: appContext.stats.score
+            },
+            {
+              name: "Level",
+              // value: stats.current?.level ?? 1
+              value: appContext.stats.level
+            },
+            {
+              name: "Lines",
+              // value: stats.current?.lines ?? 0
+              value: appContext.stats.lines
+            },
+          ]}></StatsPanel>
             
-          <SoundBoard layout={appLayout} ref={soundBoardDomRef} volume={50}/>
-          {/* <StatsPanel layout={appLayout} fields={[
-              {
-                name: "Score",
-                value: stats.current?.score || 0
-              },
-              {
-                name: "Level",
-                value: stats.current?.level || 1
-              },
-              {
-                name: "Lines",
-                value: stats.current?.lines || 0
-              },
-            ]}>
-          </StatsPanel>
-        </div> */}
+          <SoundBoard layout={appLayout} ref={soundBoardDomRef} volume={DEFAULT_VOLUME_PCT}/>
       </div>
+      <DevPanel layout={appLayout} enabled={DEV_PANEL_ENABLED}></DevPanel>
       <Filters />
       </AppProvider>
     </>

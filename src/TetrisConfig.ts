@@ -37,6 +37,8 @@ export interface GameAction {
 export const ToastTimeout: number = 500;
 export const BaseToastDelay: number = 0.1;
 
+export const DEFAULT_VOLUME_PCT: number = 50;
+
 export enum ActionType {
   NO_LINES_CLEARED=-1,
   NONE,  // 0

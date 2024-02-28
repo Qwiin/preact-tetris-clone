@@ -3,6 +3,18 @@
 Where toast items are positioned from
 
 */
+.toast-action-wrapper {
+  /* tw-flex tw-items-center tw-h-14 tw-p-0 tw-w-full tw-justify-center */
+  display: flex;
+  align-items: center;
+  height: 0rem;
+  padding: 0;
+  width: 100%;
+  position: relative;
+  top: 0rem;
+  justify-content: center;
+}
+
 .toast-action-origin {
   position: relative;
   width: 22rem;
@@ -37,7 +49,7 @@ Where toast items are positioned from
   font-family: var(--font-action-toast);
   opacity: 1;
 
-  top: -16.5rem;
+  top: -14rem;
   left: -0.25rem;
   width: 6.5rem;
 }
@@ -106,7 +118,7 @@ h2.toast-combo {
   /* background-color: #FFF9; */
   display: flex;
   position: absolute;
-  top: -3rem;
+  top: -0.25rem;
   height:2rem;
   width: 5rem;
   opacity: 1;

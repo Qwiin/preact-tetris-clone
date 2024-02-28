@@ -14,7 +14,7 @@ export default defineConfig({
       '@sounds': path.resolve(__dirname, './src/assets/sounds')
     },
   },
-  plugins: [
+  plugins: [  
     preact(),
     copy({flatten: false,
       targets: [
@@ -24,7 +24,7 @@ export default defineConfig({
   ],
   build: {
     emptyOutDir: false,
-    outDir: 'dist',
+    outDir: './dist',
     assetsDir: 'assets',
   }
 })
