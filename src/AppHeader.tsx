@@ -1,9 +1,9 @@
 import { Link } from "preact-router";
 // import { CSSColors } from "./BaseTypes";
 import { TetrisLogoSvg } from "./components/TetrisLogoSvg";
-import { useContext, useEffect, useLayoutEffect, useReducer, useState } from "preact/hooks";
-import { Auth, getAuth } from "firebase/auth";
-import { PATH_HOME, PATH_LOGIN, PATH_PROFILE, PATH_SIGNUP } from "./App2";
+import { useContext, useLayoutEffect, useReducer } from "preact/hooks";
+import { getAuth } from "firebase/auth";
+import { PATH_HOME, PATH_PROFILE, PATH_SIGNUP } from "./App2";
 import { AppContext, GameStateAPI, UserContext, UserStateAPI } from "./AppProvider";
 
 export default function AppHeader() {
@@ -54,7 +54,7 @@ export default function AppHeader() {
               fillColor="#00000000" 
               fillOpacity={1} 
               strokeWidth={true ? "0.25rem" : "0.2rem"} 
-              height={true ? "5.2rem" : "5.5rem"}
+              height={true ? "6.5rem" : "5.5rem"}
               letterFilter={ 
                 // undefined
                 'url(#shadow2)'

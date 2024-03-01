@@ -151,6 +151,9 @@ const Game = (props: GameProps) => {
       initGame();
       appContext.api.resetComplete();
     }
+    else if(appContext.props.gameOver) {
+      gameOver();
+    }
     else {
       if(appContext.props.gamePaused) {
         pauseGame(false, true);
@@ -159,7 +162,7 @@ const Game = (props: GameProps) => {
         resumeGame(RESUME_DELAY);
       }
     }  
-  },[appContext.props.gamePaused, appContext.props.gameReset]);
+  },[appContext.props.gamePaused, appContext.props.gameOver, appContext.props.gameReset]);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -777,7 +780,8 @@ const Game = (props: GameProps) => {
 
           //check for gameover//
           if(newCellVal > 0 && newCellVal < 0.9) {
-            gameOver();
+            appContext.api.gameOver();
+            // gameOver();
             return;
           }
           lastPiecePosition.current = {
@@ -836,7 +840,8 @@ const Game = (props: GameProps) => {
         for(let i=rows.length - 20; i>=0; i--) {
           numBlocksOffscreen = rows[i].reduce((prev, curr)=> prev + (curr > 0 ? 1 : 0),numBlocksOffscreen);
           if(numBlocksOffscreen >= 4) {
-            gameOver();
+            appContext.api.gameOver();
+            // gameOver();
             return;
             // break;
           }
@@ -844,6 +849,32 @@ const Game = (props: GameProps) => {
 
         if(piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
           props.actionCallback({type: ActionType.SET_PIECE});
+        }
+
+        
+        if(!isTSpin.current && !isTSpin.current) {
+          appContext.api.updateStats(
+          {
+            ...stats.current, 
+            pieceMove: {
+              comboCount: comboCount.current,
+              linesCleared: 0,
+              timeStart: 0,
+              timeEnd: Date.now(),
+              pieceType: lastPieceType.current ?? TetronimoShape.NULL,
+              points: {
+                backToBack: 0,
+                base: 0,
+                combo: 0,
+                total: piece.softDropPoints + piece.hardDropPoints,
+                tSpin: 0,
+                softDrop: piece.softDropPoints ?? 0,
+                hardDrop: piece.hardDropPoints ?? 0,
+                levelMultiplier: stats.current?.level 
+                // note: points are calculated from level prior to current line clears
+              }
+            } as PieceMove
+          });
         }
 
         dropPoints.current = {soft: piece.softDropPoints, hard: piece.hardDropPoints};

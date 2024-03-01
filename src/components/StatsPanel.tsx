@@ -8,16 +8,19 @@ import { Scoring } from "./Game";
 export const updateStatsByRef = (stats: Scoring, ref: HTMLDivElement) => {
   const scoreEl: HTMLHeadingElement | null = ref.querySelector("#Stats_Score .stats-field-value");
   if(scoreEl) {
+    scoreEl.setAttribute("data-label", `${stats.score}`);
     scoreEl.innerText = `${stats.score}`;
   }
 
   const levelEl: HTMLHeadingElement | null = ref.querySelector("#Stats_Level .stats-field-value");
   if(levelEl) {
+    levelEl.setAttribute("data-label", `${stats.level}`);
     levelEl.innerText = `${stats.level}`;
   }
 
   const linesEl: HTMLHeadingElement | null = ref.querySelector("#Stats_Lines .stats-field-value");
   if(linesEl) {
+    linesEl.setAttribute("data-label", `${stats.lines}`);
     linesEl.innerText = `${stats.lines}`;
   }
 }
@@ -62,7 +65,7 @@ const StatsField = (props: StatsFieldProps) => {
     }
   },[stats[props.valueKey]]);
 
-  useEffect(()=>{
+  useEffect(()=>{http://localhost:5173/
     if(props.valueKey === "time") {
       if(interval.current) {
         clearInterval(interval.current);
@@ -70,12 +73,17 @@ const StatsField = (props: StatsFieldProps) => {
       interval.current = setInterval(()=>{
         if(valueRef.current && !_props.gamePaused && !_props.gameOver) {
           const elapsedTime = Date.now() - _props.timeStart - _props.timePausedTotal;
-          const _min = Math.floor(elapsedTime / 1000 / 60);
+          const _hr = Math.floor(elapsedTime / 1000 / 3600);
+          const _min = Math.floor((elapsedTime / 1000 - (_hr*60)) / 60);
           const _sec = (100 + Math.round(elapsedTime / 1000 - (_min * 60))).toString().substring(1,3);
-          const _tenths = (10 + Math.round(elapsedTime % 100)).toString().substring(1,2);
-          valueRef.current.innerText = `${_min + ":" + _sec + "." + _tenths}`;
+          // const _tenths = (10 + Math.round(elapsedTime % 100)).toString().substring(1,2);
+          const _timeFmt = `${_hr}:${(100 + _min).toString().substring(1,3)}:${_sec}`;
+          // const _timeFmt = `<div style="display: inline-block; width: 0.45rem">${_hr}</div>:<div style="display: inline-block; width: 0.9rem">${(_min + 100).toString().substring(1,3)}</div>:<div style="display: inline-block; width: 0.9rem">${_sec}</div>:<div style="display: inline-block; width: 0.45rem">${_tenths}</div>`;
+          // valueRef.current.innerHTML = _timeFmt;
+          valueRef.current.innerText = _timeFmt;
+          valueRef.current.setAttribute("data-label", _timeFmt);
         }
-      },50);
+      },100);
       return () => {
         if(interval.current) {
           clearInterval(interval.current);
@@ -84,26 +92,29 @@ const StatsField = (props: StatsFieldProps) => {
     }
   },[_props.gameReset, _props.gameOver, _props.gamePaused])
 
+  const value: string = props.valueKey === "time" ? "0:00.0" : stats[props.valueKey];
+
   return (
     <div id={props.id} className={`${props.className} stats-field`}>
-      <h3 className="stats-field-name">
+      <h3 className="stats-field-name" data-label={props.label}>
         {props.label}
       </h3>
       <div className="stats-field-value-bg">
-      {props.layout === LAYOUT_MOBILE &&
+      {true &&
         <div className="tw-flex tw-items-center tw-justify-end"
         style={{justifyContent: "flex-end",
-          width: `${4.3 - (props.index ?? 0)*0.62}rem`}}>
-        <h3 ref={valueRef} className="stats-field-value">
-          {props.valueKey === "time" ? "0:00.0" : stats[props.valueKey]}
+          // width: `${4.3 - (props.index ?? 0)*0.62}rem`
+          }}>
+        <h3 ref={valueRef} data-label={value} className="stats-field-value">
+          {value}
         </h3>
         </div>
       }
-      {props.layout === LAYOUT_DESKTOP &&
-        <h3 ref={valueRef} className="stats-field-value">
-          {props.valueKey === "time" ? "0:00.0" : stats[props.valueKey]}
+      {/* {props.layout === LAYOUT_DESKTOP &&
+        <h3 ref={valueRef} data-label={value} className="stats-field-value">
+          {value}
         </h3>
-      }
+      } */}
       </div>
     </div>
   );

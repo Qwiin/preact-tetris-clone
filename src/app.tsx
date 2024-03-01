@@ -29,7 +29,7 @@ const fakeMouseEventArgs:[string, any] = ["click",{
   buttons: 0,
 }];
 
-const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 540;
+const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 624;
 
 const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 404;
@@ -151,7 +151,10 @@ export function App() {
       if(newAppLayout === LAYOUT_DESKTOP) {
         
         const gamePanelBounds = gamePanelRef.current?.getBoundingClientRect();
-        if(gamePanelBounds) {
+        const statPanelRef = document.querySelector("#StatsPanel");
+        const statPanelBounds = statPanelRef?.getBoundingClientRect();
+
+        if(gamePanelBounds && statPanelBounds) {
           const BASE_WIDTH_GAME: number = 280; 
           const BASE_HEIGHT_GAME: number = 350; 
           const gameWidthScale = gamePanelBounds.width / BASE_WIDTH_GAME;
@@ -160,16 +163,12 @@ export function App() {
           setMainPanelScale(_mainPanelScale);
           console.log(_mainPanelScale);
           // gamePanelRef.current.style.transform("")
-        }
-
-        let statPanelRef = document.querySelector("#StatsPanel");
-        let statPanelBounds = statPanelRef?.getBoundingClientRect();
-        if(statPanelBounds) {
+        
           const BASE_WIDTH_SIDE_PANEL: number = 140; 
           const BASE_HEIGHT_SIDE_PANEL: number = 350; 
-          const gameWidthScale = statPanelBounds.width * 0.9 / BASE_WIDTH_SIDE_PANEL;
-          const gameHeightScale = statPanelBounds.height * 0.8 / BASE_HEIGHT_SIDE_PANEL;
-          const _sidePanelScale = Math.min(gameWidthScale, gameHeightScale);
+          const panelWidthScale = statPanelBounds.width * 1 / BASE_WIDTH_SIDE_PANEL;
+          const panelHeightScale = statPanelBounds.height * 0.9 / BASE_HEIGHT_SIDE_PANEL;
+          const _sidePanelScale = Math.min(panelWidthScale, panelHeightScale, _mainPanelScale * 0.75);
           setSidePanelScale(_sidePanelScale);
           console.log(_sidePanelScale);
         }

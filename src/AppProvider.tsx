@@ -1,9 +1,9 @@
 import { createContext } from "preact";
-import { useContext, useReducer } from "preact/hooks";
+import { useReducer } from "preact/hooks";
 import { newUID } from "./utils/AppUtil";
-import { Auth, User, getAuth } from "firebase/auth";
+import { User, getAuth } from "firebase/auth";
 
-import { Firestore, addDoc, collection, getFirestore } from 'firebase/firestore';
+import { Firestore, getFirestore, addDoc, collection } from 'firebase/firestore';
 import { FirebaseApp, initializeApp } from "firebase/app";
 import { RESUME_DELAY } from "./components/Game";
 
@@ -25,29 +25,16 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app: FirebaseApp = initializeApp(firebaseConfig);
-const auth: Auth = getAuth(app);
 // const analytics: Analytics = getAnalytics(app);
-
 // Initialize Cloud Firestore and get a reference to the service
-const db: Firestore = getFirestore(app);
 
 interface ReducerAction {
   type: string,
   payload?: any,
 }
 
-// async function connect() {
-//   try {
-//     const docRef = await addDoc(collection(db, "users"), {
-//       first: "Devon",
-//       last: "Quinn",
-//       born: 1984
-//     });
-//     console.log("Document written with ID: ", docRef.id);
-//   } catch (e) {
-//     console.error("Error adding document: ", e);
-//   }
-// }
+const db: Firestore = getFirestore(app);
+
 
 // connect();
 
@@ -86,7 +73,7 @@ export interface GameState {
     timePauseStart: number;
     timePausedTotal: number;
     timeGameTotal: number; // elapsed time (in ms) of unpaused gameplay;
-    timeEnd: number | undefined;
+    timeEnd: number;
 
     stats: {
       level: number;
@@ -103,6 +90,8 @@ export interface GameState {
     gameMode: "marathon" | "time_attack" | "campaign";
   };
 }
+
+
 
 const initialGameState: GameState = {
   iter: 0,
@@ -124,7 +113,7 @@ const initialGameState: GameState = {
     timePauseStart: 0,  // Date - marking time pause was initiated;
     timePausedTotal: 500,  // when unpaused, the pause duration is calculated and added to this field;
     timeGameTotal: 0,
-    timeEnd: undefined,
+    timeEnd: 0,
   }
 }
 export interface GameStateAPI extends GameState {
@@ -132,6 +121,7 @@ export interface GameStateAPI extends GameState {
     pauseGame: () => void;
     resumeGame: () => void;
     resetGame: () => void; 
+    gameOver: () => void;
     resetComplete: () => void;
     showOptions: () => void;
     hideOptions: () => void;
@@ -233,8 +223,9 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       const gameId = newUID();  // TODO: move into initial state;
       const gameResults = JSON.stringify(obj);
       localStorage.setItem(gameId, gameResults);
-      getAuth()
-    
+      
+      saveResults(state);
+
       console.log(gameResults);
       return state;
     }
@@ -439,21 +430,50 @@ export function UserProvider(props: ProviderProps) {
   );
 }
 
+async function saveResults(gameState: GameState) {
+  const currentUser = getAuth().currentUser;
+  let obj: any = {
+    user_uid: currentUser?.uid ?? 'anonymous',
+    user_displayname: currentUser?.displayName ?? 'anonymous'
+  };
+
+  try {
+    const docRef = await addDoc(collection(db, "games"), {
+      user_uid: obj.user_uid,
+      user_displayname: obj.user_displayname,
+      moves: gameState.props.stats.pieceMoves,
+      final_score: gameState.props.stats.score,
+      start_time: gameState.props.timeStart,
+      end_time: gameState.props.timeEnd,
+      pause_time: gameState.props.timePausedTotal,
+      elapsed_time: gameState.props.timeEnd - gameState.props.timeStart - gameState.props.timePausedTotal,
+      max_lvl: gameState.props.stats.level,
+      lines_cleared: gameState.props.stats.lines,
+      starting_lvl: gameState.props.startingLevel,
+      game_mode: gameState.props.gameMode,   
+    });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
+
 export const samepleUserData: any = { 
   "uid": "DHrOIrNYzLOYIKSGXIiMIlZRsPK2", 
-  "email": "aanika.quinn@gmail.com", 
+  "email": "jane.doe@gmail.com", 
   "emailVerified": true, 
-  "displayName": "aanika quinn", 
+  "displayName": "jane doe", 
   "isAnonymous": false, 
-  "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4FFmYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c", 
+  "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4FklFYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c", 
   "providerData": [
     { 
       "providerId": "google.com", 
-      "uid": "113292800547509447818", 
-      "displayName": "aanika quinn", 
-      "email": "aanika.quinn@gmail.com", 
+      "uid": "151413121110987654321", 
+      "displayName": "jane doe", 
+      "email": "jane.doe@gmail.com",
       "phoneNumber": null, 
-      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4FFmYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c" 
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4klFYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c" 
     }
   ], 
   "stsTokenManager": { 

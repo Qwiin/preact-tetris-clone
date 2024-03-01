@@ -68,32 +68,51 @@ export const TetrisLogoSvg = (props:Props) => {
       width={getWidth()} 
       height={getHeight()}
       viewBox={`${-X_PAD} ${-Y_PAD} ${240 + X_PAD} ${100+X_PAD}`}
+      
       // style={{border: "1px solid green"}}
       >
 
       <defs>
 
+    
+        <linearGradient id="fadeGrad" y2="1" x2="0" 
+        gradientTransform="rotate(-8.5)"
+        >
+          {/* <stop offset="0" stop-color="white" stop-opacity="1"/> */}
+          <stop offset="0.65" stop-color="white" stop-opacity="1"/>
+          <stop offset="0.8" stop-color="white" stop-opacity="0"/>
+        </linearGradient>
+
+        <mask id="fadeMask" maskContentUnits="objectBoundingBox">
+          <rect width="1" height="1" fill="url(#fadeGrad)"/>
+        </mask>
+  
+
         <radialGradient
           id="TitleGradient"
-          spreadMethod="pad">
+          spreadMethod="pad"
+          
+          >
           <stop offset="0%" stopColor={GLOW_COLOR} stopOpacity={0.9}/>
           <stop offset="33%" stopColor={GLOW_COLOR} stopOpacity={0.45}/>
-          <stop offset="66%" stopColor={GLOW_COLOR} stopOpacity={0.225}/>
+          <stop offset="66%" stopColor={GLOW_COLOR} stopOpacity={0.15}/>
           <stop offset="100%" stopColor={GLOW_COLOR} stopOpacity={0}/>
         </radialGradient>
 
       </defs>
 
       <g id="word0" filter="url(#shadow3)">
-        <ellipse fill={'url(#TitleGradient)'}
+        <ellipse fill={'url(#TitleGradient)'} filter="url(#shadow2)" opacity={0.5}
           cx={`${50 - X_PAD * 100 / (240+X_PAD)}%`} 
-          cy={`${52 - Y_PAD * 100 / (100+Y_PAD)}%`} 
+          cy={`${(52 - Y_PAD * 100 / (100+Y_PAD))*0.96}%`} 
           rx={`${50 + (X_PAD/2/2.4)}%`}
-          ry={`${40 + (Y_PAD/2/100)}%`} >
+          ry={`${(40 + (Y_PAD/2/100))*1.1}%`} >
           
         </ellipse>
       </g>
-      <g id="lettersWrapper" transform={`translate(${-X_PAD/2} ${Y_PAD})`}>
+      
+      <g id="lettersWrapper" transform={`translate(${-X_PAD/2} ${Y_PAD})`} style={{padding: "0.1rem"}} mask={"url(#fadeGrad)"}>
+        
         <g id="letter0" filter={getLetterFilter(0)}>
           <path d={`
               M 10, 10
@@ -270,8 +289,9 @@ export const TetrisLogoSvg = (props:Props) => {
           fillOpacity={props.fillOpacity}
         />
         </g>
-        <g id="letter4" filter={getLetterFilter(4)}>
-        <path d={`
+        <g id="letter4" mask="url(#fadeMask)">
+        <rect transform={`translate(${-X_PAD/2} ${Y_PAD})`} y="-10%" x="69.3%" width="7%" height="75%" fill="transparent"></rect>
+        <path filter={getLetterFilter(4)} d={`
             M 180, 10
             L 190, 10
             L 190, 50
@@ -286,7 +306,7 @@ export const TetrisLogoSvg = (props:Props) => {
           strokeLinejoin={props.strokeLinejoin}
           fillOpacity={props.fillOpacity}
         />
-        <path d={`
+        <path filter={getLetterFilter(4)} d={`
             M 180, 50
             L 190, 50
             L 190, 90
@@ -300,6 +320,7 @@ export const TetrisLogoSvg = (props:Props) => {
           strokeLinecap={props.strokeLinecap}
           strokeLinejoin={props.strokeLinejoin}
           fillOpacity={props.fillOpacity}
+          
         />
         </g>
         <g id="letter5" filter={getLetterFilter(5)}>
