@@ -30,7 +30,7 @@ const Signup = () => {
   }
 
   return (
-    <main >
+    <main id="SignUp" className="tw-flex tw-items-center tw-justify-center tw-h-full tw-w-full">
       <section>
         <div>
           <div>

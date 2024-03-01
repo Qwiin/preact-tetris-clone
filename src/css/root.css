@@ -7,11 +7,15 @@
   --font-stats-value: 'SF Digital Heavy';
   --font-action-toast: 'SfTheraminGothicBold';
 
+  --app-header-gradient: linear-gradient(rgba(16, 22, 28, 0.7),rgba(53, 69, 85, 0.9) 42%,rgba(16, 22, 28, 0.7));
+
   --effect-z-index: 300;
 
-  --piece-que-item-scale: scale(60%);
+  --piece-que-item-scale: 50%;
 
   --scale-control-button-mobile: 1.25;
+
+  --nav-header-height: 50pt;  /*  iOS design guidline */
 
   --cell-contrast: 1.05;
   /* --cell-blur: 0.03125rem; */

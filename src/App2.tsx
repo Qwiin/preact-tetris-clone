@@ -6,8 +6,8 @@ import Router, { route } from 'preact-router';
 import { Component } from 'preact';
 import AsyncRoute from 'preact-async-route';
 import AppHeader from './AppHeader';
-import { useReducer } from 'preact/hooks';
-import { UserProvider } from './AppProvider';
+import { useEffect, useReducer } from 'preact/hooks';
+import AppProvider, { UserProvider } from './AppProvider';
 
 export const PATH_HOME   = '/';
 export const PATH_SIGNUP = '/signup';
@@ -28,6 +28,8 @@ function App2() {
   return (
     <div class="app-wrapper">
       <UserProvider>
+      <></>
+      <AppProvider>
       <AppHeader />
       <Router>
         {/*<Home loggedIn={true} path="/" />*/}
@@ -58,6 +60,7 @@ function App2() {
         />
         <NotFound default />
       </Router>
+      </AppProvider>
       </UserProvider>
     </div>
   );

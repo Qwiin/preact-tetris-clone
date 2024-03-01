@@ -2,7 +2,7 @@ import { User, getAuth, signOut } from "firebase/auth";
 import { route } from "preact-router";
 import { PATH_HOME } from "./App2";
 import { useContext } from "preact/hooks";
-import { UserContext, UserState } from "./AppProvider";
+import { UserContext, UserStateAPI } from "./AppProvider";
 
 interface ProfileProps {
   currentUser: User;
@@ -12,7 +12,7 @@ const Profile = (props: ProfileProps) => {
 
   const auth = getAuth();
   const currentUser = auth.currentUser;
-  const userState: UserState = useContext(UserContext);
+  const userState = useContext(UserContext) as UserStateAPI;
   
   const renderProfile = () => {
 
@@ -38,7 +38,7 @@ const Profile = (props: ProfileProps) => {
     if(userState.clearUser) { 
       userState.clearUser(); 
     }
-    
+
     signOut(auth).then(()=>{
       route(PATH_HOME,true);
     });

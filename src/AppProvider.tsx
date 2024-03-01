@@ -1,10 +1,11 @@
 import { createContext } from "preact";
-import { useReducer } from "preact/hooks";
+import { useContext, useReducer } from "preact/hooks";
 import { newUID } from "./utils/AppUtil";
 import { Auth, User, getAuth } from "firebase/auth";
 
 import { Firestore, addDoc, collection, getFirestore } from 'firebase/firestore';
 import { FirebaseApp, initializeApp } from "firebase/app";
+import { RESUME_DELAY } from "./components/Game";
 
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -35,20 +36,20 @@ interface ReducerAction {
   payload?: any,
 }
 
-async function connect() {
-  try {
-    const docRef = await addDoc(collection(db, "users"), {
-      first: "Devon",
-      last: "Quinn",
-      born: 1984
-    });
-    console.log("Document written with ID: ", docRef.id);
-  } catch (e) {
-    console.error("Error adding document: ", e);
-  }
-}
+// async function connect() {
+//   try {
+//     const docRef = await addDoc(collection(db, "users"), {
+//       first: "Devon",
+//       last: "Quinn",
+//       born: 1984
+//     });
+//     console.log("Document written with ID: ", docRef.id);
+//   } catch (e) {
+//     console.error("Error adding document: ", e);
+//   }
+// }
 
-connect();
+// connect();
 
 // // Import the functions you need from the SDKs you need
 // import { FirebaseApp, initializeApp } from "firebase/app";
@@ -79,73 +80,149 @@ export interface PieceMove {
 }
 
 export interface GameState {
-  timeStart: number;
-  elapsedTime: number;
-  timeEnd: number | undefined;
+  iter: number;
+  props: {
+    timeStart: number;
+    timePauseStart: number;
+    timePausedTotal: number;
+    timeGameTotal: number; // elapsed time (in ms) of unpaused gameplay;
+    timeEnd: number | undefined;
 
-  stats: {
-    level: number;
-    lines: number;
-    score: number;
-    pieceMoves: PieceMove[];
+    stats: {
+      level: number;
+      lines: number;
+      score: number;
+      pieceMoves: PieceMove[];
+    };
+    showOptions: boolean;
+    gameReset: boolean;
+    gamePaused: boolean;
+    gameOver: boolean;
+    gameSpeed: number;
+    startingLevel: number;
+    gameMode: "marathon" | "time_attack" | "campaign";
   };
-  gamePaused: boolean;
-  gameOver: boolean;
-  gameSpeed: number;
-  startingLevel: number;
-
-  gameMode: "marathon" | "time_attack" | "campaign";
 }
 
-export interface GameStateAPI extends GameState {
-  pauseGame: () => void;
-  resumeGame: () => void;
-  restartGame: () => void; // TODO: wire up
-  updateStats: (stats: any) => void;
-  saveResults: () => void;
-}
 const initialGameState: GameState = {
-  stats: {
-    level: 1,
-    lines: 0,
-    score: 0,
-    pieceMoves: [],
-  },
-  gameOver: false,
-  gamePaused: false,
-  gameSpeed: 1,
-  startingLevel: 1,
-  gameMode: "marathon",
-  timeStart: Date.now(),
-  elapsedTime: 0,
-  timeEnd: undefined,
+  iter: 0,
+  props: {
+    stats: {
+      level: 1,
+      lines: 0,
+      score: 0,
+      pieceMoves: [],
+    },
+    gameOver: false,
+    gamePaused: false,
+    gameReset: false,
+    gameSpeed: 1,
+    showOptions: false,
+    startingLevel: 1,
+    gameMode: "marathon",
+    timeStart: Date.now(),
+    timePauseStart: 0,  // Date - marking time pause was initiated;
+    timePausedTotal: 500,  // when unpaused, the pause duration is calculated and added to this field;
+    timeGameTotal: 0,
+    timeEnd: undefined,
+  }
+}
+export interface GameStateAPI extends GameState {
+  api: {
+    pauseGame: () => void;
+    resumeGame: () => void;
+    resetGame: () => void; 
+    resetComplete: () => void;
+    showOptions: () => void;
+    hideOptions: () => void;
+    addToScore: (value: number) => void;  // optimized method for updating score during soft drop
+    updateStats: (stats: any) => void;
+    saveResults: () => void;
+    stats: () => void;
+  }
 }
 
 const appReducer = (state: GameState, action: ReducerAction) => {
   console.log("appReducer Called");
   switch (action.type) {
     case 'PAUSE': {
-      return {
-        ...state,
-        gamePaused: true
-      };
+      if(state.props.gamePaused !== true) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.timePauseStart = Date.now();
+        newState.props.gamePaused = true;
+        return newState;
+      }
+      break;
     }
     case 'RESUME': {
-      return {
-        ...state,
-        gamePaused: false
-      };
+      if(state.props.gamePaused === true) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.timePausedTotal += Date.now() - state.props.timePauseStart + RESUME_DELAY;
+        console.log(`timePausedTotal: ${newState.props.timePausedTotal}`);
+        newState.props.gamePaused = false;
+        return newState;
+      }
+      break;
+    }
+    case 'ADD_TO_SCORE': {
+      // const newState = { ...state };
+      // state.iter += 1;
+      state.props.stats.score += action.payload;
+      return state;
     }
     case 'UPDATE_STATS': {
-      let newState = { ...state };
-      newState.stats.level = action.payload.level;
-      newState.stats.lines = action.payload.lines;
-      newState.stats.score = action.payload.score;
-      newState.stats.pieceMoves.push(action.payload.pieceMove);
+      const newState = { ...state };
+      newState.iter += 1;
+      newState.props.stats.level = action.payload.level;
+      newState.props.stats.lines = action.payload.lines;
+      newState.props.stats.score = action.payload.score;
+      newState.props.stats.pieceMoves.push(action.payload.pieceMove);
       return newState;
     }
+    case 'SHOW_OPTIONS': {
+      if(state.props.showOptions !== true) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.showOptions = true;
+        return newState;
+      }
+      break;
+    }
+    case 'HIDE_OPTIONS': {
+      if(state.props.showOptions === true) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.showOptions = false;
+        return newState;
+      }
+      break;
+    }
+    case 'UPDATE_STATS_SILENT': {
+      const newState = state;
+      newState.iter += 1;
+      newState.props.stats.level = action.payload.level;
+      newState.props.stats.lines = action.payload.lines;
+      newState.props.stats.score = action.payload.score;
+      newState.props.stats.pieceMoves.push(action.payload.pieceMove);
+      return newState;
+    }
+    case 'GAME_OVER' : {
+      if(state.props.gameOver === false) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.gameOver = true;
+        newState.props.timeEnd = Date.now();
+        return newState;
+      }
+      break;
+    }
     case 'SAVE_RESULTS': {
-      let obj: any = {};
+      let obj: any = {
+        user_uid: getAuth().currentUser?.uid ?? 'anonymous',
+        user_displayname: getAuth().currentUser?.displayName ?? 'anonymous'
+      };
       Object.keys(state).forEach((key: string) => {
         if (key !== "pauseGame" && key !== "resumeGame" && key !== "updateStats") {
           obj[key] = (state as any)[key];
@@ -156,19 +233,38 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       const gameId = newUID();  // TODO: move into initial state;
       const gameResults = JSON.stringify(obj);
       localStorage.setItem(gameId, gameResults);
+      getAuth()
+    
       console.log(gameResults);
       return state;
     }
-    case 'RESTART': {
-      return {
-        ...JSON.parse(JSON.stringify(initialGameState)),
-        timeStart: Date.now()
-      };
+    case 'RESET_GAME': {
+      const newState: GameState = JSON.parse(JSON.stringify(
+        {
+          ...state, 
+          ...initialGameState,
+        }));
+      newState.props.timeStart = Date.now();
+      newState.props.gamePaused = false;
+      newState.props.gameOver = false;
+      newState.props.gameSpeed = 1;
+      newState.props.gameReset = true;
+      // newState.props.gameReset = true;
+      return newState;
+    }
+    case 'RESET_COMPLETE': {
+      if(state.props.gameReset === true) {
+        const newState = { ...state };
+        newState.props.gameReset = false;
+        return newState;
+      }
+      break;
     }
     default: {
       return state;
     }
   }
+  return state;
 };
 
 export const AppContext = createContext<GameState>(initialGameState);
@@ -191,16 +287,49 @@ export default function AppProvider(props: ProviderProps) {
       type: 'RESUME'
     });
   }
-
-  const restartGame = () => {
+  const gameOver = () => {
     dispatch({
-      type: 'RESTART'
+      type: 'GAME_OVER'
     });
   }
 
+  const resetGame = () => {
+    dispatch({
+      type: 'RESET_GAME'
+    });
+  }
+  const resetComplete = () => {
+    dispatch({
+      type: 'RESET_COMPLETE'
+    });
+  }
+
+  const showOptions = () => {
+    dispatch({
+      type: 'SHOW_OPTIONS'
+    });
+  }
+  const hideOptions = () => {
+    dispatch({
+      type: 'HIDE_OPTIONS'
+    });
+  }
+
+  const addToScore = ( points: number) => {
+    dispatch({
+      type: 'ADD_TO_SCORE',
+      payload: points
+    });
+  }
+  // const updateStats = (stats: any) => {
+  //   dispatch({
+  //     type: 'UPDATE_STATS',
+  //     payload: stats,
+  //   });
+  // }
   const updateStats = (stats: any) => {
     dispatch({
-      type: 'UPDATE_STATS',
+      type: 'UPDATE_STATS_SILENT',
       payload: stats,
     });
   }
@@ -210,15 +339,28 @@ export default function AppProvider(props: ProviderProps) {
     });
   }
 
+  const stats = () => {
+    return state.props.stats;
+  }
+  
+
   return (
     <AppContext.Provider
       value={{
         ...state,
-        pauseGame,
-        resumeGame,
-        restartGame,
-        updateStats,
-        saveResults
+        api: {
+          pauseGame,
+          resumeGame,
+          gameOver,
+          resetGame,
+          resetComplete,
+          addToScore,
+          updateStats,
+          saveResults,
+          showOptions,
+          hideOptions,
+          stats,
+        }
       } as GameStateAPI}
     >
       {children}

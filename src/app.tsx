@@ -1,6 +1,6 @@
 import { Ref } from 'preact';
 import { useContext, useEffect, useReducer, useRef, useState } from 'preact/hooks';
-import { DEFAULT_VOLUME_PCT, GameAction } from './TetrisConfig';
+
 import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
@@ -15,8 +15,10 @@ import { DevPanel } from './components/DevPanel';
 // import { StatsPanel } from './components/StatsPanel';
 // import { MenuPanel } from './components/MenuPanel';
 import AppProvider, { AppContext, GameStateAPI } from './AppProvider';
-import { MenuButtonAction, MenuPanel } from './components/MenuPanel';
-import { StatsPanel } from './components/StatsPanel';
+import { MenuPanel } from './components/MenuPanel';
+import { StatsPanel, updateStatsByRef } from './components/StatsPanel';
+import OptionsModal from './OptionsModal';
+import { GameAction } from './TetrisConfig';
 
 const DEV_PANEL_ENABLED: boolean = true;
 
@@ -32,27 +34,37 @@ const PORTRAIT_MODE_WIDTH_THRESHOLD: number = 540;
 const MIN_DESKTOP_WIDTH: number = 803;
 const MIN_DESKTOP_HEIGHT: number = 404;
 
-const RESIZE_DEBOUNCE_TIMEOUT: number = 500;
+const RESIZE_DEBOUNCE_TIMEOUT: number = 100;
 
 export function App() {
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
   const soundBoardDomRef:Ref<HTMLDivElement> = useRef(null);
+  const statsRef: Ref<HTMLDivElement> = useRef(null);
   const actionQue: Ref<GameAction[]> = useRef([]);
   const [theme, setTheme] = useState(1);
   const resizeTimeout: Ref<NodeJS.Timeout> = useRef(null);
   const appContext = useContext(AppContext) as GameStateAPI;
 
+  const gamePanelRef: Ref<HTMLDivElement> = useRef(null);
+  
   const appContainerRef: Ref<HTMLDivElement> = useRef(null);
   
   const [appScale, setAppScale] = useState(1);
+  const [mainPanelScale, setMainPanelScale] = useState(1);
+  const [sidePanelScale, setSidePanelScale] = useState(1);
   const [appLayout, setAppLayout] = useState<AppLayout>("desktop");
 
   useEffect(() => {
-    window.addEventListener("resize", handleWindowResize)
+    // window.addEventListener("resize", handleWindowResize);
+    window.onresize = handleWindowResize;
+    window.onblur = ()=>{ appContext.api.pauseGame(); }
+    
 
     // scale on mount
-    handleWindowResize();
+    setTimeout(()=>{
+      handleWindowResize();
+    }, 500);
 
     return () => {
       window.removeEventListener("resize",handleWindowResize);
@@ -86,16 +98,17 @@ export function App() {
 
   const resizeApp = () => {
 
-      // let windowAspectRatio = window.innerWidth / window.innerHeight;
-      let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
-      let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
-      console.log({hScale, vScale});
+    
+    // let windowAspectRatio = window.innerWidth / window.innerHeight;
+    let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
+    let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
+    console.log({hScale, vScale});
 
     console.log({portraitRatio: window.innerHeight / window.innerWidth});
 
       let scaleRatio: number = hScale/vScale;
       let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) 
-        ? Math.min(Math.max(hScale, vScale), window.innerWidth/PORTRAIT_MODE_WIDTH_THRESHOLD * 1.68)  // PORTRAIT MODE
+        ? Math.min(Math.max(hScale, vScale), window.innerWidth/PORTRAIT_MODE_WIDTH_THRESHOLD * 2.0)  // PORTRAIT MODE
         : Math.min(hScale, vScale);
 
       let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
@@ -131,6 +144,37 @@ export function App() {
 
       console.log({vScale, hScale, scaleRatio});
       console.log(`scale(${newAppScale})`);
+
+
+      
+
+      if(newAppLayout === LAYOUT_DESKTOP) {
+        
+        const gamePanelBounds = gamePanelRef.current?.getBoundingClientRect();
+        if(gamePanelBounds) {
+          const BASE_WIDTH_GAME: number = 280; 
+          const BASE_HEIGHT_GAME: number = 350; 
+          const gameWidthScale = gamePanelBounds.width / BASE_WIDTH_GAME;
+          const gameHeightScale = gamePanelBounds.height * 0.96 / BASE_HEIGHT_GAME;
+          const _mainPanelScale = Math.min(gameWidthScale, gameHeightScale);
+          setMainPanelScale(_mainPanelScale);
+          console.log(_mainPanelScale);
+          // gamePanelRef.current.style.transform("")
+        }
+
+        let statPanelRef = document.querySelector("#StatsPanel");
+        let statPanelBounds = statPanelRef?.getBoundingClientRect();
+        if(statPanelBounds) {
+          const BASE_WIDTH_SIDE_PANEL: number = 140; 
+          const BASE_HEIGHT_SIDE_PANEL: number = 350; 
+          const gameWidthScale = statPanelBounds.width * 0.9 / BASE_WIDTH_SIDE_PANEL;
+          const gameHeightScale = statPanelBounds.height * 0.8 / BASE_HEIGHT_SIDE_PANEL;
+          const _sidePanelScale = Math.min(gameWidthScale, gameHeightScale);
+          setSidePanelScale(_sidePanelScale);
+          console.log(_sidePanelScale);
+        }
+        
+      }
   }
 
   const actionCallback = (a: GameAction) => {
@@ -156,7 +200,7 @@ export function App() {
 
   // const menuButtonCallback = (action: MenuButtonAction) => {
   //   if(action === "restart") {    
-  //     appContext.restartGame();
+  //     appContext.resetGame();
   //     return;
   //   }
   //   if(action === "pause") {
@@ -205,54 +249,47 @@ export function App() {
         >
 
           <MenuPanel
+            scale={sidePanelScale}
             layout={appLayout}
-            gameover={appContext.gameOver}
-            paused={appContext.gamePaused}
-            // menuButtonCallback={ menuButtonCallback }
-            ></MenuPanel>
+            ref={soundBoardDomRef}>
+            </MenuPanel>
 
-          <div id="GamePanel" style={{
-            transform: `scale(${appScale})`
-          }}>
+          <div id="GamePanel" ref={gamePanelRef}>
+            <div id="GameScaleWrapper" style={{
+              transform: `scale(${mainPanelScale})`
+            }}>
             {/* @ts-expect-error Preact Component */}
-            <Game init={true} actionCallback={actionCallback} layout={appLayout} startingLevel={1}/>
-            <ActionToast layout={appLayout}
-            actions={actionQue.current || []} 
-            toastComplete={(id?: string)=>{
-              if(!actionQue.current || !id) {
-                return;
-              }
-              for(let i=0; i<actionQue.current.length; i++) {
-                if(id === actionQue.current[i].id) {
-                  actionQue.current.splice(i,1);
-                  break;
+              <Game init={true} actionCallback={actionCallback} layout={appLayout} startingLevel={1} 
+              statsCallback={ () => {
+                  if (statsRef.current) {
+                    updateStatsByRef(appContext.props.stats, statsRef.current);
+                  }
+                  else {
+                    console.error("statsRef is not mounted");
+                  }
                 }
-              }
-              // console.log("toastComplete");
-            }}
-            />
+              }/>
+              <ActionToast layout={appLayout}
+              actions={actionQue.current || []} 
+              toastComplete={(id?: string)=>{
+                if(!actionQue.current || !id) {
+                  return;
+                }
+                for(let i=0; i<actionQue.current.length; i++) {
+                  if(id === actionQue.current[i].id) {
+                    actionQue.current.splice(i,1);
+                    break;
+                  }
+                }
+                // console.log("toastComplete");
+              }}
+              />
+            </div>
           </div>
-          <StatsPanel layout={appLayout} fields={[
-            {
-              name: "Score",
-              // value: stats.current?.score ?? 0
-              value: appContext.stats.score
-            },
-            {
-              name: "Level",
-              // value: stats.current?.level ?? 1
-              value: appContext.stats.level
-            },
-            {
-              name: "Lines",
-              // value: stats.current?.lines ?? 0
-              value: appContext.stats.lines
-            },
-          ]}></StatsPanel>
-            
-          <SoundBoard layout={appLayout} ref={soundBoardDomRef} volume={DEFAULT_VOLUME_PCT}/>
+          <StatsPanel ref={statsRef} layout={appLayout} scale={sidePanelScale}></StatsPanel>
       </div>
-      <DevPanel layout={appLayout} enabled={DEV_PANEL_ENABLED}></DevPanel>
+      {/* <DevPanel layout={appLayout} enabled={DEV_PANEL_ENABLED}></DevPanel> */}
+      <OptionsModal></OptionsModal>
       <Filters />
       </AppProvider>
     </>

@@ -1,25 +1,48 @@
 import { Link } from "preact-router";
 // import { CSSColors } from "./BaseTypes";
 import { TetrisLogoSvg } from "./components/TetrisLogoSvg";
-import { useContext, useEffect, useState } from "preact/hooks";
+import { useContext, useEffect, useLayoutEffect, useReducer, useState } from "preact/hooks";
 import { Auth, getAuth } from "firebase/auth";
 import { PATH_HOME, PATH_LOGIN, PATH_PROFILE, PATH_SIGNUP } from "./App2";
-import { UserContext } from "./AppProvider";
+import { AppContext, GameStateAPI, UserContext, UserStateAPI } from "./AppProvider";
 
 export default function AppHeader() {
 
-  const userState = useContext(UserContext);
+  const userState = useContext(UserContext) as UserStateAPI;
+  const gameState = useContext(AppContext) as GameStateAPI;
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
   // const [signedIn, setSignedIn] = useState(false);
 
   const currentUser = getAuth().currentUser;
 
+  useLayoutEffect(()=>{
+    if(!currentUser && !userState.user) {
+      setTimeout(()=>{
+        forceUpdate(1);
+      },1000);
+    }
+    if(currentUser && !userState.user) {
+      userState.setUser(currentUser);
+      // setTimeout(()=>{
+      //   forceUpdate(1);
+      // },1000);
+    }
+  },[currentUser, userState.user]);
+
   return (
 
-    <header className={`app-header tw-h-16`} style={{zIndex:5000}}>
+    <header id="AppHeader" className={`app-header tw-h-16`} style={{zIndex:5000}}>
       <nav className={`nav-item left tw-h-auto tw-z-50 tw-bg-slate-600`}>
-      <div className="nav-icon settings">
+        <div className={`nav-icon settings ${gameState.props.showOptions ? 'open' : ''}`} onClick={()=>{
+          if(gameState.props.showOptions === true) {
+            gameState.api.hideOptions();
+          }
+          else {
+            gameState.api.showOptions();
+          }
+        }}>
 
-      </div>
+        </div>
       </nav>
       
       <Link href={PATH_HOME} style={{display: "block"}}>

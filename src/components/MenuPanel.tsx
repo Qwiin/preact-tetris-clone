@@ -1,16 +1,14 @@
-import { useContext } from "preact/hooks";
+import { useContext, useEffect, useState } from "preact/hooks";
 import { AppLayout, BaseComponentProps } from "../BaseTypes";
 import ControlsMap from "./ControlsMap";
 import { AppContext, GameStateAPI } from "../AppProvider";
+import { forwardRef } from "preact/compat";
+import { Ref } from "preact";
+
+import { DEFAULT_VOLUME_PCT } from '../TetrisConfig';
+import SoundBoard from "./SoundBoard";
 
 export type MenuButtonAction = "restart" | "pause";
-interface MenuPanelProps extends BaseComponentProps {
-  // controlMapCallback: (fakeInputEvent: any) => void;
-  // menuButtonCallback: (action: MenuButtonAction) => void;
-  gameover: boolean;
-  paused: boolean;
-  layout: AppLayout;
-}
 
 const fakeKeyboardEventArgs:[string, any] = ["keydown",{
   view: window,
@@ -19,43 +17,62 @@ const fakeKeyboardEventArgs:[string, any] = ["keydown",{
   key: ''
 }];
 
-export function MenuPanel(props:MenuPanelProps) {
-  const {paused, gameover} = props;
+export const MenuPanel = forwardRef(function MenuPanel(props:BaseComponentProps, soundBoardDomRef:Ref<HTMLDivElement>) {
+  const gameState = useContext(AppContext) as GameStateAPI;
+
+  const [gamePaused, setGamePaused] = useState(gameState.props.gamePaused);
+  const [gameOver, setGameOver] = useState(gameState.props.gameOver);
+
+  
+
+  useEffect(()=>{
+    setGamePaused(gameState.props.gamePaused);
+    setGameOver(gameState.props.gameOver);
+  },[gameState.props.gamePaused, gameState.props.gameOver]);
+
   const isDesktop = props.layout === 'desktop';
-  const appState = useContext(AppContext) as GameStateAPI;
+  
   return (
     <div id="MenuPanel" data-layout={props.layout} className="menu-panel">
-        <button className={
-          `tetris-font menu-button btn-restart 
-           ${(paused === false && gameover === false) ? 'disabled': ''}`
-          } 
-          onClick={()=>{
-            // props.menuButtonCallback("restart");
-            appState.restartGame();
-          }}
-        
-        disabled={
-          paused === false && gameover === false
-          }>{gameover === false ? (isDesktop ? "Restart" : "Restart") : (isDesktop ? "New Game" : "New Game")}</button>
-        <button 
-          className={`tetris-font btn-pause menu-button pause button ${gameover ? 'disabled' : ''}`} 
-    
-          onClick={()=> { 
-            appState.pauseGame();
-            // props.menuButtonCallback("pause")
-          }}
-            
-          disabled={appState.gameOver} 
-            >{(paused && !gameover) ? (isDesktop ? 'Resume' : 'Resume') : (isDesktop ? 'Pause' : 'Pause')}</button>
-
-        <ControlsMap layout={props.layout} clickCallback={
-            (e: any)=>{
-              // keydownHandler(e);
-              const keyboardEventArgs: [string, any] = [...fakeKeyboardEventArgs];
-              keyboardEventArgs[1].key = e.key;
-              document.dispatchEvent(new KeyboardEvent(...keyboardEventArgs));
+        <div id="MenuPanelScaleWrapper" style={{transform: `scale(${props.scale ?? 1})`}}>
+          <button className={
+            `tetris-font menu-button btn-restart 
+            ${(gamePaused === false && gameOver === false) ? 'disabled': ''}`
             } 
-          }/>
+            onClick={()=>{
+              // props.menuButtonCallback("restart");
+              gameState.api.resetGame();
+            }}
+          
+          disabled={
+            gamePaused === false && gameOver === false
+            }>{gameOver === false ? (isDesktop ? "Restart" : "Restart") : (isDesktop ? "New Game" : "New Game")}</button>
+          <button 
+            className={`tetris-font btn-pause menu-button pause button ${gameOver ? 'disabled' : ''}`} 
+      
+            onClick={()=> { 
+              if(!gamePaused) {
+                gameState.api.pauseGame();
+              }
+              else {
+                gameState.api.resumeGame();
+              }
+              
+            }}
+              
+            disabled={gameOver} 
+              >{(gamePaused && !gameOver) ? (isDesktop ? 'Resume' : 'Resume') : (isDesktop ? 'Pause' : 'Pause')}</button>
+
+          <SoundBoard layout={props.layout} ref={soundBoardDomRef} volume={DEFAULT_VOLUME_PCT}/>
+          <ControlsMap layout={props.layout} clickCallback={
+              (e: any)=>{
+                // keydownHandler(e);
+                const keyboardEventArgs: [string, any] = [...fakeKeyboardEventArgs];
+                keyboardEventArgs[1].key = e.key;
+                document.dispatchEvent(new KeyboardEvent(...keyboardEventArgs));
+              } 
+            }/>
+        </div>
       </div>
   );
-}
+});

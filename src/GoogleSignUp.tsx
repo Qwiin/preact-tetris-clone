@@ -74,7 +74,7 @@ export const GoogleSignUp = () => {
   };
 
   return (
-    <div className='signupContainer'>
+    <div id="GoogleSignUp" className="signup-container tw-flex tw-items-center tw-justify-center tw-h-full tw-w-full">
       <div className='signupContainer__box__google'>
         <button onClick={handleGoogleSignUp}>
           <span>

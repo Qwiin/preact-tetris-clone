@@ -9,7 +9,7 @@ Where toast items are positioned from
   align-items: center;
   height: 0rem;
   padding: 0;
-  width: 100%;
+  width: auto;
   position: relative;
   top: 0rem;
   justify-content: center;

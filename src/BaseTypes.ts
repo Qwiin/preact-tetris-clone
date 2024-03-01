@@ -3,11 +3,14 @@ export const LAYOUT_MOBILE: AppLayout = "mobile";
 export const LAYOUT_DESKTOP: AppLayout = "desktop";
 
 export type AppLayout = "mobile" | "desktop";
+export type AppFormFactor = "tablet" | "phone" | "desktop";
 
 export interface BaseComponentProps {
+  layout: AppLayout;
+  formFactor?: AppFormFactor;
   className?: string;
   style?: any;
-  layout: AppLayout;
+  scale?: number;
 }
 
 export type CSSColor =

@@ -99,11 +99,11 @@ body[data-layout="mobile"] {
 }
 
 .app-wrapper {
-  display: flex;
+  /* display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  height: 70%;
+  height: 70%; */
   & #HeaderSVG {
     margin-top: 0.175rem;
   }
@@ -111,9 +111,12 @@ body[data-layout="mobile"] {
 
 .app-container {
   /* transform-origin: top left; */
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: var(--nav-header-height);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
   /* height: 26rem; */
   /* background-color: rgb(var(--app-container-bg-color) / var(--app-container-bg-op)); */
   display: flex;
@@ -129,7 +132,7 @@ body[data-layout="mobile"] {
 .app-header {
   --header-scale-desktop: 0.4;
   --header-cell-border-width: 0.0625rem;
-  /* position: absolute; */
+  position: absolute;
   top:0;
   font-size: 1rem;
   width: 100%;
@@ -139,12 +142,13 @@ body[data-layout="mobile"] {
   align-items: center;
   justify-content: space-between;
   /* background-image: linear-gradient(rgba(16, 22, 28, 0.5),rgba(53, 69, 85, 0.5),rgba(16, 22, 28, 0.5)); */
-  background-image: linear-gradient(rgba(16, 22, 28, 0.7),rgba(53, 69, 85, 0.9) 42%,rgba(16, 22, 28, 0.7));
+  background-image: var(--app-header-gradient);
 
-  height: 50pt;
+  height: 60pt;
   /* margin-bottom: -2rem; */
 
   & .nav-icon {
+    z-index: 100;
     padding: 0;
     margin: 0;
     background-size: 30pt;
@@ -154,12 +158,69 @@ body[data-layout="mobile"] {
   }
 
   & .settings {
+    position: relative;
     background-image: url('assets/settings.png');
     background-size: 24pt;
     height: 24pt;
     width: 24pt;
     border-radius: 24pt;
+    filter: contrast(1);
+    transition: all;
+    margin-top: 1pt;
+    margin-left: 4pt;
+  }
+  & .settings.open {
+    position: relative;
+    z-index: 100;
+    filter: contrast(1);
+    height: 40pt;
+    width: 40pt;
+    margin-left: -4pt;
+
+    background-size: var(--nav-header-height) var(--nav-header-height);
+    background-position: -5pt -5pt;
+    background-repeat: no-repeat;
+    overflow: show;
+    background-image: 
+    linear-gradient(rgba(16, 22, 28, 0.35),rgba(53, 69, 85, 0.45) 42%,rgba(16, 22, 28, 0.35)),
+    radial-gradient(circle at center,hsla(150, 100%, 50%, 1) 0%, hsla(200, 100%, 50%, 0.2) 40%, #00000000 54%, #00000000 100%);
+  }
+  & .settings.open::before {
+    filter: contrast(0.8);
+    position: relative;
+    transition: all;
+    content: ' ';
+    position: absolute;
+    z-index: -100;
+    top: 0pt;
+    left: 0pt;
+    background-image: url('assets/settings.png');
+    height: 40pt;
+    width: 40pt;
+    /* background-image: url('assets/settings.png'); */
+    background-size: 24pt;
+    background-position: 8pt 8pt;
+    background-repeat: no-repeat;
+    border-radius: 24pt;
+  }
+  & .settings::before {
     filter: contrast(0);
+    position: relative;
+    transition: all;
+    content: ' ';
+    position: absolute;
+    z-index: -100;
+    top: -4pt;
+    left: -4pt;
+    background-image: url('assets/settings.png');
+    height: 32pt;
+    width: 32pt;
+    transform: scale(0.96);
+    /* background-image: url('assets/settings.png'); */
+    background-size: 24pt;
+    background-position: 4pt 4pt;
+    background-repeat: no-repeat;
+    border-radius: 24pt;
   }
 
   & .user-icon {
@@ -206,7 +267,7 @@ body[data-layout="mobile"] {
   align-items: center;
   justify-content: center;
   /* background-image: linear-gradient(rgba(16, 22, 28, 0.5),rgba(53, 69, 85, 0.5),rgba(16, 22, 28, 0.5)); */
-  height: 50pt;
+  height: var(--nav-header-height);
   margin-bottom: -2rem;
 
   /* box-shadow: 0rem 0.05rem 0 0.03125rem rgba(167, 166, 166, 0.5); */
@@ -367,7 +428,7 @@ body[data-layout="mobile"] {
 }
 
 .que-item {
-  transform: var(--piece-que-item-scale);
+  /* transform: var(--piece-que-item-scale); */
 }
 
 .game-clock {
@@ -379,25 +440,28 @@ body[data-layout="mobile"] {
   padding: 0;
 }
 
-.stats-panel {
-  width: 1fr;
+#StatsPanelScaleWrapper {
+  /* transform: scale(1.5); */
+  /* transform-origin: left; */
+  /* width: 20%; */
   border-radius: 0.7rem;
   overflow:hidden;
   display: flex;
-  flex-direction: column;
-  height: 20rem;
-  width: 12rem;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-end;
+  height: 21rem;
+  /* width: 12rem; */
   gap: 1.5rem;
-  margin-top: 0rem;
+  /* margin-top: -3rem; */
   font-size: 1rem;
-  padding: 0;
 }
 
 [data-layout="mobile"] {
   touch-action: none;
 }
 
-[data-layout="mobile"].stats-panel {
+[data-layout="mobile"].stats-panel #StatsPanelScaleWrapper {
   /* background-color: red; */
   position:absolute;
   width: 21rem;
@@ -475,6 +539,22 @@ body[data-layout="mobile"] {
   & .stats-field:nth-child(3) {
     height: 0.8rem;
     width: 9.4rem;
+
+    & .stats-field-name {
+      font-size: 0.56rem;
+    }
+      & .stats-field-value-bg {
+        width: auto;
+        & .stats-field-value {
+          /* padding-left:0.6rem; */
+          padding-right: 0rem;
+          font-size: 0.6rem;
+        }
+      }
+  }
+  & .stats-field:nth-child(4) {
+    height: 0.8rem;
+    /* width: 9.4rem; */
 
     & .stats-field-name {
       font-size: 0.56rem;
@@ -600,14 +680,16 @@ body[data-layout="mobile"] {
 }
 
 .game-sounds {
-  position: absolute;
+  position: relative;
+  /* position: absolute;
   top: 11.125rem;
-  left: 3.66rem;
+  left: 3.66rem; */
   background-color: rgb(26, 26, 26, 0.8);
   border: 1px solid rgba(226,232,240,0.6);
   border-radius: 0.5rem;
   gap: 0.0rem;
   display: flex;
+  margin-top: 1rem;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -900,11 +982,11 @@ Keyboard Controls Map UI
 
 */
 .game-control-map {
-  margin-top: 5.5rem;
+  margin-top: 1.0rem;
   /* background-color: rgb(26, 26, 26, 0.8); */
   /* border: 1px rgba(148, 163, 184, 0.8) solid; */
   /* border: 1px solid rgba(226,232,240,0.6); */
-  padding-top: 0.1rem;
+  /* padding-top: 0.1rem; */
   padding-bottom: 0.5rem;
 
   & .btn-row {
@@ -996,6 +1078,10 @@ Keyboard Controls Map UI
 }
 
 .piece-que-container {
+
+  --hold-que-t-y: translateY(calc((100% - var(--piece-que-item-scale))/ -2));
+  --hold-que-t-x: translateX(calc((100% - var(--piece-que-item-scale) - 8%)/ -2));
+  transform: var(--hold-que-t-x) var(--hold-que-t-y) scale(var(--piece-que-item-scale));
   /* tw-overflow-y-hidden tw-box-border tw-flex tw-relative tw-flex-col tw-w-24 tw-items-center tw-justify-start tw-gap-0 tw-mt-0 tw-bg-black tw-rounded-xl tw-pt-4 tw-pb-8 */
   overflow-y:hidden;
   box-sizing: border-box;
@@ -1017,7 +1103,7 @@ Keyboard Controls Map UI
   border-bottom-left-radius: 0rem;
   border-bottom-right-radius: 1rem;
   
-  transform: translateX(-16%) translateY(-20%) scale(60%);
+  
   z-index: -1;
   border: 0.09375rem solid rgba(200,200,200,0.6);
   z-index: -1;
@@ -1043,20 +1129,18 @@ Keyboard Controls Map UI
 }
 
 .hold-que {
+  --hold-que-t-y: translateY(calc((100% - var(--piece-que-item-scale))/ -2));
+  --hold-que-t-x: translateX(calc((100% - var(--piece-que-item-scale) - 8%)/ 2));
+  transform: var(--hold-que-t-x) var(--hold-que-t-y) scale(var(--piece-que-item-scale));
+
   border-top-right-radius: 1rem;
   border-top-left-radius: 0rem;
   border-bottom-left-radius: 1rem;
   border-bottom-right-radius: 0rem;
-  transform: translateX(16%) translateY(-20%) scale(60%);
   margin-bottom: 16rem;
   height: 6rem;
   touch-action: manipulation;
   pointer-events: all;
-
-  &[data-layout="mobile"] {
-    /* transform: translateX(20%) translateY(-25%) scale(50%); */
-    transform: translateX(12%) translateY(-20%) scale(60%);
-  }
 }
 
 .board-grid-mask {
@@ -1069,9 +1153,30 @@ Keyboard Controls Map UI
 }
 
 #GamePanel {
-  flex-basis: 100%;
+  position: relative;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex-basis: 60%;
+  height: 100%;
   /* flex: 2fr; */
   /* flex-basis: 2fr; */
+}
+#StatsPanel, #MenuPanel{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  /* height: 22rem; */
+  width: 20%;
+  z-index: 200;
+}
+
+#GameScaleWrapper, #MenuPanelScaleWrapper, #StatsPanelScaleWrapper {
+  transition: transform 0.3s linear;
 }
 #GamePanel[data-layout="mobile"] {
   flex-basis: 100%;
@@ -1111,6 +1216,56 @@ Keyboard Controls Map UI
   margin-left: -1rem;
   margin-right: -1rem;
   width: 21rem;
+}
+
+#OptionsModal {
+  position: absolute;
+  top: 97%;
+  left: 5%;
+  width: 90%;
+  border-radius: 10vw 10vw;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  height: 100vh;
+  box-sizing: border-box;
+  background-color:rgb(26, 26, 26, 0.8);
+  border: 0.125rem solid hsl(208, 30%, 60%);
+  border-style: ridge;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 0.5rem;
+  transform-origin: 50% 0%;
+  box-shadow: 0rem -2rem 0.5rem 4rem #0009;
+  /* transition: all 0.5s; */
+
+  & #OptionsOpenButton {
+    height: 1.5rem;
+    width: 1.5rem;
+    /* margin-top: 0.5rem; */
+    background-size: 1.5rem;
+    background-image: url('assets/angle-up.png');
+    filter: contrast(0);
+    
+    &.open {
+      animation: flip-icon 0.5s ease-out;
+      transform: rotate(180deg) scale(1);
+    }
+    &.close {
+      animation: flip-icon2 0.5s ease-out;
+      transform: rotate(0deg) scale(1.5);
+    }
+  }
+}
+
+@keyframes flip-icon {
+  0%{transform: rotate(0deg) scale(1.5);}
+  100%{transform: rotate(180deg) scale(1);}
+}
+@keyframes flip-icon2 {
+  0%{transform: rotate(180deg) scale(1);}
+  100%{transform: rotate(0deg) scale(1.5);}
 }
 
 div#GameoverLeft {
@@ -1287,18 +1442,21 @@ div#GameoverRight {
   border: rgb(243 244 246 / 1);
 }
 
-.menu-panel {
-  flex-basis:content;
-  height: 100%;
-  width: 12rem;
+#MenuPanelScaleWrapper {
+  /* height: 100%; */
+  /* flex-basis:content; */
+  /* transform: scale(1.5); */
+  /* transform-origin: right; */
+  height: 21rem;
+  /* width: 20%; */
   margin: 0;
-  padding: 0;
-  padding-bottom: 1rem;
+  /* padding-top: 1rem; */
+  /* padding-bottom: 1rem; */
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   /* padding-top: 1.1rem; */
 }
 
@@ -1372,7 +1530,7 @@ div[data-layout="mobile"] {
     gap: 5rem;
   }
 }
-.menu-panel[data-layout="mobile"] {
+.menu-panel[data-layout="mobile"] #MenuPanelScaleWrapper {
   position:fixed;
   pointer-events: none;
   z-index: 4000;
@@ -1514,4 +1672,13 @@ div[data-layout="mobile"] {
   box-shadow: inset -.05rem -.05rem 0.3rem #000F;
   margin-left: -0.5rem;
   /* border: 0.0625rem solid black; */
+}
+
+#GoogleSignUp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
 }

@@ -39,13 +39,13 @@ import { MenuButtonAction, MenuPanel } from './MenuPanel';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
 import { memo } from 'preact/compat';
-import { AppContext, PieceMove, UserContext } from '../AppProvider';
+import { AppContext, GameStateAPI, PieceMove, UserContext } from '../AppProvider';
 
 
 const PIECE_QUE_LENGTH: number = 5;
 // const LINE_CLEAR_TIMEOUT: number = 1000;
 
-const RESUME_DELAY: number = 400;
+export const RESUME_DELAY: number = 400;
 
 const tick: Signal<number> = signal(0);
 
@@ -58,7 +58,7 @@ interface GameProps extends BaseComponentProps {
   init: boolean;
   actionCallback: (value: any) => void;
   setPieceCallback?: (value: any) => void;
-  setStatsCallback?: (value: any) => void;
+  statsCallback?: (value: any) => void;
 }
 
 export interface Scoring {
@@ -142,8 +142,24 @@ const Game = (props: GameProps) => {
     return;
   }
 
-  const appContext = useContext(AppContext);
+  const appContext = useContext(AppContext) as GameStateAPI;
   const userContext = useContext(UserContext);
+
+  useEffect(()=>{
+    if(appContext.props.gameReset) {
+      initRefs();
+      initGame();
+      appContext.api.resetComplete();
+    }
+    else {
+      if(appContext.props.gamePaused) {
+        pauseGame(false, true);
+      }
+      else {
+        resumeGame(RESUME_DELAY);
+      }
+    }  
+  },[appContext.props.gamePaused, appContext.props.gameReset]);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -154,6 +170,7 @@ const Game = (props: GameProps) => {
   const [gameover, setGameover] = useState(false);
 
   const ticker: Ref<NodeJS.Timeout> = useRef(null);
+  const resumeTimeout: Ref<NodeJS.Timeout> = useRef(null);
   const frameCount = useRef(0);
   const syncFrameOnNextTick = useRef(false);
   
@@ -200,9 +217,7 @@ const Game = (props: GameProps) => {
     paused.current = true;
     pauseGame();
     props.actionCallback({type: ActionType.GAME_OVER});
-    if(appContext.saveResults) {
-      appContext.saveResults();
-    }
+    appContext.api.saveResults();
   }
 
   /**
@@ -219,7 +234,7 @@ const Game = (props: GameProps) => {
       if(!paused.current) {
         props.actionCallback({type: ActionType.PAUSE});
         console.log(userContext.user?.displayName);
-        appContext.pauseGame ? appContext.pauseGame() : console.error("no such function `pauseGame() in appContext`");
+        appContext.api.pauseGame();
       }
       paused.current = true;
       unpaused.current = false;
@@ -235,22 +250,27 @@ const Game = (props: GameProps) => {
       // when game is resumed, the piece will start at the beginning of a game tick;
       syncFrameOnNextTick.current = true;
       
-      setTimeout(()=>{
-        appContext.resumeGame ? appContext.resumeGame() : console.error("no such function `resumeGame() in appContext`");
-        ticker.current = setInterval(()=>{
-          
-          if(syncFrameOnNextTick.current) {
-            // let speedIndex = Math.min((stats.current?.level || 1)-1,9);
-            // let ticksPerGameFrame = Math.round(1/GAME_SPEEDS[speedIndex]);
-            // let tickOffset = ticksPerGameFrame - ((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]))
-            tick.value = 1;
-            syncFrameOnNextTick.current = false;
-          }
-          else {
-            tick.value = tick.value + 1;
-          }
-          
-        },TICK_INTERVAL);
+      if(resumeTimeout.current) {
+        clearTimeout(resumeTimeout.current);
+      }
+      resumeTimeout.current = setTimeout(()=>{
+        // appContext.api.resumeGame();
+        if(!ticker.current) {
+          ticker.current = setInterval(()=>{
+            
+            if(syncFrameOnNextTick.current) {
+              // let speedIndex = Math.min((stats.current?.level || 1)-1,9);
+              // let ticksPerGameFrame = Math.round(1/GAME_SPEEDS[speedIndex]);
+              // let tickOffset = ticksPerGameFrame - ((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]))
+              tick.value = 1;
+              syncFrameOnNextTick.current = false;
+            }
+            else {
+              tick.value = tick.value + 1;
+            }
+            
+          },TICK_INTERVAL);
+        }
       }, delay);
     }
     paused.current = false;
@@ -625,7 +645,11 @@ const Game = (props: GameProps) => {
 
       if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
         p.softDropPoints += 1;
+        appContext.api.addToScore(1);
         stats.current.score += 1;
+        if(props.statsCallback){
+          props.statsCallback(stats.current.score);
+        }
       }
 
       p.coordsPrev = p.coords;
@@ -1123,11 +1147,11 @@ interface PieceMove {
          */
 
 
-        if(appContext.updateStats !== undefined) {
+        if(appContext.api.updateStats !== undefined) {
           /**
             UPDATE STATS
           */
-          appContext.updateStats(
+          appContext.api.updateStats(
             {
               ...stats.current, 
               pieceMove: {
@@ -1267,11 +1291,17 @@ interface PieceMove {
     // if not gameover, pause should be allowed
     if(e.key === "Escape" && gameoverRef.current === false) {
       if(!paused.current) {
-        pauseGame(false, true);
+        // pauseGame(false, true);
+        appContext.api.pauseGame();
       }
       else {
-        props.actionCallback({type: ActionType.RESUME});
-        resumeGame(RESUME_DELAY);
+        if(appContext.props.showOptions) {
+          appContext.api.hideOptions();
+        }
+        else {
+          props.actionCallback({type: ActionType.RESUME});
+          appContext.api.resumeGame();
+        }
       }
     }
 
@@ -1413,6 +1443,11 @@ interface PieceMove {
           props.actionCallback({type: ActionType.DROP, data: e.key});
           if(stats.current) {   
             p.hardDropPoints = (dropDistance * 2);
+            // appContext.api.addToScore(p.hardDropPoints);
+            appContext.api.addToScore(p.hardDropPoints);
+            if(props.statsCallback){
+              props.statsCallback(stats.current.score);
+            }
             stats.current.score += (dropDistance * 2);
           }
           // console.log(minDistance);
@@ -1562,6 +1597,7 @@ interface PieceMove {
 
     gameoverRef.current = false;
     paused.current = false;
+    unpaused.current = true;
 
     comboCount.current = -1;
     lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
@@ -1573,7 +1609,7 @@ interface PieceMove {
   const initGame = () => {
     setGameover(false);
     gameoverRef.current = false;
-    resumeGame();
+    resumeGame(RESUME_DELAY);
 
     setTimeout(()=> {
       activePiece.current = getPieceFromQue();
@@ -1769,7 +1805,7 @@ interface PieceMove {
     
       
 
-      <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0">
+      {/* <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0"> */}
         <div id="GameContainer" data-layout={props.layout} className="game-container">
           {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
 
@@ -1862,7 +1898,7 @@ interface PieceMove {
 
         </div>
       </div>
-    </div>
+    // </div>
   );
 };
 
