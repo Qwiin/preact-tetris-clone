@@ -4,11 +4,7 @@ import { PATH_HOME } from "./App2";
 import { useContext } from "preact/hooks";
 import { UserContext, UserStateAPI } from "./AppProvider";
 
-interface ProfileProps {
-  currentUser: User;
-}
-
-const Profile = (props: ProfileProps) => {
+const Profile = () => {
 
   const auth = getAuth();
   const currentUser = auth.currentUser;

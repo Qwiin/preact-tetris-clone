@@ -1,6 +1,6 @@
 import { useContext, useEffect, useReducer, useRef } from "preact/hooks"
 import { AppLayout } from "../BaseTypes";
-import { AppContext, GameState, UserContext, UserState } from "../AppProvider";
+import { AppContext, GameState} from "../AppProvider";
 
 
 const NUM_SAMPLES: number = 10;

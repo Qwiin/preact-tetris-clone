@@ -1,11 +1,11 @@
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { useContext, useState } from 'preact/hooks';
-import { UserContext, UserState } from './AppProvider';
+import { useState } from 'preact/hooks';
+// import { UserContext, UserState } from './AppProvider';
 import { Link } from 'preact-router';
 
 const Signup = () => {
 
-  const userState: UserState = useContext(UserContext);
+  // const userState: UserState = useContext(UserContext);
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('');

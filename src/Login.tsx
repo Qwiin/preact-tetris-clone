@@ -6,7 +6,7 @@ import { PATH_SIGNUP } from './App2';
  
 const Login = () => {
 
-    const userState: UserState = useContext(UserContext);
+    // const userState: UserState = useContext(UserContext);
 
     
     const [email, setEmail] = useState('');
