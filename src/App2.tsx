@@ -6,7 +6,7 @@ import Router, { route } from 'preact-router';
 import { Component } from 'preact';
 import AsyncRoute from 'preact-async-route';
 import AppHeader from './AppHeader';
-import { useEffect, useReducer } from 'preact/hooks';
+import { useReducer } from 'preact/hooks';
 import AppProvider, { UserProvider } from './AppProvider';
 
 export const PATH_HOME   = '/';

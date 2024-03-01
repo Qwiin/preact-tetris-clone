@@ -4,12 +4,11 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   getAuth,
-  UserCredential,
-  User
+  // User
 } from "firebase/auth";
 
 import SignInWithGoogleLight from './assets/SignInWithGoogleLight';
-import { AppContext, GameState, UserContext, UserState } from "./AppProvider";
+import { AppContext, GameState, UserContext, UserStateAPI } from "./AppProvider";
 import { Link, route } from "preact-router";
 import { PATH_HOME, PATH_LOGIN } from "./App2";
 
@@ -17,7 +16,7 @@ export const GoogleSignUp = () => {
   const [error, setError] = useState(false);
   const [googleErrorMessage, setGoogleErrorMessage] = useState("");
 
-  const userState: UserState = useContext(UserContext);
+  const userState = useContext(UserContext) as UserStateAPI;
   const appState: GameState = useContext(AppContext);
 
   // Instantiate the auth service SDK
@@ -33,10 +32,10 @@ export const GoogleSignUp = () => {
     try {
       // Sign in with a pop-up window
       const result: any = await signInWithPopup(auth, provider);
-      
-
       // Pull signed-in user credential.
-      const user: User = result.user;
+      // const user: User = result.user;
+
+      console.log(result);
 
       console.log(appState);
 
@@ -74,7 +73,7 @@ export const GoogleSignUp = () => {
   };
 
   return (
-    <div id="GoogleSignUp" className="signup-container tw-flex tw-items-center tw-justify-center tw-h-full tw-w-full">
+    <div id="GoogleSignUp" className="signup-container tw-flex tw-items-center tw-justify-center">
       <div className='signupContainer__box__google'>
         <button onClick={handleGoogleSignUp}>
           <span>

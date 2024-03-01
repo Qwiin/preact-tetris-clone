@@ -1,5 +1,5 @@
-import { MutableRef, useContext, useEffect, useRef, useState } from "preact/hooks";
-import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from "../BaseTypes";
+import { MutableRef, useContext, useEffect, useRef } from "preact/hooks";
+import { BaseComponentProps } from "../BaseTypes";
 import { AppContext } from "../AppProvider";
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat";
@@ -65,7 +65,7 @@ const StatsField = (props: StatsFieldProps) => {
     }
   },[stats[props.valueKey]]);
 
-  useEffect(()=>{http://localhost:5173/
+  useEffect(()=>{
     if(props.valueKey === "time") {
       if(interval.current) {
         clearInterval(interval.current);

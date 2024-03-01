@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "preact/hooks";
-import { AppLayout, BaseComponentProps } from "../BaseTypes";
+import { BaseComponentProps } from "../BaseTypes";
 import ControlsMap from "./ControlsMap";
 import { AppContext, GameStateAPI } from "../AppProvider";
 import { forwardRef } from "preact/compat";

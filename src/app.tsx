@@ -4,12 +4,12 @@ import { useContext, useEffect, useReducer, useRef, useState } from 'preact/hook
 import './app.css';
 import ActionToast from './components/ActionToast';
 import Game from './components/Game';
-import SoundBoard from './components/SoundBoard';
+// import SoundBoard from './components/SoundBoard';
 import {animate} from 'framer-motion';
 import { Filters } from './effects/Filters';
 import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 import { mobileCheck } from './utils/AppUtil';
-import { DevPanel } from './components/DevPanel';
+// import { DevPanel } from './components/DevPanel';
 // import { TetrisLogo } from './components/TetrisLogo';
 // import { TetrisLogoSvg } from './components/TetrisLogoSvg';
 // import { StatsPanel } from './components/StatsPanel';
@@ -20,7 +20,7 @@ import { StatsPanel, updateStatsByRef } from './components/StatsPanel';
 import OptionsModal from './OptionsModal';
 import { GameAction } from './TetrisConfig';
 
-const DEV_PANEL_ENABLED: boolean = true;
+// const DEV_PANEL_ENABLED: boolean = true;
 
 const fakeMouseEventArgs:[string, any] = ["click",{
   view: window,
