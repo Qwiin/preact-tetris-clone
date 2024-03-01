@@ -1,4 +1,4 @@
-import { User, getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import { route } from "preact-router";
 import { PATH_HOME } from "./App2";
 import { useContext } from "preact/hooks";

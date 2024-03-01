@@ -1,6 +1,5 @@
-import {useContext, useState} from 'preact/hooks';
+import {useState} from 'preact/hooks';
 import {  getAuth, signInWithEmailAndPassword   } from 'firebase/auth';
-import { UserContext, UserState } from './AppProvider';
 import { Link } from 'preact-router';
 import { PATH_SIGNUP } from './App2';
  
