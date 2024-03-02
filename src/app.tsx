@@ -58,6 +58,7 @@ export function App() {
   useEffect(() => {
     // window.addEventListener("resize", handleWindowResize);
     window.onresize = handleWindowResize;
+    window.ondeviceorientation = handleWindowResize;
     window.onblur = ()=>{ appContext.api.pauseGame(); }
     
 
@@ -69,7 +70,7 @@ export function App() {
     return () => {
       window.removeEventListener("resize",handleWindowResize);
     }
-  },[]);
+  },[window.screen.orientation, window.innerWidth, window.innerHeight]);
 
   useEffect(()=>{
       if(theme !== 1) {
@@ -148,15 +149,15 @@ export function App() {
 
       
 
-      if(newAppLayout === LAYOUT_DESKTOP) {
+      if(newAppLayout === LAYOUT_DESKTOP || newAppLayout === LAYOUT_MOBILE) {
         
         const gamePanelBounds = gamePanelRef.current?.getBoundingClientRect();
         const statPanelRef = document.querySelector("#StatsPanel");
         const statPanelBounds = statPanelRef?.getBoundingClientRect();
 
         if(gamePanelBounds && statPanelBounds) {
-          const BASE_WIDTH_GAME: number = 280; 
-          const BASE_HEIGHT_GAME: number = 350; 
+          const BASE_WIDTH_GAME: number = 282; 
+          const BASE_HEIGHT_GAME: number = newAppLayout === LAYOUT_DESKTOP ? 350 : 525; 
           const gameWidthScale = gamePanelBounds.width / BASE_WIDTH_GAME;
           const gameHeightScale = gamePanelBounds.height * 0.96 / BASE_HEIGHT_GAME;
           const _mainPanelScale = Math.min(gameWidthScale, gameHeightScale);
@@ -164,13 +165,19 @@ export function App() {
           console.log(_mainPanelScale);
           // gamePanelRef.current.style.transform("")
         
-          const BASE_WIDTH_SIDE_PANEL: number = 140; 
-          const BASE_HEIGHT_SIDE_PANEL: number = 350; 
-          const panelWidthScale = statPanelBounds.width * 1 / BASE_WIDTH_SIDE_PANEL;
-          const panelHeightScale = statPanelBounds.height * 0.9 / BASE_HEIGHT_SIDE_PANEL;
-          const _sidePanelScale = Math.min(panelWidthScale, panelHeightScale, _mainPanelScale * 0.75);
-          setSidePanelScale(_sidePanelScale);
-          console.log(_sidePanelScale);
+
+          if(newAppLayout === LAYOUT_DESKTOP) {
+            const BASE_WIDTH_SIDE_PANEL: number = 140; 
+            const BASE_HEIGHT_SIDE_PANEL: number = 350; 
+            const panelWidthScale = statPanelBounds.width * 1 / BASE_WIDTH_SIDE_PANEL;
+            const panelHeightScale = statPanelBounds.height * 0.9 / BASE_HEIGHT_SIDE_PANEL;
+            const _sidePanelScale = Math.min(panelWidthScale, panelHeightScale, Math.max(_mainPanelScale * 0.75, 0.75));
+            setSidePanelScale(_sidePanelScale);
+            console.log(_sidePanelScale);
+          }
+          else{
+            setSidePanelScale(1);
+          }
         }
         
       }
@@ -248,7 +255,7 @@ export function App() {
         >
 
           <MenuPanel
-            scale={sidePanelScale}
+            scale={appLayout === LAYOUT_DESKTOP ? sidePanelScale : mainPanelScale}
             layout={appLayout}
             ref={soundBoardDomRef}>
             </MenuPanel>
@@ -285,7 +292,10 @@ export function App() {
               />
             </div>
           </div>
-          <StatsPanel ref={statsRef} layout={appLayout} scale={sidePanelScale}></StatsPanel>
+          <StatsPanel ref={statsRef} layout={appLayout} 
+          // scale={sidePanelScale}
+          scale={appLayout === LAYOUT_DESKTOP ? sidePanelScale : Math.max(Math.sqrt(mainPanelScale) * 0.95, 1)}
+          ></StatsPanel>
       </div>
       {/* <DevPanel layout={appLayout} enabled={DEV_PANEL_ENABLED}></DevPanel> */}
       <OptionsModal></OptionsModal>

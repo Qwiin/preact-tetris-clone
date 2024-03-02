@@ -20,7 +20,7 @@ Performance:
 
   1. Use 1D array for gameboard
   2. Move Model into it's own class to decouple game logic from view
-  3. 
+  3. Memoize
 
 **/
 

@@ -8,6 +8,8 @@ import AsyncRoute from 'preact-async-route';
 import AppHeader from './AppHeader';
 import { useReducer } from 'preact/hooks';
 import AppProvider, { UserProvider } from './AppProvider';
+import { mobileCheck } from './utils/AppUtil';
+import { LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 
 export const PATH_HOME   = '/';
 export const PATH_SIGNUP = '/signup';
@@ -30,7 +32,7 @@ function App2() {
       <UserProvider>
       <></>
       <AppProvider>
-      <AppHeader />
+      <AppHeader layout={mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP}/>
       <Router>
         {/*<Home loggedIn={true} path="/" />*/}
         <PrivateRoute onRouteComplete={()=>{

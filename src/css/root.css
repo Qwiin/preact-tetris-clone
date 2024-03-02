@@ -15,7 +15,8 @@
 
   --scale-control-button-mobile: 1.25;
 
-  --nav-header-height: 50pt;  /*  iOS design guidline */
+  --nav-header-height: 44pt;  /*  iOS design guidline */
+  --nav-header-height-landscape-mobile: 30pt;  /*  iOS design guidline */
 
   --cell-contrast: 1.05;
   /* --cell-blur: 0.03125rem; */

@@ -1,5 +1,5 @@
 import { MutableRef, useContext, useEffect, useRef } from "preact/hooks";
-import { BaseComponentProps } from "../BaseTypes";
+import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from "../BaseTypes";
 import { AppContext } from "../AppProvider";
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat";
@@ -30,12 +30,22 @@ export const StatsPanel = forwardRef( function StatsPanel(props: BaseComponentPr
   return (
     <>
       <div ref={ref} id="StatsPanel" data-layout={props.layout} className={"stats-panel" + (props.className || "")}>
-        <div id="StatsPanelScaleWrapper" style={{transform: `scale(${props.scale ?? 1})`}}>
-          <StatsField id="Stats_Score" valueKey="score" label="Score" index={0} layout={props.layout}/>
-          <StatsField id="Stats_Lines" valueKey="lines" label="Lines" index={1} layout={props.layout}/>
-          <StatsField id="Stats_Level" valueKey="level" label="Level" index={2} layout={props.layout}/>
-          <StatsField id="Stats_Timer" valueKey="time" label="Time" index={3} layout={props.layout}/>
-        </div>
+        {props.layout === LAYOUT_DESKTOP && 
+          <div id="StatsPanelScaleWrapper" style={{transform: `scale(${props.scale ?? 1})`}}>
+            <StatsField id="Stats_Score" valueKey="score" label="Score" index={0} layout={props.layout}/>
+            <StatsField id="Stats_Lines" valueKey="lines" label="Lines" index={1} layout={props.layout}/>
+            <StatsField id="Stats_Level" valueKey="level" label="Level" index={2} layout={props.layout}/>
+            <StatsField id="Stats_Timer" valueKey="time" label="Time" index={3} layout={props.layout}/>
+          </div>
+        }
+        {props.layout === LAYOUT_MOBILE && 
+          <div id="StatsPanelScaleWrapper" style={{transform: `scale(${props.scale ?? 1})`}}>
+            <StatsField id="Stats_Timer" valueKey="time" label="Time" index={3} layout={props.layout}/>
+            <StatsField id="Stats_Level" valueKey="level" label="Level" index={2} layout={props.layout}/>
+            <StatsField id="Stats_Lines" valueKey="lines" label="Lines" index={1} layout={props.layout}/>
+            <StatsField id="Stats_Score" valueKey="score" label="Score" index={0} layout={props.layout}/>
+          </div>
+        }
       </div>
     </>
   );
@@ -77,7 +87,9 @@ const StatsField = (props: StatsFieldProps) => {
           const _min = Math.floor((elapsedTime / 1000 - (_hr*60)) / 60);
           const _sec = (100 + Math.round(elapsedTime / 1000 - (_min * 60))).toString().substring(1,3);
           // const _tenths = (10 + Math.round(elapsedTime % 100)).toString().substring(1,2);
-          const _timeFmt = `${_hr}:${(100 + _min).toString().substring(1,3)}:${_sec}`;
+          const _timeFmt = props.layout === LAYOUT_DESKTOP 
+            ? `${_hr}:${(100 + _min).toString().substring(1,3)}:${_sec}`
+            : `${(_min + (60 * _hr)).toString()}:${_sec}`;
           // const _timeFmt = `<div style="display: inline-block; width: 0.45rem">${_hr}</div>:<div style="display: inline-block; width: 0.9rem">${(_min + 100).toString().substring(1,3)}</div>:<div style="display: inline-block; width: 0.9rem">${_sec}</div>:<div style="display: inline-block; width: 0.45rem">${_tenths}</div>`;
           // valueRef.current.innerHTML = _timeFmt;
           valueRef.current.innerText = _timeFmt;
@@ -103,7 +115,7 @@ const StatsField = (props: StatsFieldProps) => {
       {true &&
         <div className="tw-flex tw-items-center tw-justify-end"
         style={{justifyContent: "flex-end",
-          // width: `${4.3 - (props.index ?? 0)*0.62}rem`
+          width: props.layout === LAYOUT_MOBILE && props.valueKey !== "time" ? `${5.3 - (props.index ?? 0)*0.62}rem` : 'inherit'
           }}>
         <h3 ref={valueRef} data-label={value} className="stats-field-value">
           {value}
