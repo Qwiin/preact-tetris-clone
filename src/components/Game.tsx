@@ -82,51 +82,50 @@ export interface PieceQueItem {
  *        pass in the current que to make sure no repeats
  * @returns number[] of length `bagSize * numBags * numDistributions`
  */
-function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistributions: number=3, prevDist?: number[]){
+function randomBagDistribution(bagSize: number = 7, numBags: number = 2, numDistributions: number = 3, prevDist?: number[]) {
   const bag: number[] = [];
   const dist: number[] = [];
 
-  for(let j=0; j<numBags; j++) {
-    for(let i=0; i<bagSize; i++) {
+  for (let j = 0; j < numBags; j++) {
+    for (let i = 0; i < bagSize; i++) {
       bag.push(i);
     }
   }
 
   let numRetries: number = 0;
 
-  for(let k=0; k<numDistributions; k++) {
+  for (let k = 0; k < numDistributions; k++) {
     let _bag = [...bag];
 
-    while(_bag.length > 0) {
+    while (_bag.length > 0) {
 
-      let bagIndex = Math.round(Math.random() * (_bag.length-1));
+      let bagIndex = Math.round(Math.random() * (_bag.length - 1));
       let drawnValue = _bag[bagIndex];
-      
+
       let _retry = false;
 
-      if(dist.length > 1 
-        && dist[dist.length - 1] === drawnValue 
-        && dist[dist.length - 2] === drawnValue) 
-      {
+      if (dist.length > 1
+        && dist[dist.length - 1] === drawnValue
+        && dist[dist.length - 2] === drawnValue) {
         _retry = true;
       }
-      else if(dist.length === 1 && prevDist && prevDist.length > 0) {
-        if(dist[0] === drawnValue && prevDist[prevDist.length - 1] === drawnValue) {
+      else if (dist.length === 1 && prevDist && prevDist.length > 0) {
+        if (dist[0] === drawnValue && prevDist[prevDist.length - 1] === drawnValue) {
           _retry = true;
         }
       }
-      else if(dist.length === 0 && prevDist && prevDist.length > 1) {
-        if(prevDist[prevDist.length - 1] === drawnValue && prevDist[prevDist.length - 2] === drawnValue) {
+      else if (dist.length === 0 && prevDist && prevDist.length > 1) {
+        if (prevDist[prevDist.length - 1] === drawnValue && prevDist[prevDist.length - 2] === drawnValue) {
           _retry = true;
         }
       }
 
-      if(_retry === true){
+      if (_retry === true) {
         numRetries++;
         continue;
       }
-      
-      dist.push(_bag.splice(bagIndex,1)[0]);
+
+      dist.push(_bag.splice(bagIndex, 1)[0]);
     }
   }
 
@@ -138,31 +137,31 @@ function randomBagDistribution(bagSize: number=7, numBags: number=2, numDistribu
 
 const Game = (props: GameProps) => {
 
-  if(!props.init) {
+  if (!props.init) {
     return;
   }
 
   const appContext = useContext(AppContext) as GameStateAPI;
   const userContext = useContext(UserContext);
 
-  useEffect(()=>{
-    if(appContext.props.gameReset) {
+  useEffect(() => {
+    if (appContext.props.gameReset) {
       initRefs();
       initGame();
       appContext.api.resetComplete();
     }
-    else if(appContext.props.gameOver) {
+    else if (appContext.props.gameOver) {
       gameOver();
     }
     else {
-      if(appContext.props.gamePaused) {
+      if (appContext.props.gamePaused) {
         pauseGame(false, true);
       }
       else {
         resumeGame(RESUME_DELAY);
       }
-    }  
-  },[appContext.props.gamePaused, appContext.props.gameOver, appContext.props.gameReset]);
+    }
+  }, [appContext.props.gamePaused, appContext.props.gameOver, appContext.props.gameReset]);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -176,7 +175,7 @@ const Game = (props: GameProps) => {
   const resumeTimeout: Ref<NodeJS.Timeout> = useRef(null);
   const frameCount = useRef(0);
   const syncFrameOnNextTick = useRef(false);
-  
+
   const clearedRows: Ref<number[]> = useRef(null);
   const dropPoints: MutableRef<any> = useRef(null);
   // const clearedRowIndexesDesc: Ref<number[]> = useRef(null);
@@ -187,14 +186,14 @@ const Game = (props: GameProps) => {
   const activePiece: Ref<ActivePiece> = useRef(null);
   const pieceQueIndexes: Ref<number[]> = useRef(null);
   const pieceQue: Ref<PieceQueItem[]> = useRef(null);
-  const holdQue: Ref<PieceQueItem[]> = useRef([{id:"-1",shapeEnum: TetronimoShape.NULL}]);
+  const holdQue: Ref<PieceQueItem[]> = useRef([{ id: "-1", shapeEnum: TetronimoShape.NULL }]);
 
   const stats: Ref<Scoring> = useRef(null);
   // const pieceSetTimeout: Ref<NodeJS.Timeout> = useRef(null);
   // const pieceSetTimeoutMax: Ref<NodeJS.Timeout> = useRef(null);
   // const setOnNextContact = useRef(false);
-  
-  
+
+
   const holdQuePressed = useRef(false);
   const downArrowPressed = useRef(false);
   const upArrowPressed = useRef(false);
@@ -219,7 +218,7 @@ const Game = (props: GameProps) => {
     gameoverRef.current = true;
     paused.current = true;
     pauseGame();
-    props.actionCallback({type: ActionType.GAME_OVER});
+    props.actionCallback({ type: ActionType.GAME_OVER });
     appContext.api.saveResults();
   }
 
@@ -229,39 +228,39 @@ const Game = (props: GameProps) => {
    * @param forceRender 
    */
   const pauseGame = (discrete: boolean = false, forceRender: boolean = false) => {
-    if(ticker.current){
+    if (ticker.current) {
       clearInterval(ticker.current);
       ticker.current = null;
     }
-    if(!discrete) {
-      if(!paused.current) {
-        props.actionCallback({type: ActionType.PAUSE});
+    if (!discrete) {
+      if (!paused.current) {
+        props.actionCallback({ type: ActionType.PAUSE });
         console.log(userContext.user?.displayName);
         appContext.api.pauseGame();
       }
       paused.current = true;
       unpaused.current = false;
     }
-    if(forceRender){
+    if (forceRender) {
       // changes "Pause" button label to "Resume"
       forceUpdate(1);
     }
   }
   const resumeGame = (delay: number = 0) => {
-    if(!ticker.current){
+    if (!ticker.current) {
 
       // when game is resumed, the piece will start at the beginning of a game tick;
       syncFrameOnNextTick.current = true;
-      
-      if(resumeTimeout.current) {
+
+      if (resumeTimeout.current) {
         clearTimeout(resumeTimeout.current);
       }
-      resumeTimeout.current = setTimeout(()=>{
+      resumeTimeout.current = setTimeout(() => {
         // appContext.api.resumeGame();
-        if(!ticker.current) {
-          ticker.current = setInterval(()=>{
-            
-            if(syncFrameOnNextTick.current) {
+        if (!ticker.current) {
+          ticker.current = setInterval(() => {
+
+            if (syncFrameOnNextTick.current) {
               // let speedIndex = Math.min((stats.current?.level || 1)-1,9);
               // let ticksPerGameFrame = Math.round(1/GAME_SPEEDS[speedIndex]);
               // let tickOffset = ticksPerGameFrame - ((tick.value) % Math.round(1/GAME_SPEEDS[speedIndex]))
@@ -271,8 +270,8 @@ const Game = (props: GameProps) => {
             else {
               tick.value = tick.value + 1;
             }
-            
-          },TICK_INTERVAL);
+
+          }, TICK_INTERVAL);
         }
       }, delay);
     }
@@ -282,7 +281,7 @@ const Game = (props: GameProps) => {
 
   // TODO: implement a way of caching columns. getting columns everytime a drop is done is expensive
   const updateBoardCols = () => {
-    if(!board.current || !boardCols.current){
+    if (!board.current || !boardCols.current) {
       console.error("cannot update boardCols");
       return;
     }
@@ -294,7 +293,7 @@ const Game = (props: GameProps) => {
       // let col: number[] = [];
       for (let j = 0; j < colLen; j++) {
         let cellValue = cells[j * rowLen + i];
-        if(cellValue >= 0 ){
+        if (cellValue >= 0) {
           boardCols.current[i][j] = (cells[j * rowLen + i]);
         }
         else {
@@ -310,11 +309,11 @@ const Game = (props: GameProps) => {
     const cols = boardCols.current;
     const p = activePiece.current;
 
-    if(!p || !cols) {
+    if (!p || !cols) {
       console.error("cannot determine drop distance");
       return 0;
     }
-    
+
     let colIndex = p.x;
     let perm: number[][] = p.permutation;
 
@@ -322,29 +321,29 @@ const Game = (props: GameProps) => {
     // Gets the offsets from the bottoms contour of the piece's current permutation
     //
     let bottomOffsets: number[] = [];
-    for(let i=0; i<p.width; i++) {
+    for (let i = 0; i < p.width; i++) {
       bottomOffsets.push(0);
-      for(let j=p.height-1; j>=0; j--) {
-        if(perm[j][i] > 0) {
+      for (let j = p.height - 1; j >= 0; j--) {
+        if (perm[j][i] > 0) {
           break;
         }
         bottomOffsets[i]++;
       }
     }
-    
+
     let minDistance: number = p.yMax - p.y;
     let minDistances = [];
-    for(let i=0; i<p.width; i++) {
+    for (let i = 0; i < p.width; i++) {
       let colArr: number[] = (cols[i + colIndex]);
       let dropDistance = bottomOffsets[i];
-      for(let j=p.y; j<colArr.length; j++){
-        if(colArr[j] > 0 && colArr[j] < 10) {
+      for (let j = p.y; j < colArr.length; j++) {
+        if (colArr[j] > 0 && colArr[j] < 10) {
           break;
         }
         dropDistance++;
       }
       minDistances.push(minDistance);
-      if(dropDistance < minDistance) {
+      if (dropDistance < minDistance) {
         minDistance = dropDistance;
       }
     }
@@ -355,7 +354,7 @@ const Game = (props: GameProps) => {
   // TODO: make sure the piece.lastTick is updated each time updatePosition is called;
   // updatePosition should not be called twice in the same tick.
   const updatePosition = () => {
-    if(!board.current || !activePiece.current || clearEffectData.current) {
+    if (!board.current || !activePiece.current || clearEffectData.current) {
       return
     }
 
@@ -365,7 +364,7 @@ const Game = (props: GameProps) => {
     // let permPrev: number[][] = p.permutationPrev;
     let h: number = p.height;
     let w: number = p.width;
-    
+
     let rotationAttempted = false;
     let failedRotation = false;
     let rotationType = ActionType.NONE;
@@ -373,18 +372,18 @@ const Game = (props: GameProps) => {
     // let canMoveLateral = true;
     if (p.rotation !== p.rotationPrev) {
       rotationAttempted = true;
-    
+
       let j_iii = p.x;
       let i_iii = p.y - 1;
-      let i_sss = h-1;
-      
+      let i_sss = h - 1;
+
       // let dx = p.x - p.xPrev;
       let dy = p.y - p.yPrev;
 
       let rotatedClockwise = (p.rotation - p.rotationPrev === 1 || p.rotation - p.rotationPrev === -3);
 
-      rotationType = ( rotatedClockwise === true ) 
-        ? ActionType.ROTATE_RIGHT 
+      rotationType = (rotatedClockwise === true)
+        ? ActionType.ROTATE_RIGHT
         : ActionType.ROTATE_LEFT;
 
       let canRotateInPlace = true;
@@ -393,10 +392,10 @@ const Game = (props: GameProps) => {
       let canTSpinRight = !rotatedClockwise;
 
       // let canMoveDown = true;
-      for(let i=i_iii; i > (i_iii - h); i--) {
+      for (let i = i_iii; i > (i_iii - h); i--) {
         let j_sss = 0;
-        for(let j=j_iii; j < (j_iii + w); j++) {
-          if(canRotateInPlace && perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_sss][j_sss]) {
+        for (let j = j_iii; j < (j_iii + w); j++) {
+          if (canRotateInPlace && perm[i_sss][j_sss] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_sss][j_sss]) {
             // if(p.y !== p.yPrev){
             //   canMoveDown = false;
             //   console.log("can't move down...");
@@ -405,13 +404,13 @@ const Game = (props: GameProps) => {
             canRotateInPlace = false;
             // canTSpinInPlace = false;
           }
-          if(i+dy >= p.yMax){
+          if (i + dy >= p.yMax) {
             canTSpin = false;
             canTSpinLeft = false;
             canTSpinRight = false;
           }
           else {
-            if(canTSpin && perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j) >= 0 && rows[i+dy][j] > 0 && rows[i+dy][j] !== perm[i_sss][j_sss]) {
+            if (canTSpin && perm[i_sss][j_sss] > 0 && (i + dy) >= 0 && (j) >= 0 && rows[i + dy][j] > 0 && rows[i + dy][j] !== perm[i_sss][j_sss]) {
               // if(p.y !== p.yPrev){
               //   canMoveDown = false;
               //   console.log("can't move down...");
@@ -427,17 +426,17 @@ const Game = (props: GameProps) => {
              *      xxx0
              *      xx000
              */
-            if(canTSpinLeft) {
-              
+            if (canTSpinLeft) {
+
               // if( w<h && permPrev[0][h-1] === 0 && (rows[p.yPrev-(w-2)][p.xPrev + h-1] !== 0)) {  // note w = permPrev height
               //   canTSpinLeft = false;   
               //  }
               // else 
-              if(j === 0 || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j-1) >= 0 && rows[i+dy][j-1] > 0 && rows[i+dy][j-1] !== perm[i_sss][j_sss])) {
+              if (j === 0 || (perm[i_sss][j_sss] > 0 && (i + dy) >= 0 && (j - 1) >= 0 && rows[i + dy][j - 1] > 0 && rows[i + dy][j - 1] !== perm[i_sss][j_sss])) {
                 canTSpinLeft = false;
               }
             }
-            if(canTSpinRight){ 
+            if (canTSpinRight) {
 
               // if( w<h && permPrev[0][0] === 0 && (rows[p.yPrev-(w-2)][p.xPrev] !== 0)) {  // note w = permPrev height
               //  canTSpinRight = false;   
@@ -446,50 +445,50 @@ const Game = (props: GameProps) => {
               //  canTSpinRight = false;   
               // }
               // else 
-              if(j === (p.xMax-2) || (perm[i_sss][j_sss] > 0 && (i+dy) >= 0 && (j+1) >= 0 && rows[i+dy][j+1] > 0 && rows[i+dy][j+1] !== perm[i_sss][j_sss])) {
+              if (j === (p.xMax - 2) || (perm[i_sss][j_sss] > 0 && (i + dy) >= 0 && (j + 1) >= 0 && rows[i + dy][j + 1] > 0 && rows[i + dy][j + 1] !== perm[i_sss][j_sss])) {
                 canTSpinRight = false;
               }
             }
           }
           j_sss++;
-        } 
+        }
         i_sss--;
       }
-      if(canRotateInPlace) {
+      if (canRotateInPlace) {
         // console.log("rotate in place");
         // p.coords = [...p.coordsPrev];
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
 
-        if(p.shapeEnum === TetronimoShape.T) {
+        if (p.shapeEnum === TetronimoShape.T) {
           tSpun.current = true;
         }
       }
-      else if(!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
+      else if (!canRotateInPlace && !(canTSpin || canTSpinLeft || canTSpinRight)) {
         p.x = p.xPrev;
 
         // cache rotation, because rotateLeft/Right() will modify prevRotation
         let prevRotation = p.rotationPrev;
         // console.log("can't rotate nor t-spin");
         // p.coords = [...p.coordsPrev];
-        if(p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
+        if (p.rotation > p.rotationPrev || (p.rotation === 1 && p.rotationPrev === 4)) {
           p.rotateLeft();
         }
-        else if(p.rotation < p.rotationPrev || (p.rotation === 4 && p.rotationPrev === 1)) {
+        else if (p.rotation < p.rotationPrev || (p.rotation === 4 && p.rotationPrev === 1)) {
           p.rotateRight();
         }
         tSpun.current = false;
         p.rotationPrev = prevRotation;
         p.lastMoveTrigger = MovementTrigger.GRAVITY;
-        failedRotation = true;  
+        failedRotation = true;
       }
-      else if(!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
+      else if (!canRotateInPlace && (canTSpin || canTSpinLeft || canTSpinRight)) {
         // console.log("can t-spin");
-        if(canTSpinLeft) {
+        if (canTSpinLeft) {
           p.x = p.x - 1;
           p.xPrev = p.x;
         }
-        else if(canTSpinRight) {
+        else if (canTSpinRight) {
           p.x = p.x + 1;
           p.xPrev = p.x;
         }
@@ -500,7 +499,7 @@ const Game = (props: GameProps) => {
         p.yPrev = p.y - 1;
         p.rotationPrev = p.rotation;
 
-        if(p.shapeEnum === TetronimoShape.T) {
+        if (p.shapeEnum === TetronimoShape.T) {
           tSpun.current = true;
         }
       }
@@ -515,61 +514,61 @@ const Game = (props: GameProps) => {
       tSpun.current = false;
       let coords = p.coords;
       let dx = p.x - p.xPrev;
-      if(coords){
-        for(let i=0;i<coords.length; i++){
+      if (coords) {
+        for (let i = 0; i < coords.length; i++) {
           let y = coords[i][0];
           let x = coords[i][1];
           let cellValue = rows[y][x + dx];
-          if(cellValue > 0 && cellValue < 10){
+          if (cellValue > 0 && cellValue < 10) {
             p.x = p.xPrev;
-          }   
+          }
         }
       }
-      if(p.x !== p.xPrev){
+      if (p.x !== p.xPrev) {
         p.yPrev = p.y - 1;
       }
     }
 
-    if(!failedRotation && rotationAttempted) {
-      props.actionCallback({type: rotationType});
+    if (!failedRotation && rotationAttempted) {
+      props.actionCallback({ type: rotationType });
     }
 
     let j_i = p.x;
     let i_i = p.y - 1;
 
-    let i_s = h-1;
-    
+    let i_s = h - 1;
+
     let canMoveDown = true;
     let canMoveDownTwice = true;
-    if(p.y === p.yPrev && p.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
+    if (p.y === p.yPrev && p.lastMoveTrigger !== MovementTrigger.INPUT_DROP) {
       canMoveDown = false;
       canMoveDownTwice = false;
     }
     else {
-      for(let i=i_i; i > (i_i - h); i--) {
+      for (let i = i_i; i > (i_i - h); i--) {
         let j_s = 0;
-        for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_s][j_s]) {
+        for (let j = j_i; j < (j_i + w); j++) {
+          if (perm[i_s][j_s] > 0 && i >= 0 && j >= 0 && rows[i][j] > 0 && rows[i][j] !== perm[i_s][j_s]) {
             canMoveDown = false;
             p.y = p.yPrev;
           }
-          if(i >= rows.length-1) {
+          if (i >= rows.length - 1) {
             canMoveDownTwice = false;
           }
-          else if(perm[i_s][j_s] > 0 && i+1 >= 0 && i<23 && j >= 0 && rows[i+1][j] > 0 && rows[i+1][j] !== perm[i_s][j_s]) {            
+          else if (perm[i_s][j_s] > 0 && i + 1 >= 0 && i < 23 && j >= 0 && rows[i + 1][j] > 0 && rows[i + 1][j] !== perm[i_s][j_s]) {
             canMoveDownTwice = false;
           }
           j_s++;
-        } 
+        }
         i_s--;
       }
     }
 
-    if(canMoveDown) { 
-      if(canMoveDownTwice){
+    if (canMoveDown) {
+      if (canMoveDownTwice) {
         tSpun.current = false;
       } else {
-        if(failedRotation) {
+        if (failedRotation) {
           p.yPrev = p.y;
         }
       }
@@ -577,8 +576,8 @@ const Game = (props: GameProps) => {
       //--------------------
       // erase old location
       //--------------------
-      for(let i=0; i<p.coords.length; i++){
-        if(p.coordsGhost && p.coordsGhost.length > i && board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] <= 0) {
+      for (let i = 0; i < p.coords.length; i++) {
+        if (p.coordsGhost && p.coordsGhost.length > i && board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] <= 0) {
           board.current[p.coordsGhost[i][0]][p.coordsGhost[i][1]] = 0;
         }
         board.current[p.coords[i][0]][p.coords[i][1]] = 0;
@@ -594,45 +593,45 @@ const Game = (props: GameProps) => {
 
       let ghostY = -1;
 
-      let updateGhostCoords = ( canMoveDown && canMoveDownTwice && !tSpun.current && (
-          p.lastMoveTrigger !== MovementTrigger.INPUT_DROP || p.coordsGhost.length === 0
-        ));
+      let updateGhostCoords = (canMoveDown && canMoveDownTwice && !tSpun.current && (
+        p.lastMoveTrigger !== MovementTrigger.INPUT_DROP || p.coordsGhost.length === 0
+      ));
 
-      if(updateGhostCoords) {
+      if (updateGhostCoords) {
         const dropDistance: number = getDropDistance();
         // console.log(dropDistance);
-        if(dropDistance <= 0) {
+        if (dropDistance <= 0) {
           updateGhostCoords = false;
         }
         ghostY = Math.min(p.y + dropDistance - 1, 23);
       }
-       
+
       //--------------------
       // write new location
       //--------------------
 
       j_i = p.x;
-      i_i = p.y-1;
-      let i_ss = h-1;
+      i_i = p.y - 1;
+      let i_ss = h - 1;
       let newCoords: number[][] = [];
       let newCoordsGhost: number[][] = [];
-      for(let i=i_i; i > (i_i - h); i--) {
-        
-        let j_s = 0;
-        for(let j=j_i; j < (j_i + w); j++) {
-          if(perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && (board.current[i][j] === 0 || board.current[i][j] === p.cellValue)) {
+      for (let i = i_i; i > (i_i - h); i--) {
 
-            if(updateGhostCoords) {
-              newCoordsGhost.unshift([ghostY-h+i_ss+1, j]);
+        let j_s = 0;
+        for (let j = j_i; j < (j_i + w); j++) {
+          if (perm[i_ss][j_s] > 0 && i >= 0 && j >= 0 && (board.current[i][j] === 0 || board.current[i][j] === p.cellValue)) {
+
+            if (updateGhostCoords) {
+              newCoordsGhost.unshift([ghostY - h + i_ss + 1, j]);
               let ghostCellValue = board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]];
-              if( ghostCellValue <= 0 ) {
+              if (ghostCellValue <= 0) {
                 board.current[newCoordsGhost[0][0]][newCoordsGhost[0][1]] = perm[i_ss][j_s] * -1;
                 // ghostCoords.push(`[${24 - colHeightsSub[j_s] - (h - i_ss)},${j}]`);
               }
             }
 
             board.current[i][j] = perm[i_ss][j_s];
-            newCoords.unshift([i,j]);
+            newCoords.unshift([i, j]);
           }
           j_s++;
         }
@@ -646,11 +645,11 @@ const Game = (props: GameProps) => {
       //   console.log({ghostY});
       // }
 
-      if(p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
+      if (p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
         p.softDropPoints += 1;
         appContext.api.addToScore(1);
         stats.current.score += 1;
-        if(props.statsCallback){
+        if (props.statsCallback) {
           props.statsCallback(stats.current.score);
         }
       }
@@ -660,12 +659,12 @@ const Game = (props: GameProps) => {
       p.coordsGhost = newCoordsGhost;
 
       // this is run before the render, so we need to know if the piece will thud on next paint
-      if(
-        (p.lastMoveTrigger === MovementTrigger.GRAVITY 
-          || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN) 
-          && !canMoveDownTwice && !failedRotation) {
+      if (
+        (p.lastMoveTrigger === MovementTrigger.GRAVITY
+          || p.lastMoveTrigger === MovementTrigger.INPUT_DOWN)
+        && !canMoveDownTwice && !failedRotation) {
         // console.log("can't move down twice...");
-        props.actionCallback({type: ActionType.THUD});
+        props.actionCallback({ type: ActionType.THUD });
       }
 
       // if(!canMoveDownTwice) {
@@ -685,7 +684,7 @@ const Game = (props: GameProps) => {
       //     updateBoard(p);  
       //     setOnNextContact.current = false;
       //   }
-      
+
       //   else {
       //     if(!pieceSetTimeoutMax.current) {
       //       console.log("pieceSetTimeoutMax started");
@@ -711,7 +710,7 @@ const Game = (props: GameProps) => {
       //       console.log("pieceSetTimeout reset");
       //       clearTimeout(pieceSetTimeout.current);
       //     }
-          
+
       //     pieceSetTimeout.current = setTimeout(() => {
       //       console.log("pieceSetTimeout complete");
       //       if(pieceSetTimeoutMax.current) {
@@ -744,18 +743,18 @@ const Game = (props: GameProps) => {
    */
   const updateBoard = (piece?: ActivePiece | null) => {
 
-    if(tick.value < 0 || !board.current) {
+    if (tick.value < 0 || !board.current) {
       return;
     }
 
     const rows = board.current;
     const nRows = rows.length;
 
-    if(piece) {
+    if (piece) {
 
       // set piece in place
-      if((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
-        
+      if ((piece.y === piece.yPrev && piece.x === piece.xPrev) || piece.lastMoveTrigger === MovementTrigger.INPUT_DROP) {
+
         // if(pieceSetTimeout.current) {
         //   clearTimeout(pieceSetTimeout.current);
         // }
@@ -765,21 +764,21 @@ const Game = (props: GameProps) => {
 
         let coords = piece.coords;
         let colHeights = columnHeights.current;
-        for(let i=0; i<coords.length; i++){
+        for (let i = 0; i < coords.length; i++) {
           let y = coords[i][0];
           let x = coords[i][1];
 
-          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11; 
+          let newCellVal = rows[coords[i][0]][coords[i][1]] / 11;
           rows[coords[i][0]][coords[i][1]] = newCellVal;
 
           // update column heights
-          if(colHeights) {
+          if (colHeights) {
             colHeights[x] = Math.max((nRows - y), colHeights[x]);
             // console.log(colHeights.toString());
           }
 
           //check for gameover//
-          if(newCellVal > 0 && newCellVal < 0.9) {
+          if (newCellVal > 0 && newCellVal < 0.9) {
             appContext.api.gameOver();
             // gameOver();
             return;
@@ -794,52 +793,52 @@ const Game = (props: GameProps) => {
 
         // now that piece is set in place, we can update the board columns ref
         updateBoardCols();
-        
+
         // Verify and complete T-SPIN
-        if(piece.shapeEnum === TetronimoShape.T && tSpun.current === true) {
-            let iMin = (piece.y - piece.height) + ((piece.rotation === Direction.S) ? (-1) : 0);
-            let iMax = (piece.y - 1) + ((piece.rotation === Direction.N) ? 1 : 0);
-            let jMin = (piece.x) + ((piece.rotation === Direction.E) ? (-1) : 0);
-            let jMax = (piece.x + piece.width - 1) + ((piece.rotation === Direction.W) ? 1 : 0);
+        if (piece.shapeEnum === TetronimoShape.T && tSpun.current === true) {
+          let iMin = (piece.y - piece.height) + ((piece.rotation === Direction.S) ? (-1) : 0);
+          let iMax = (piece.y - 1) + ((piece.rotation === Direction.N) ? 1 : 0);
+          let jMin = (piece.x) + ((piece.rotation === Direction.E) ? (-1) : 0);
+          let jMax = (piece.x + piece.width - 1) + ((piece.rotation === Direction.W) ? 1 : 0);
 
-            let cornerCount = 0;
-            if(iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] > 0 && rows[iMin][jMin] < 10)){
+          let cornerCount = 0;
+          if (iMin >= 0 && jMax >= 0 && (rows[iMin][jMin] > 0 && rows[iMin][jMin] < 10)) {
+            cornerCount++;
+          }
+          if (iMin >= 0 && jMax < rows[0].length && (rows[iMin][jMax] > 0 && rows[iMin][jMax] < 10)) {
+            cornerCount++;
+          }
+          if (iMax < rows.length && jMin >= 0 && (rows[iMax][jMin] > 0 && rows[iMax][jMin] < 10)) {
+            cornerCount++;
+          }
+          if (iMax < rows.length && jMax < rows[0].length && (rows[iMax][jMax] > 0 && rows[iMax][jMax] < 10)) {
+            cornerCount++;
+          }
+
+          // still a t-spin if at bottom of board and have only one corner
+          if (cornerCount > 0) {
+            if (iMax >= rows.length) {
               cornerCount++;
             }
-            if(iMin >= 0 && jMax < rows[0].length && (rows[iMin][jMax] > 0 && rows[iMin][jMax] < 10)){
-              cornerCount++;
-            }
-            if(iMax < rows.length && jMin >= 0 && (rows[iMax][jMin] > 0 && rows[iMax][jMin] < 10)){
-              cornerCount++;
-            }
-            if(iMax < rows.length && jMax < rows[0].length && (rows[iMax][jMax] > 0 && rows[iMax][jMax] < 10)){
-              cornerCount++;
-            }
+          }
 
-            // still a t-spin if at bottom of board and have only one corner
-            if(cornerCount > 0) {
-              if(iMax >= rows.length) {
-                cornerCount++;
-              }
-            }
+          // console.log("CornerCount:", cornerCount);
 
-            // console.log("CornerCount:", cornerCount);
-
-            if(cornerCount === 2) {
-              isTSpin.current = false;
-              isTSpinMini.current = true;
-            }
-            else if (cornerCount > 2){
-              isTSpin.current = true;
-              isTSpinMini.current = false;
-            }
+          if (cornerCount === 2) {
+            isTSpin.current = false;
+            isTSpinMini.current = true;
+          }
+          else if (cornerCount > 2) {
+            isTSpin.current = true;
+            isTSpinMini.current = false;
+          }
         }
 
         //check for gameover//
         let numBlocksOffscreen = 0;
-        for(let i=rows.length - 20; i>=0; i--) {
-          numBlocksOffscreen = rows[i].reduce((prev, curr)=> prev + (curr > 0 ? 1 : 0),numBlocksOffscreen);
-          if(numBlocksOffscreen >= 4) {
+        for (let i = rows.length - 20; i >= 0; i--) {
+          numBlocksOffscreen = rows[i].reduce((prev, curr) => prev + (curr > 0 ? 1 : 0), numBlocksOffscreen);
+          if (numBlocksOffscreen >= 4) {
             appContext.api.gameOver();
             // gameOver();
             return;
@@ -847,54 +846,54 @@ const Game = (props: GameProps) => {
           }
         }
 
-        if(piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP){
-          props.actionCallback({type: ActionType.SET_PIECE});
+        if (piece.lastMoveTrigger !== MovementTrigger.INPUT_DROP) {
+          props.actionCallback({ type: ActionType.SET_PIECE });
         }
 
-        
-        if(!isTSpin.current && !isTSpin.current) {
+
+        if (!isTSpin.current && !isTSpin.current) {
           appContext.api.updateStats(
-          {
-            ...stats.current, 
-            pieceMove: {
-              comboCount: comboCount.current,
-              linesCleared: 0,
-              timeStart: 0,
-              timeEnd: Date.now(),
-              pieceType: lastPieceType.current ?? TetronimoShape.NULL,
-              points: {
-                backToBack: 0,
-                base: 0,
-                combo: 0,
-                total: piece.softDropPoints + piece.hardDropPoints,
-                tSpin: 0,
-                softDrop: piece.softDropPoints ?? 0,
-                hardDrop: piece.hardDropPoints ?? 0,
-                levelMultiplier: stats.current?.level 
-                // note: points are calculated from level prior to current line clears
-              }
-            } as PieceMove
-          });
+            {
+              ...stats.current,
+              pieceMove: {
+                comboCount: comboCount.current,
+                linesCleared: 0,
+                timeStart: 0,
+                timeEnd: Date.now(),
+                pieceType: lastPieceType.current ?? TetronimoShape.NULL,
+                points: {
+                  backToBack: 0,
+                  base: 0,
+                  combo: 0,
+                  total: piece.softDropPoints + piece.hardDropPoints,
+                  tSpin: 0,
+                  softDrop: piece.softDropPoints ?? 0,
+                  hardDrop: piece.hardDropPoints ?? 0,
+                  levelMultiplier: stats.current?.level
+                  // note: points are calculated from level prior to current line clears
+                }
+              } as PieceMove
+            });
         }
 
-        dropPoints.current = {soft: piece.softDropPoints, hard: piece.hardDropPoints};
+        dropPoints.current = { soft: piece.softDropPoints, hard: piece.hardDropPoints };
         lastPieceType.current = piece.shapeEnum;
-        activePiece.current = null; 
+        activePiece.current = null;
         pieceWasSet.current = true;
 
-        requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
-            requestAnimationFrame(()=>{
-              
-              let additionalStartingYOffset = clearEffectData.current ? -1 : 0;    
-              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null; 
-              dropPoints.current = null;  
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+
+              let additionalStartingYOffset = clearEffectData.current ? -1 : 0;
+              activePiece.current = getPieceFromQue(additionalStartingYOffset) || null;
+              dropPoints.current = null;
               syncFrameOnNextTick.current = true;
 
-          // add piece to board
-          updatePosition();
-        });
-        });
+              // add piece to board
+              updatePosition();
+            });
+          });
         });
 
         updateBoard(null);
@@ -902,25 +901,24 @@ const Game = (props: GameProps) => {
         return;
       }
 
-      if(piece.lastTick !== frameCount.current  ){
-      
+      if (piece.lastTick !== frameCount.current) {
+
         piece.xPrev = piece.x;
         piece.yPrev = piece.y;
-        piece.y = Math.min(piece.y + 1, piece.yMax); 
+        piece.y = Math.min(piece.y + 1, piece.yMax);
 
-        if(piece.y !== piece.yPrev) {
+        if (piece.y !== piece.yPrev) {
 
           piece.lastMoveTrigger = MovementTrigger.GRAVITY;
         }
-        
+
         // console.log({pieceY: piece.y});
         piece.lastTick = frameCount.current;    // This may or may not be the most important
         updatePosition();
       }
     }
-    else  
-    {
-      if(!pieceWasSet.current) {
+    else {
+      if (!pieceWasSet.current) {
         console.log("Piece Not Set");
         return;
       }
@@ -930,13 +928,13 @@ const Game = (props: GameProps) => {
       // CHECK FOR COMPLETE LINES
       // Method: find full rows and recycle them
 
-      
+
       const _clearedRows = clearedRows.current;
-      if(_clearedRows === null) {
+      if (_clearedRows === null) {
         console.error("cleared rows is null");
         return;
       }
-      else if(clearEffectData.current !== null) {
+      else if (clearEffectData.current !== null) {
         // console.log("cleared rows was not cleared; updateBoard(nullish) was called too soon");
         return;
       }
@@ -944,35 +942,35 @@ const Game = (props: GameProps) => {
         _clearedRows.fill(-1);
       }
 
-      for(let i=nRows-1; i>=0; i--){
+      for (let i = nRows - 1; i >= 0; i--) {
         let row = rows[i];
-        if(!row.includes(0) && numCleared < 4){
+        if (!row.includes(0) && numCleared < 4) {
           row.fill(0);  // clear line (erase the row);
           _clearedRows[numCleared] = i;
           numCleared++;
-          if(numCleared === 4) {  // TODO: cache height of last piece
+          if (numCleared === 4) {  // TODO: cache height of last piece
             break;
           }
         }
       }
-      
+
       // GET POSITIONS FOR CLEARED LINES AND PASS THE DATA 
       // ALONG IN THE ACTION CALLBACK TO POSITION THE POINTS TOAST
 
       let boardPositions: BoardPosition[] = [];
-      if(numCleared > 0) {
+      if (numCleared > 0) {
 
         // clearedRows.current = [...clearedRowIndexesDesc];
         let prevClearedIndex = -1;
-        for(let i=0; i<_clearedRows.length; i++) {
-          if(!clearEffectData.current){
+        for (let i = 0; i < _clearedRows.length; i++) {
+          if (!clearEffectData.current) {
             clearEffectData.current = [];
           }
 
           let top = (_clearedRows[i] - 4);
           let bottom = 24 - (_clearedRows[i] + 1);
 
-          if(i > 0 && _clearedRows[i] >= 0 && prevClearedIndex >= 0 && _clearedRows[prevClearedIndex] - _clearedRows[i] === 1){
+          if (i > 0 && _clearedRows[i] >= 0 && prevClearedIndex >= 0 && _clearedRows[prevClearedIndex] - _clearedRows[i] === 1) {
             clearEffectData.current[clearEffectData.current.length - 1].top = `${top}rem`;
             boardPositions[clearEffectData.current.length - 1].top = top;
             boardPositions[clearEffectData.current.length - 1].height += 1;
@@ -1005,64 +1003,64 @@ const Game = (props: GameProps) => {
         // loop to work properly
 
         // This should be a memory optimized operation
-        requestAnimationFrame(()=>{
-          requestAnimationFrame(()=>{
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
 
             let shiftCount: number = 0;
-            for(let j=0; j<_clearedRows.length; j++) {  
-              if(_clearedRows[j] >= 0) {
+            for (let j = 0; j < _clearedRows.length; j++) {
+              if (_clearedRows[j] >= 0) {
                 // console.log(_clearedRows.toString());
-                rows.unshift(rows.splice(_clearedRows[j]+shiftCount,1)[0]);  // shift cleared rows to the top of the board;
+                rows.unshift(rows.splice(_clearedRows[j] + shiftCount, 1)[0]);  // shift cleared rows to the top of the board;
                 shiftCount++;
               }
             }
-            
+
             let colHeights = columnHeights.current || [];
-            for(let i=0; i<colHeights.length; i++){
-              colHeights[i] = Math.max(colHeights[i] - numCleared, 0); 
+            for (let i = 0; i < colHeights.length; i++) {
+              colHeights[i] = Math.max(colHeights[i] - numCleared, 0);
             }
-          
+
             // now that rows are cleared and board ref is updated, we can update the columns ref
             updateBoardCols();
           });
         });
       }
-      
+
       let points: number = 0;
       // console.log("updateBoard");
 
-      if(numCleared > 0 || isTSpin.current || isTSpinMini.current) {
+      if (numCleared > 0 || isTSpin.current || isTSpinMini.current) {
 
         let actionEnum = numCleared;
         let actionText: string = "";
-        switch(numCleared) {
+        switch (numCleared) {
           case 0:
             actionEnum = isTSpin.current ? ActionType.T_SPIN : ActionType.T_SPIN_MINI;
             break;
           case ActionType.SINGLE:
             actionText = getLabelForActionType(ActionType.SINGLE);
-            if(isTSpin.current) {
+            if (isTSpin.current) {
               actionEnum = ActionType.T_SPIN_SINGLE;
             }
-            else if(isTSpinMini.current) {
+            else if (isTSpinMini.current) {
               actionEnum = ActionType.T_SPIN_MINI_SINGLE;
             }
             break;
           case ActionType.DOUBLE:
             actionText = getLabelForActionType(ActionType.DOUBLE);
-            if(isTSpin.current) {
+            if (isTSpin.current) {
               actionEnum = ActionType.T_SPIN_DOUBLE;
             }
-            else if(isTSpinMini.current) {
+            else if (isTSpinMini.current) {
               actionEnum = ActionType.T_SPIN_MINI_DOUBLE;
             }
-          break;
+            break;
           case ActionType.TRIPLE:
             actionText = getLabelForActionType(ActionType.TRIPLE);
-            if(isTSpin.current) {
+            if (isTSpin.current) {
               actionEnum = ActionType.T_SPIN_TRIPLE;
             }
-            
+
             break;
           case ActionType.TETRIS:
             actionText = getLabelForActionType(ActionType.TETRIS);
@@ -1072,22 +1070,22 @@ const Game = (props: GameProps) => {
 
 
         let backToBack = false;
-        if((actionEnum === lastLineClearAction.current && actionEnum === ActionType.TETRIS)
+        if ((actionEnum === lastLineClearAction.current && actionEnum === ActionType.TETRIS)
           || (actionEnum === lastPieceAction.current && (
-            actionEnum === ActionType.T_SPIN_MINI_SINGLE 
-            || actionEnum === ActionType.T_SPIN_MINI_DOUBLE 
-            || actionEnum === ActionType.T_SPIN_SINGLE 
-            || actionEnum === ActionType.T_SPIN_DOUBLE 
+            actionEnum === ActionType.T_SPIN_MINI_SINGLE
+            || actionEnum === ActionType.T_SPIN_MINI_DOUBLE
+            || actionEnum === ActionType.T_SPIN_SINGLE
+            || actionEnum === ActionType.T_SPIN_DOUBLE
             || actionEnum === ActionType.T_SPIN_TRIPLE
           ))) {
           backToBack = true;
         }
 
-        if(isTSpin.current) {
+        if (isTSpin.current) {
           // subtext = "T-Spin";
           isTSpin.current = false;
         }
-        else if(isTSpinMini.current) {
+        else if (isTSpinMini.current) {
           // subtext = "T-Spin Mini";
           isTSpinMini.current = false;
         }
@@ -1095,11 +1093,11 @@ const Game = (props: GameProps) => {
           lastLineClearAction.current = numCleared;
         }
 
-        if(comboCount.current === null || stats.current === null){
+        if (comboCount.current === null || stats.current === null) {
           console.error("comboCount ref is null");
           return;
         }
-        
+
 
         comboCount.current += 1;
         // console.log("Combo count: " + comboCount.current);
@@ -1108,24 +1106,24 @@ const Game = (props: GameProps) => {
         // console.log("updatePoints");
         stats.current.lines += numCleared;
 
-        const currentLevel: number = stats.current.level; 
+        const currentLevel: number = stats.current.level;
         const newLevel: number = Math.max(Math.floor(stats.current.lines / 10) + 1, props.startingLevel);
         const comboBonus: number = comboCount.current * currentLevel * 50;
 
         // level-up
-        if(newLevel !== currentLevel){
+        if (newLevel !== currentLevel) {
           stats.current.level = newLevel;
-          props.actionCallback({type: ActionType.LEVEL_UP});  
+          props.actionCallback({ type: ActionType.LEVEL_UP });
         }
-  
-        if(isTSpinMini.current) {
-          points += ((numCleared > 0) ? (numCleared * 200) : 100) * currentLevel; 
+
+        if (isTSpinMini.current) {
+          points += ((numCleared > 0) ? (numCleared * 200) : 100) * currentLevel;
         }
-        else if(isTSpin.current) {
-          points += (400 + (numCleared * 400)) * currentLevel; 
+        else if (isTSpin.current) {
+          points += (400 + (numCleared * 400)) * currentLevel;
         }
         else {
-          points += (((Math.max(numCleared - 1, 0) + numCleared)*100 + (numCleared === 4 ? 100 : 0)) * currentLevel);
+          points += (((Math.max(numCleared - 1, 0) + numCleared) * 100 + (numCleared === 4 ? 100 : 0)) * currentLevel);
         }
 
         const basePoints: number = points;
@@ -1138,14 +1136,14 @@ const Game = (props: GameProps) => {
 
         //TODO: implement all clear
         //DONE: combo, and back-to-back bonuses
-        
+
         props.actionCallback({
-          type: actionEnum, 
+          type: actionEnum,
           id: newUID(),
           timestamp: (window.performance.now() / 1000),
-          text: actionText, 
-          points: `${points * (backToBack ? 1.5 : 1 )}`,
-          combo: comboCount.current > 0 ? comboCount.current : undefined, 
+          text: actionText,
+          points: `${points * (backToBack ? 1.5 : 1)}`,
+          combo: comboCount.current > 0 ? comboCount.current : undefined,
           comboPoints: comboBonus,
           toast: true,
           boardPositions,
@@ -1153,7 +1151,7 @@ const Game = (props: GameProps) => {
           backToBack: backToBack,
           transitioning: true,
         } as GameAction);
-          
+
 
         /**
          * 
@@ -1178,13 +1176,13 @@ interface PieceMove {
          */
 
 
-        if(appContext.api.updateStats !== undefined) {
+        if (appContext.api.updateStats !== undefined) {
           /**
             UPDATE STATS
           */
           appContext.api.updateStats(
             {
-              ...stats.current, 
+              ...stats.current,
               pieceMove: {
                 comboCount: comboCount.current,
                 linesCleared: numCleared,
@@ -1197,13 +1195,13 @@ interface PieceMove {
                   combo: comboPoints,
                   total: totalPoints,
                   tSpin: isTSpin.current
-                    ? ActionType.T_SPIN 
+                    ? ActionType.T_SPIN
                     : isTSpinMini.current
-                      ? ActionType.T_SPIN_MINI 
+                      ? ActionType.T_SPIN_MINI
                       : 0,
                   softDrop: dropPoints.current?.soft ?? 0,
                   hardDrop: dropPoints.current?.hard ?? 0,
-                  levelMultiplier: currentLevel 
+                  levelMultiplier: currentLevel
                   // note: points are calculated from level prior to current line clears
                 }
               } as PieceMove
@@ -1211,7 +1209,7 @@ interface PieceMove {
           );
         }
 
-        if(clearEffectData.current && clearEffectData.current.length > 0) {
+        if (clearEffectData.current && clearEffectData.current.length > 0) {
           // console.log(clearEffectData.current.toString())
           pauseGame(true, true);
         }
@@ -1226,7 +1224,7 @@ interface PieceMove {
         comboCount.current = -1;
         lastPieceAction.current = ActionType.NO_LINES_CLEARED;
         lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
-          
+
       }
     }
   };
@@ -1234,7 +1232,7 @@ interface PieceMove {
   const getNextPiece = (): PieceQueItem => {
 
     // replenish piece que
-    if(pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
+    if (pieceQueIndexes.current && pieceQueIndexes.current.length <= 6) {
       pieceQueIndexes.current.push(...randomBagDistribution(7, 2, 3, pieceQueIndexes.current));
     }
 
@@ -1247,24 +1245,24 @@ interface PieceMove {
   }
 
   const getPieceFromQue = (additionalStartingYOffset: number = 0) => {
-    if(pieceQue.current){
+    if (pieceQue.current) {
 
-      pieceQue.current.push( getNextPiece() );    
-      
+      pieceQue.current.push(getNextPiece());
+
       let pieceItem = pieceQue.current.shift();
-      if(!pieceItem) {
+      if (!pieceItem) {
         console.error("no piece item in que");
         return null;
       };
-      
-      const {xStart, yStart} = getStartingXY(pieceItem);
-       
+
+      const { xStart, yStart } = getStartingXY(pieceItem);
+
       let p: ActivePiece = new ActivePiece(pieceItem, Direction.N, undefined, xStart, (yStart ?? 0) + additionalStartingYOffset);
-      
+
       let c: number[][] = [];
-      for(let i=1; i<=p.height; i++) {
-        for(let j=0; j<p.width; j++) {
-          c.push([p.y-i,p.x+j]);
+      for (let i = 1; i <= p.height; i++) {
+        for (let j = 0; j < p.width; j++) {
+          c.push([p.y - i, p.x + j]);
         }
       }
       p.coords = c;
@@ -1283,54 +1281,54 @@ interface PieceMove {
    */
   const getStartingXY = (item: PieceQueItem) => {
 
-      if(!item) {
-        console.error("Game::getStartingXY(item) -- 'item' is '" + item + "'");
-        return {};
-      }
+    if (!item) {
+      console.error("Game::getStartingXY(item) -- 'item' is '" + item + "'");
+      return {};
+    }
 
-      let h = TETRONIMOES[item?.shapeEnum || 0].length;
-      let w = TETRONIMOES[item?.shapeEnum || 0][0].length;
+    let h = TETRONIMOES[item?.shapeEnum || 0].length;
+    let w = TETRONIMOES[item?.shapeEnum || 0][0].length;
 
-      let xStart: number = Math.floor((10 - w)/2);
-      let yStart: number = 4 + h;
+    let xStart: number = Math.floor((10 - w) / 2);
+    let yStart: number = 4 + h;
 
-      let maxColumnHeightUnderNewPiece = 0;
-      if(columnHeights.current) {
-        for(let i=xStart; i<(xStart + w); i++) {
-          if(columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
-            maxColumnHeightUnderNewPiece = columnHeights.current[i];
-          }
+    let maxColumnHeightUnderNewPiece = 0;
+    if (columnHeights.current) {
+      for (let i = xStart; i < (xStart + w); i++) {
+        if (columnHeights.current[i] > maxColumnHeightUnderNewPiece) {
+          maxColumnHeightUnderNewPiece = columnHeights.current[i];
         }
       }
-      // adjust starting y position if board is stacked higher than starting height projection of piece
-      if(maxColumnHeightUnderNewPiece > 18){
-        yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece;
-      }
+    }
+    // adjust starting y position if board is stacked higher than starting height projection of piece
+    if (maxColumnHeightUnderNewPiece > 18) {
+      yStart = (board.current?.length || 24) - maxColumnHeightUnderNewPiece;
+    }
 
-      // console.log({xStart, yStart});
+    // console.log({xStart, yStart});
 
-      return {xStart, yStart};
+    return { xStart, yStart };
   }
 
-  const keydownHandler = useCallback((e:any) => {
-    
-    if(gameoverRef.current === true || !board.current) {
+  const keydownHandler = useCallback((e: any) => {
+
+    if (gameoverRef.current === true || !board.current) {
       // currently, no keyboard input should be processed if gameover (or board ref is null)
       return;
     }
 
     // if not gameover, pause should be allowed
-    if(e.key === "Escape" && gameoverRef.current === false) {
-      if(!paused.current) {
+    if (e.key === "Escape" && gameoverRef.current === false) {
+      if (!paused.current) {
         // pauseGame(false, true);
         appContext.api.pauseGame();
       }
       else {
-        if(appContext.props.showOptions) {
+        if (appContext.props.showOptions) {
           appContext.api.hideOptions();
         }
         else {
-          props.actionCallback({type: ActionType.RESUME});
+          props.actionCallback({ type: ActionType.RESUME });
           appContext.api.resumeGame();
         }
       }
@@ -1347,42 +1345,42 @@ interface PieceMove {
     //    3. game is paused
     //    4. ticker ref is null
     //
-    if(!p || paused.current || !ticker.current || p.lastMoveTrigger === MovementTrigger.INPUT_DROP || p.lastMoveTrigger === MovementTrigger.INPUT_SET) {
+    if (!p || paused.current || !ticker.current || p.lastMoveTrigger === MovementTrigger.INPUT_DROP || p.lastMoveTrigger === MovementTrigger.INPUT_SET) {
       return;
     }
-    
-    switch(e.key) {
-      
+
+    switch (e.key) {
+
       case "/":
-        if(holdQue.current) {
-          if(holdQue.current.length > 0 && !p.wasInHold) {
+        if (holdQue.current) {
+          if (holdQue.current.length > 0 && !p.wasInHold) {
             let heldPieceItem = holdQue.current.pop() as PieceQueItem;
 
             // erase active piece from board
-            for(let i=0; i<p.coords.length;i++) {
+            for (let i = 0; i < p.coords.length; i++) {
               let y = p.coords[i][0];
               let x = p.coords[i][1];
               board.current[y][x] = 0;
 
-              if(p.coordsGhost.length > i) {
+              if (p.coordsGhost.length > i) {
                 let yG = p.coordsGhost[i][0];
                 let xG = p.coordsGhost[i][1];
                 board.current[yG][xG] = 0;
               }
             }
 
-            if(heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
-              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id, softDropPoints: p.softDropPoints});
-              const {xStart, yStart} = getStartingXY(heldPieceItem);
-              activePiece.current = new ActivePiece(heldPieceItem, Direction.N, undefined, xStart, (yStart || 5) - 1);  
-              activePiece.current.wasInHold = true; 
+            if (heldPieceItem.shapeEnum !== TetronimoShape.NULL) {
+              holdQue.current.push({ shapeEnum: p.shapeEnum, id: p.id, softDropPoints: p.softDropPoints });
+              const { xStart, yStart } = getStartingXY(heldPieceItem);
+              activePiece.current = new ActivePiece(heldPieceItem, Direction.N, undefined, xStart, (yStart || 5) - 1);
+              activePiece.current.wasInHold = true;
               // updatePosition();
             }
             else {
-              holdQue.current.push({shapeEnum: p.shapeEnum, id: p.id});
+              holdQue.current.push({ shapeEnum: p.shapeEnum, id: p.id });
               activePiece.current = getPieceFromQue(-1) || null;
               // updatePosition();
-              
+
               // holdQuePressed.current = true;
             }
             // holdQuePressed.current = true;
@@ -1390,39 +1388,39 @@ interface PieceMove {
             updateBoard(activePiece.current);
 
             p = activePiece.current;
-            props.actionCallback({type: ActionType.HOLD_PIECE});
+            props.actionCallback({ type: ActionType.HOLD_PIECE });
           }
-          else if(p.wasInHold) {
-            props.actionCallback({type: ActionType.MOVE_NOT_ALLOWED});
+          else if (p.wasInHold) {
+            props.actionCallback({ type: ActionType.MOVE_NOT_ALLOWED });
           }
         }
         break;
       case "ArrowRight":
-        if((p.x + p.width) < board.current[0].length) {
+        if ((p.x + p.width) < board.current[0].length) {
           // sfx_movePiece();
-          props.actionCallback({type: ActionType.MOVE_RIGHT, data: e.key});
+          props.actionCallback({ type: ActionType.MOVE_RIGHT, data: e.key });
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
-          p.x += 1; 
+          p.x += 1;
           p.lastMoveTrigger = MovementTrigger.INPUT_LATERAL;
-          updatePosition();      
+          updatePosition();
         }
         break;
       case "ArrowLeft":
-        if(p.x > 0) {
-          props.actionCallback({type: ActionType.MOVE_LEFT, data: e.key});
+        if (p.x > 0) {
+          props.actionCallback({ type: ActionType.MOVE_LEFT, data: e.key });
           // sfx_movePiece();
           p.xPrev = p.x;
           p.yPrev = p.y - 1;
-          p.x -= 1; 
+          p.x -= 1;
           p.lastMoveTrigger = MovementTrigger.INPUT_LATERAL;
           updatePosition();
         }
         break;
       case "ArrowDown":
-        if(p.yPrev !== p.y && p.y < p.yMax ) {
+        if (p.yPrev !== p.y && p.y < p.yMax) {
           p.lastTick = tick.value;
-          props.actionCallback({type: ActionType.MOVE_DOWN, data: e.key});
+          props.actionCallback({ type: ActionType.MOVE_DOWN, data: e.key });
           // sfx_movePiece();
           p.yPrev = p.y;
           p.y += 1;
@@ -1440,13 +1438,13 @@ interface PieceMove {
           downArrowPressed.current = true;
           // updateBoard();
           updateBoard(activePiece.current);
-          
+
         }
         break;
 
       // insta-drop the piece
       case "ArrowUp":
-        
+
         p.lastMoveTrigger = MovementTrigger.INPUT_DROP;
 
         const dropDistance = getDropDistance();
@@ -1460,23 +1458,23 @@ interface PieceMove {
         };
 
         // console.log(JSON.stringify(bottomOffsets) + " " + JSON.stringify(minDistances));
-        
+
         p.xPrev = p.x;
         p.rotationPrev = p.rotation;
-        if(dropDistance > 0) {
+        if (dropDistance > 0) {
           tSpun.current = false;
         }
         p.y += dropDistance;
         p.yPrev = p.y;
 
         upArrowPressed.current = true;
-        if(dropDistance > 0) {
-          props.actionCallback({type: ActionType.DROP, data: e.key});
-          if(stats.current) {   
+        if (dropDistance > 0) {
+          props.actionCallback({ type: ActionType.DROP, data: e.key });
+          if (stats.current) {
             p.hardDropPoints = (dropDistance * 2);
             // appContext.api.addToScore(p.hardDropPoints);
             appContext.api.addToScore(p.hardDropPoints);
-            if(props.statsCallback){
+            if (props.statsCallback) {
               props.statsCallback(stats.current.score);
             }
             stats.current.score += (dropDistance * 2);
@@ -1505,20 +1503,20 @@ interface PieceMove {
 
     pieceQueIndexes.current = [];
     pieceQueIndexes.current?.push(
-      ...randomBagDistribution(7,2,3)
+      ...randomBagDistribution(7, 2, 3)
     );
-    holdQue.current = [{id:"-1",shapeEnum: TetronimoShape.NULL}];
+    holdQue.current = [{ id: "-1", shapeEnum: TetronimoShape.NULL }];
 
     let indices = pieceQueIndexes.current;
     pieceQue.current = [];
-    for(let i=0; i<PIECE_QUE_LENGTH; i++) {
+    for (let i = 0; i < PIECE_QUE_LENGTH; i++) {
       pieceQue.current.push({
         shapeEnum: indices[i],
         id: newUID()
       });
     }
 
-    if(columnHeights.current === null) {
+    if (columnHeights.current === null) {
       columnHeights.current = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     }
     else {
@@ -1526,8 +1524,8 @@ interface PieceMove {
     }
 
     ghostPieceCoords.current = [];
-    
-    if(board.current === null) { 
+
+    if (board.current === null) {
       board.current = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1556,46 +1554,46 @@ interface PieceMove {
       ];
     }
     else {
-      for(let i=0;  i<board.current.length; i++) {
+      for (let i = 0; i < board.current.length; i++) {
         board.current[i].fill(0);
       }
     }
 
-    if(boardCols.current === null) { 
+    if (boardCols.current === null) {
       boardCols.current = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       ];
     }
     else {
-      for(let i=0;  i<boardCols.current.length; i++) {
+      for (let i = 0; i < boardCols.current.length; i++) {
         boardCols.current[i].fill(0);
       }
     }
-    
+
     clearEffectData.current = null;
     dropEffectData.current = null;
 
-    if(clearedRows.current === null) {
-      clearedRows.current = [-1,-1,-1,-1];
+    if (clearedRows.current === null) {
+      clearedRows.current = [-1, -1, -1, -1];
     }
     else {
       clearedRows.current.fill(-1);
@@ -1603,8 +1601,8 @@ interface PieceMove {
 
     lastPieceAction.current = ActionType.NONE;
     lastLineClearAction.current = ActionType.NO_LINES_CLEARED;
-    
-    if(stats.current === null) {
+
+    if (stats.current === null) {
       stats.current = {
         level: 1,
         lines: 0,
@@ -1642,16 +1640,16 @@ interface PieceMove {
     gameoverRef.current = false;
     resumeGame(RESUME_DELAY);
 
-    setTimeout(()=> {
+    setTimeout(() => {
       activePiece.current = getPieceFromQue();
       updatePosition();
       tSpun.current = false;
-    },100);
-  
+    }, 100);
+
   }
 
   // component did mount
-  useEffect(()=>{
+  useEffect(() => {
 
     initRefs();
 
@@ -1668,73 +1666,73 @@ interface PieceMove {
       board.current = null;
       boardCols.current = null;
       clearedRows.current = null;
-      
+
       columnHeights.current = null;
-      
+
       tSpun.current = false;
       isTSpin.current = null;
       isTSpinMini.current = null;
-      
+
       upArrowPressed.current = false;
       downArrowPressed.current = false;
-      
+
       gameoverRef.current = false;
       paused.current = false;
-      
+
       stats.current = null;
       comboCount.current = null;
       lastLineClearAction.current = null;
       lastPieceAction.current = null;
       lastPiecePosition.current = null;
 
-      if(ticker.current) {
+      if (ticker.current) {
         clearInterval(ticker.current);
         ticker.current = null;
       }
 
       document.removeEventListener("keydown", keydownHandler);
     }
-  },[]);
+  }, []);
 
 
   // render current frame
   useEffect(() => {
 
-    let speedIndex = Math.min((stats.current?.level || 1)-1,9);
-    let framePct: number = (tick.value) / (Math.ceil(1/GAME_SPEEDS[speedIndex]));
+    let speedIndex = Math.min((stats.current?.level || 1) - 1, 9);
+    let framePct: number = (tick.value) / (Math.ceil(1 / GAME_SPEEDS[speedIndex]));
 
-    if(framePct >= 1
-        || holdQuePressed.current   === true
-        || upArrowPressed.current   === true
-        || downArrowPressed.current === true) {
+    if (framePct >= 1
+      || holdQuePressed.current === true
+      || upArrowPressed.current === true
+      || downArrowPressed.current === true) {
 
       holdQuePressed.current = false;
       downArrowPressed.current = false;
       upArrowPressed.current = false;
-      
+
       // console.log("Frame:", frameCount.current);
 
       tick.value = 1;
-      
-      frameCount.current += 1;    
+
+      frameCount.current += 1;
       // updatePosition();
       updateBoard(activePiece.current);
     }
-    
+
   }, [tick.value]);
 
-  
+
   // const renderBoard = () => {
   //   if(!board.current){
   //     return
   //   };
 
   //   const rows = board.current;
-    
+
   //   return rows.map((row, index) => {
   //     return (
   //       <div key={`r${index}`} className={`tw-flex tw-flex-row tw-gap-0 tw-box-border tw-h-4 ${(clearedRows.current && clearedRows.current?.includes(index)) ? 'tw-opacity-0' : 'tw-opacity-1'}`}>
-          
+
   //         { 
   //           row.map((cellValue, colIndex) => {
 
@@ -1758,13 +1756,13 @@ interface PieceMove {
   // };
 
   // const menuButtonCallback = (action: MenuButtonAction) => {
-  
+
 
   const filterSetPieces = (board: number[][] | null) => {
 
-    return board?.map((row: number[])=>{
-      return row.map((cellValue: number)=>{
-        if(cellValue < 10 && cellValue >= 0) {
+    return board?.map((row: number[]) => {
+      return row.map((cellValue: number) => {
+        if (cellValue < 10 && cellValue >= 0) {
           return cellValue;
         }
         else {
@@ -1787,17 +1785,17 @@ interface PieceMove {
     [activePiece.current, clearEffectData.current]
   );
   // console.timeEnd('filter board');
-  
+
 
   const pieceParams = useMemo(
     () => {
       const piece = activePiece.current;
-      if(!piece) {
+      if (!piece) {
         return {
           coords: [],
           coordsGhost: [],
           cellValue: 0,
-          ghostValue: 0, 
+          ghostValue: 0,
         }
       }
 
@@ -1805,9 +1803,9 @@ interface PieceMove {
 
       // if remove ghost coords that overlap
       const coordsGhost = piece.coordsGhost.filter(
-        (coordGhost:number[]) => {
-          for(let i=0; i<coords.length; i++) {
-            if(coords[i][0] === coordGhost[0] && coords[i][1] === coordGhost[1]) {
+        (coordGhost: number[]) => {
+          for (let i = 0; i < coords.length; i++) {
+            if (coords[i][0] === coordGhost[0] && coords[i][1] === coordGhost[1]) {
               return false;
             }
           }
@@ -1819,116 +1817,119 @@ interface PieceMove {
         coords,
         coordsGhost,
         cellValue: piece.cellValue,
-        ghostValue: -(piece.cellValue ?? 0), 
+        ghostValue: -(piece.cellValue ?? 0),
       }
     },
     [
-     activePiece.current, 
-     activePiece.current?.x, 
-     activePiece.current?.y,
-     activePiece.current?.rotation
+      activePiece.current,
+      activePiece.current?.x,
+      activePiece.current?.y,
+      activePiece.current?.rotation
     ]
   );
 
   return (
-    
-    <div data-layout={props.layout} className="panels-container">
-    
-      
 
-      {/* <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0"> */}
-        <div id="GameContainer" data-layout={props.layout} className="game-container">
-          {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */}
+    <div data-layout={ props.layout } className="panels-container">
 
-          <div id="DevTools">
-            <h5 className=" tw-hidden game-clock tetris-font tw-text-lg">{frameCount.current}</h5>
-          </div>
 
-          <PieceQue id="HoldQue" 
-            title={"HOLD"} 
-            queLength={1} 
-            position={"left"} 
-            animation={"spinRight"} 
-            disabled={activePiece.current && activePiece.current.wasInHold || false}
-            layout={props.layout} 
-            onTap={()=>{keydownHandler({key: '/'})}} 
-            pieces={
-              holdQue?.current || [{id: "-1", shapeEnum: TetronimoShape.NULL}]
-            }/>
 
-          <div>
-            <BoardBackground/>
-            <div data-layer="effects" class="board-grid-mask">
-              
-              {/* Effects go here until Effect Layer is implemented */}
-              { dropEffectData.current && 
-                <DropEffect
-                  position={dropEffectData.current} 
-                  onAnimationComplete={()=>{
-                    dropEffectData.current = null
-                  }}/>
-              }
-              
-              { clearEffectData.current &&
-                <LineClearEffect
-                  positions={clearEffectData.current} 
-                  onAnimationComplete={() => {
-                    // make sure sound effect is only played once
-                    // in the event that multiple effects are needed
-                    if(clearEffectData.current !== null) {
-                      clearEffectData.current = null;
-                      props.actionCallback({type: ActionType.LINE_CLEAR_DROP});
-                    }
-                    if(clearedRows.current) {
-                      clearedRows.current.fill(-1);
-                    }
-                    resumeGame();
-                  }}/>
-              }
-              
-              <ActivePieceLayer params={pieceParams}/>
-              <BoardGrid params={boardGridParams}></BoardGrid>
+      {/* <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-0"> */ }
+      <div id="GameContainer" data-layout={ props.layout } className="game-container">
+        {/* <div className="game-left-pane tw-flex tw-flex-col tw-w-20 tw-items-top tw-justify-center tw-gap-0 tw-mt-24"></div> */ }
 
-              { ( gameover || paused.current || !unpaused.current ) &&
-                <div id="PauseOverlay" className={`pause-overlay ${gameover ? 'animate-gameover' : paused.current ? 'animate-pause' : !unpaused.current ? 'animate-unpause' : ''}`}
-                 onAnimationEnd={()=>{
-                  if(!paused.current && !unpaused.current) {
+        <div id="DevTools">
+          <h5 className=" tw-hidden game-clock tetris-font tw-text-lg">{ frameCount.current }</h5>
+        </div>
+
+        <PieceQue id="HoldQue"
+          title={ "HOLD" }
+          queLength={ 1 }
+          position={ "left" }
+          animation={ "spinRight" }
+          disabled={ activePiece.current && activePiece.current.wasInHold || false }
+          layout={ props.layout }
+          onTap={ () => { keydownHandler({ key: '/' }) } }
+          pieces={
+            holdQue?.current || [{ id: "-1", shapeEnum: TetronimoShape.NULL }]
+          } />
+
+        <div>
+          <BoardBackground />
+          <div data-layer="effects" class="board-grid-mask">
+
+            {/* Effects go here until Effect Layer is implemented */ }
+            { dropEffectData.current &&
+              <DropEffect
+                position={ dropEffectData.current }
+                onAnimationComplete={ () => {
+                  dropEffectData.current = null
+                } } />
+            }
+
+            { clearEffectData.current &&
+              <LineClearEffect
+                positions={ clearEffectData.current }
+                onAnimationComplete={ () => {
+                  // make sure sound effect is only played once
+                  // in the event that multiple effects are needed
+                  if (clearEffectData.current !== null) {
+                    clearEffectData.current = null;
+                    props.actionCallback({ type: ActionType.LINE_CLEAR_DROP });
+                  }
+                  if (clearedRows.current) {
+                    clearedRows.current.fill(-1);
+                  }
+                  resumeGame();
+                } } />
+            }
+
+            <ActivePieceLayer params={ pieceParams } />
+            <BoardGrid params={ boardGridParams }></BoardGrid>
+
+            { (gameover || paused.current || !unpaused.current) &&
+              <div id="PauseOverlay" className={ `pause-overlay ${gameover ? 'animate-gameover' : paused.current ? 'animate-pause' : !unpaused.current ? 'animate-unpause' : ''}` }
+                onAnimationEnd={ () => {
+                  if (!paused.current && !unpaused.current) {
                     unpaused.current = true;
                   }
-                 }}>
-                  {gameover && <>
-                  <div id="GameoverLeft" className="tetris-font" onAnimationEnd={(e:AnimationEvent)=>{
+                } }>
+                { gameover && <>
+                  <div id="GameoverLeft" className="tetris-font" onAnimationEnd={ (e: AnimationEvent) => {
                     let targetEl = (e.target as HTMLDivElement);
-                    if(targetEl && targetEl.style) {
+                    if (targetEl && targetEl.style) {
                       targetEl.style.opacity = "1";
                     }
-                    }}>Game</div>
-                  <div id="GameoverRight" className="tetris-font" onAnimationEnd={(e:AnimationEvent)=>{
+                  } }>Game</div>
+                  <div id="GameoverRight" className="tetris-font" onAnimationEnd={ (e: AnimationEvent) => {
                     let targetEl = (e.target as HTMLDivElement);
-                    if(targetEl && targetEl.style) {
+                    if (targetEl && targetEl.style) {
                       targetEl.style.opacity = "1";
                     }
-                    }}>Over</div>
-                  </>
-                  }
-                  { !gameover &&
-                    <div className=" pause-text tetris-font">Paused</div>
-                  }
-                </div>
-              }
+                  } }>Over</div>
+                </>
+                }
+                { !gameover &&
+                  <div className=" pause-text tetris-font">Paused</div>
+                }
+                <button id="PauseOverlay_Restart"
+                  onClick={ () => { appContext.api.resetGame() } }
+                  className={ paused.current ? 'show' : 'hide' }>Restart</button>
+              </div>
+            }
 
-            </div>
           </div>
-
-          { pieceQue.current &&
-            <PieceQue layout={props.layout} title={"NEXT"} queLength={PIECE_QUE_LENGTH} position={"right"}
-            pieces={
-              pieceQue?.current || [{id: "123", shapeEnum: 1},{id: "1", shapeEnum: 2},{id: "12", shapeEnum: 3},{id: "124", shapeEnum: 4},{id: "125", shapeEnum: 5}]
-            }/>
-          }
-
         </div>
+
+        { pieceQue.current &&
+          <PieceQue layout={ props.layout } title={ "NEXT" } queLength={ PIECE_QUE_LENGTH } position={ "right" }
+            pieces={
+              pieceQue?.current || [{ id: "123", shapeEnum: 1 }, { id: "1", shapeEnum: 2 }, { id: "12", shapeEnum: 3 }, { id: "124", shapeEnum: 4 }, { id: "125", shapeEnum: 5 }]
+            } />
+        }
+
       </div>
+    </div>
     // </div>
   );
 };
@@ -1939,65 +1940,65 @@ interface ActivePieceParams {
   coords: number[][],
   coordsGhost: number[][],
   cellValue: number,
-  ghostValue: number, 
+  ghostValue: number,
 }
 interface ActivePieceProps {
   params: ActivePieceParams
 }
-const ActivePieceLayer = memo( function ActivePieceLayer(props: ActivePieceProps){
+const ActivePieceLayer = memo(function ActivePieceLayer(props: ActivePieceProps) {
 
-  const {params} = props;
+  const { params } = props;
 
   // console.log("active piece rendered");
 
   return (
     <>
-    { params &&
-      <div data-layer="active-piece" className="board-grid active-piece-layer">
-        { params.coords &&
-          <>
-            { 
-              params.coords.map((coord: number[]) => {
-                return (
-                  <>
-                  <div key={`r${coord[0]}c${coord[1]}`}
-                      className={`board-cell filled-cell c${coord[1]} r${coord[0]-4} cell-color-${params.cellValue}`}
-                      style={{
+      { params &&
+        <div data-layer="active-piece" className="board-grid active-piece-layer">
+          { params.coords &&
+            <>
+              {
+                params.coords.map((coord: number[]) => {
+                  return (
+                    <>
+                      <div key={ `r${coord[0]}c${coord[1]}` }
+                        className={ `board-cell filled-cell c${coord[1]} r${coord[0] - 4} cell-color-${params.cellValue}` }
+                        style={ {
+                          // position: "absolute",
+                          // top: 0, 
+                          // left: 0, 
+                          // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`
+                        } }
+                      ></div>
+                    </>
+                  );
+                })
+              }
+            </>
+          }
+          { params.coordsGhost &&
+            <>
+              {
+                params.coordsGhost.map((coord: number[]) => {
+                  let cellColorClass = `cell-color-${params.ghostValue}`;
+                  return (
+                    <div key={ `r${coord[0]}c${coord[1]}` }
+                      className={ `ghost-cell board-cell c${coord[1]} r${coord[0] - 4} ${cellColorClass}` }
+                      style={ {
                         // position: "absolute",
                         // top: 0, 
                         // left: 0, 
-                        // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`
-                      }}
-                      ></div>
-                  </>
-                );
-              })
-            }
-          </>
-        }
-        { params.coordsGhost &&
-          <>
-            { 
-              params.coordsGhost.map((coord: number[]) => {
-                let cellColorClass = `cell-color-${params.ghostValue}`;
-                return (
-                  <div key={`r${coord[0]}c${coord[1]}`}
-                  className={`ghost-cell board-cell c${coord[1]} r${coord[0]-4} ${cellColorClass}`}
-                  style={{
-                    // position: "absolute",
-                    // top: 0, 
-                    // left: 0, 
-                    // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`,
-                    zIndex: 3000
-                  }}
-                  ></div>
-                );
-              })
-            }
-          </>
-        }
-      </div>
-    }
+                        // transform: `translate(${coord[1]}rem,${coord[0]-4}rem) scale(0.92)`,
+                        zIndex: 3000
+                      } }
+                    ></div>
+                  );
+                })
+              }
+            </>
+          }
+        </div>
+      }
     </>
   );
 });
@@ -2009,7 +2010,7 @@ interface BoardGridProps {
     activePiece: ActivePiece | null;
   }
 }
-const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
+const BoardGrid = memo(function BoardGrid(props: BoardGridProps) {
 
   const { params } = props;
 
@@ -2020,26 +2021,26 @@ const BoardGrid = memo( function BoardGrid(props: BoardGridProps){
   const renderBoard = () => {
     const rows = params.board ?? [];
     return rows.map((row, rowIndex) => {
-        const wasCleared = !!params.clearedRows && params.clearedRows.includes(rowIndex);
-        return (
-          <BoardRow key={rowIndex} params={{row, index: rowIndex, cleared: wasCleared, forceUpdate: wereLinesCleared}}/>
-        );
+      const wasCleared = !!params.clearedRows && params.clearedRows.includes(rowIndex);
+      return (
+        <BoardRow key={ rowIndex } params={ { row, index: rowIndex, cleared: wasCleared, forceUpdate: wereLinesCleared } } />
+      );
     });
   };
 
   return (
     <>
-    { params.board &&    
-    <div data-layer="static-pieces" className="board-grid"  style={{transform: "translateY(-4.0rem)"}}>
-      {renderBoard()}
-    </div>
-    }
+      { params.board &&
+        <div data-layer="static-pieces" className="board-grid" style={ { transform: "translateY(-4.0rem)" } }>
+          { renderBoard() }
+        </div>
+      }
     </>
   )
 });
 
 interface BoardRowProps {
-  params:{
+  params: {
     row: number[];
     index: number;
     cleared: boolean;
@@ -2047,51 +2048,51 @@ interface BoardRowProps {
   }
 }
 // const BoardRow = memo( function BoardRow(props: BoardRowProps){
-const BoardRow = memo( function BoardRow(props: BoardRowProps){
-  const {params} = props;
+const BoardRow = memo(function BoardRow(props: BoardRowProps) {
+  const { params } = props;
 
   // if this is done correctly, only the rows that change will be re-rendered;
   // console.log(`Row ${params.index} rendered`);
 
   return (
-    <div key={`r${params.index}`} 
-        // style={{transform: `translateY(${params.index}rem)`}}
-         className={`board-row r${params.index}`}>
-    
-    { params.row.map((cellValue, colIndex) => {
+    <div key={ `r${params.index}` }
+      // style={{transform: `translateY(${params.index}rem)`}}
+      className={ `board-row r${params.index}` }>
 
-        if(cellValue === 0) {
+      { params.row.map((cellValue, colIndex) => {
+
+        if (cellValue === 0) {
           return (
             <>
-            <div data-coord={`r${params.index}c${colIndex}`}
-                  key={"c" + colIndex}
-                  className={`board-cell empty-cell c${colIndex}`}
-                  // style={{transform: `translateX(${colIndex}rem)`}}
-            ></div>
+              <div data-coord={ `r${params.index}c${colIndex}` }
+                key={ "c" + colIndex }
+                className={ `board-cell empty-cell c${colIndex}` }
+              // style={{transform: `translateX(${colIndex}rem)`}}
+              ></div>
             </>
           );
         }
 
         return (
           <>
-            <div data-coord={`r${params.index}c${colIndex}`}
-                  key={"c" + colIndex}
-                  className={`board-cell filled-cell c${colIndex} cell-color-${cellValue}`}
-                  // style={{transform: `translateX(${colIndex}rem) scale(0.92)`}}
+            <div data-coord={ `r${params.index}c${colIndex}` }
+              key={ "c" + colIndex }
+              className={ `board-cell filled-cell c${colIndex} cell-color-${cellValue}` }
+            // style={{transform: `translateX(${colIndex}rem) scale(0.92)`}}
             ></div>
           </>
         );
       })
-    }
+      }
     </div>
   );
 }
-,
-(oldProps: BoardRowProps, newProps: BoardRowProps) => {
-  return (
-    !oldProps.params.forceUpdate &&
-    oldProps.params.row && newProps.params.row
-    && oldProps.params.row.toString() === newProps.params.row.toString()
-  );
-}
+  ,
+  (oldProps: BoardRowProps, newProps: BoardRowProps) => {
+    return (
+      !oldProps.params.forceUpdate &&
+      oldProps.params.row && newProps.params.row
+      && oldProps.params.row.toString() === newProps.params.row.toString()
+    );
+  }
 );

@@ -1,45 +1,53 @@
 @-webkit-keyframes glow {
   from {
     /* text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073; */
-    text-shadow: 
-    rgba(0,128,196,0.9) -0.1rem 0.2rem 0.2rem, 
-    rgba(0,128,196,0.9) 0rem -0.5rem 0.2rem
+    text-shadow:
+      rgba(0, 128, 196, 0.9) -0.1rem 0.2rem 0.2rem,
+      rgba(0, 128, 196, 0.9) 0rem -0.5rem 0.2rem
   }
+
   to {
-    text-shadow: 
-    rgba(196,0,196,0.9) 0.1rem 0.5rem 0.7rem, 
-    rgba(196,0,196,0.9) 0rem 0.2rem 0.7rem
+    text-shadow:
+      rgba(196, 0, 196, 0.9) 0.1rem 0.5rem 0.7rem,
+      rgba(196, 0, 196, 0.9) 0rem 0.2rem 0.7rem
   }
 }
+
 @keyframes glow {
   from {
     /* text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073; */
-    text-shadow: 
-    rgba(0,128,196,0.7) -0.2rem 0.2rem 0.7rem, 
-    rgba(196,0,196,0.7) 0.2rem 0.2rem 0.7rem
+    text-shadow:
+      rgba(0, 128, 196, 0.7) -0.2rem 0.2rem 0.7rem,
+      rgba(196, 0, 196, 0.7) 0.2rem 0.2rem 0.7rem
   }
+
   to {
-    text-shadow: 
-    rgba(196,0,196,0.7) -0.2rem 0.2rem 0.7rem, 
-    rgba(0,128,196,0.7) 0.2rem 0.2rem 0.7rem
+    text-shadow:
+      rgba(196, 0, 196, 0.7) -0.2rem 0.2rem 0.7rem,
+      rgba(0, 128, 196, 0.7) 0.2rem 0.2rem 0.7rem
   }
 }
+
 @keyframes hdrift-left {
   0% {
     transform: translateX(0%) scale(1.0);
   }
+
   100% {
     transform: translateX(-5%) scale(1.0);
   }
 }
+
 @keyframes hdrift-right {
   0% {
     transform: translateX(0%) scale(1.0);
   }
+
   100% {
     transform: translateX(5%) scale(1.0);
   }
 }
+
 /* 
 @keyframes vdrift {
   from { transform: translateY( attr(data-drift-from rem, 0)) };
@@ -51,6 +59,7 @@
     transform: translateY(-100%);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0%);
     opacity: 1;
@@ -62,10 +71,12 @@
     transform: scaleX(100%) scaleY(1.0);
     opacity: 0.3;
   }
+
   50% {
     transform: scaleX(107.5%) scaleY(1.05);
     opacity: 1;
   }
+
   100% {
     transform: scaleX(115%) scaleY(1.1);
     opacity: 0;
@@ -77,6 +88,7 @@
     transform: translateY(-100%);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0%);
     opacity: 1;
@@ -93,45 +105,63 @@ GAME OVER animations
     opacity: 1;
     transform: translateX(-6rem) rotate(0deg) skew(20deg);
   }
+
   40% {
     transform: translateX(-1rem) rotate(0deg) translateZ(0.1rem) rotateY(0deg) skew(20deg);
   }
+
   52% {
     transform: translateX(0.5rem) rotateZ(-2deg) translateZ(0.5rem) rotateY(-10deg) skew(-2deg) scaleX(90%) scaleY(110%);
   }
+
   70% {
     transform: translateX(0rem) rotateZ(0deg) translateZ(-0rem) rotateY(0deg) skew(0deg) scaleX(1) scaleY(1);
     opacity: 1;
   }
+
   100% {
     transform: translateX(0rem) rotateZ(0deg) rotateY(0deg) skew(0deg) scaleX(1) scaleY(1);
     opacity: 1;
   }
 }
+
 @keyframes slam-right-to-left {
   0% {
     opacity: 1;
     transform: translateX(6rem) rotateZ(0deg) skew(-20deg);
   }
+
   40% {
     transform: translateX(1rem) rotateZ(0deg) translateZ(0.1rem) rotateY(0deg) skew(-20deg);
   }
+
   52% {
     /* 2d animation */
-    /* transform: translateX(-0.25rem) rotate(-2deg) skew(0deg) scaleX(90%) scaleY(110%); */ 
+    /* transform: translateX(-0.25rem) rotate(-2deg) skew(0deg) scaleX(90%) scaleY(110%); */
     transform: translateX(-0.5rem) rotateZ(2deg) translateZ(0.5rem) rotateY(10deg) skew(2deg) scaleX(90%) scaleY(110%);
   }
+
   70% {
     transform: translateX(0rem) rotateZ(0deg) translateZ(0rem) rotateY(0deg) skew(0deg) scaleX(1) scaleY(1);
     opacity: 1;
   }
+
   100% {
     transform: translateX(0rem) rotateZ(0deg) rotateY(0deg) skew(0deg) scaleX(1) scaleY(1);
     opacity: 1;
   }
 }
+
 @keyframes waterfall {
-  0%   { transform: translateY(-50%) scaleY(0%) }
-  50%  { transform: translateY(-15%) scale(70%) }
-  100% { transform: translateY(0%) scaleY(100%) }
+  0% {
+    transform: translateY(-100%) scaleY(0%)
+  }
+
+  50% {
+    transform: translateY(-60%) scaleY(40%)
+  }
+
+  100% {
+    transform: translateY(0%) scaleY(100%)
+  }
 }

@@ -87,6 +87,9 @@ export interface GameState {
     gameOver: boolean;
     gameSpeed: number;
     startingLevel: number;
+    isSoundOn: boolean;
+    isMusicOn: boolean;
+    isDevPanelOn: boolean;
     gameMode: "marathon" | "time_attack" | "campaign";
   };
 }
@@ -114,14 +117,22 @@ const initialGameState: GameState = {
     timePausedTotal: 500,  // when unpaused, the pause duration is calculated and added to this field;
     timeGameTotal: 0,
     timeEnd: 0,
+    isSoundOn: false,
+    isMusicOn: false,
+    isDevPanelOn: false,
   }
 }
 export interface GameStateAPI extends GameState {
   api: {
     pauseGame: () => void;
     resumeGame: () => void;
-    resetGame: () => void; 
+    resetGame: () => void;
     gameOver: () => void;
+    enableMusic: (value: boolean) => void;
+    enableSound: (value: boolean) => void;
+    enableDevPanel: (value: boolean) => void;
+    // setSoundVolume(value: number) => void;
+
     resetComplete: () => void;
     showOptions: () => void;
     hideOptions: () => void;
@@ -136,7 +147,8 @@ const appReducer = (state: GameState, action: ReducerAction) => {
   console.log("appReducer Called");
   switch (action.type) {
     case 'PAUSE': {
-      if(state.props.gamePaused !== true) {
+      if (state.props.gamePaused !== true) {
+        document.dispatchEvent(new CustomEvent("game_pause"));
         const newState = { ...state };
         newState.iter += 1;
         newState.props.timePauseStart = Date.now();
@@ -146,7 +158,8 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       break;
     }
     case 'RESUME': {
-      if(state.props.gamePaused === true) {
+      if (state.props.gamePaused === true) {
+        document.dispatchEvent(new CustomEvent("game_resume"));
         const newState = { ...state };
         newState.iter += 1;
         newState.props.timePausedTotal += Date.now() - state.props.timePauseStart + RESUME_DELAY;
@@ -171,8 +184,35 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       newState.props.stats.pieceMoves.push(action.payload.pieceMove);
       return newState;
     }
+    case 'ENABLE_SOUND': {
+      if (state.props.isSoundOn !== action.payload) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.isSoundOn = action.payload;
+        return newState;
+      }
+      break;
+    }
+    case 'ENABLE_MUSIC': {
+      if (state.props.isMusicOn !== action.payload) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.isMusicOn = action.payload;
+        return newState;
+      }
+      break;
+    }
+    case 'ENABLE_DEV_PANEL': {
+      if (state.props.isDevPanelOn !== action.payload) {
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.isDevPanelOn = action.payload;
+        return newState;
+      }
+      break;
+    }
     case 'SHOW_OPTIONS': {
-      if(state.props.showOptions !== true) {
+      if (state.props.showOptions !== true) {
         const newState = { ...state };
         newState.iter += 1;
         newState.props.showOptions = true;
@@ -181,7 +221,7 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       break;
     }
     case 'HIDE_OPTIONS': {
-      if(state.props.showOptions === true) {
+      if (state.props.showOptions === true) {
         const newState = { ...state };
         newState.iter += 1;
         newState.props.showOptions = false;
@@ -198,8 +238,8 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       newState.props.stats.pieceMoves.push(action.payload.pieceMove);
       return newState;
     }
-    case 'GAME_OVER' : {
-      if(state.props.gameOver === false) {
+    case 'GAME_OVER': {
+      if (state.props.gameOver === false) {
         const newState = { ...state };
         newState.iter += 1;
         newState.props.gameOver = true;
@@ -223,7 +263,7 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       const gameId = newUID();  // TODO: move into initial state;
       const gameResults = JSON.stringify(obj);
       localStorage.setItem(gameId, gameResults);
-      
+
       saveResults(state);
 
       console.log(gameResults);
@@ -232,7 +272,7 @@ const appReducer = (state: GameState, action: ReducerAction) => {
     case 'RESET_GAME': {
       const newState: GameState = JSON.parse(JSON.stringify(
         {
-          ...state, 
+          ...state,
           ...initialGameState,
         }));
       newState.props.timeStart = Date.now();
@@ -244,7 +284,7 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       return newState;
     }
     case 'RESET_COMPLETE': {
-      if(state.props.gameReset === true) {
+      if (state.props.gameReset === true) {
         const newState = { ...state };
         newState.props.gameReset = false;
         return newState;
@@ -305,8 +345,26 @@ export default function AppProvider(props: ProviderProps) {
       type: 'HIDE_OPTIONS'
     });
   }
+  const enableSound = (on: boolean) => {
+    dispatch({
+      type: 'ENABLE_SOUND',
+      payload: on
+    });
+  }
+  const enableMusic = (on: boolean) => {
+    dispatch({
+      type: 'ENABLE_MUSIC',
+      payload: on
+    });
+  }
+  const enableDevPanel = (on: boolean) => {
+    dispatch({
+      type: 'ENABLE_DEV_PANEL',
+      payload: on
+    });
+  }
 
-  const addToScore = ( points: number) => {
+  const addToScore = (points: number) => {
     dispatch({
       type: 'ADD_TO_SCORE',
       payload: points
@@ -333,11 +391,11 @@ export default function AppProvider(props: ProviderProps) {
   const stats = () => {
     return state.props.stats;
   }
-  
+
 
   return (
     <AppContext.Provider
-      value={{
+      value={ {
         ...state,
         api: {
           pauseGame,
@@ -350,11 +408,14 @@ export default function AppProvider(props: ProviderProps) {
           saveResults,
           showOptions,
           hideOptions,
+          enableSound,
+          enableMusic,
+          enableDevPanel,
           stats,
         }
-      } as GameStateAPI}
+      } as GameStateAPI }
     >
-      {children}
+      { children }
     </AppContext.Provider>
   );
 }
@@ -374,17 +435,17 @@ export interface UserState {
   user: User | null,
   preferences: any,
 }
- export interface UserStateAPI extends UserState {
+export interface UserStateAPI extends UserState {
   setUser: (user: any) => void;
   clearUser: () => void;
- }
+}
 
 const userReducer = (state: UserState, action: ReducerAction) => {
   switch (action.type) {
     case 'SET_USER': {
       return {
         ...state,
-        user: {...action.payload}
+        user: { ...action.payload }
       };
     }
     case 'CLEAR_USER': {
@@ -419,13 +480,13 @@ export function UserProvider(props: ProviderProps) {
 
   return (
     <UserContext.Provider
-      value={{
+      value={ {
         ...state,
         setUser,
         clearUser,
-      } as UserStateAPI}
+      } as UserStateAPI }
     >
-      {children}
+      { children }
     </UserContext.Provider>
   );
 }
@@ -450,7 +511,7 @@ async function saveResults(gameState: GameState) {
       max_lvl: gameState.props.stats.level,
       lines_cleared: gameState.props.stats.lines,
       starting_lvl: gameState.props.startingLevel,
-      game_mode: gameState.props.gameMode,   
+      game_mode: gameState.props.gameMode,
     });
     console.log("Document written with ID: ", docRef.id);
   } catch (e) {
@@ -459,29 +520,29 @@ async function saveResults(gameState: GameState) {
 }
 
 
-export const samepleUserData: any = { 
-  "uid": "DHrOIrNYzLOYIKSGXIiMIlZRsPK2", 
-  "email": "jane.doe@gmail.com", 
-  "emailVerified": true, 
-  "displayName": "jane doe", 
-  "isAnonymous": false, 
-  "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4FklFYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c", 
+export const samepleUserData: any = {
+  "uid": "DHrOIrNYzLOYIKSGXIiMIlZRsPK2",
+  "email": "jane.doe@gmail.com",
+  "emailVerified": true,
+  "displayName": "jane doe",
+  "isAnonymous": false,
+  "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4FklFYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c",
   "providerData": [
-    { 
-      "providerId": "google.com", 
-      "uid": "151413121110987654321", 
-      "displayName": "jane doe", 
+    {
+      "providerId": "google.com",
+      "uid": "151413121110987654321",
+      "displayName": "jane doe",
       "email": "jane.doe@gmail.com",
-      "phoneNumber": null, 
-      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4klFYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c" 
+      "phoneNumber": null,
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJII3w4klFYX-YDFZtJo3hrQWWjEOFAoESJ5HrB0hs_=s96-c"
     }
-  ], 
-  "stsTokenManager": { 
-    "refreshToken": "AMf-vBwPLMhkSHX9kDu_WjMpKQ2j1O5_ja4Mev_thmsbB1bo6xyTYvZeP2P3F-aU6vH3V5_kiEfJcuIq8wReF_mFzvxFr5KA8_chNBWVyS5loJxnO0uamK8kbZr_ZbK6youz6OE1KYzVo6yHKcUSUiEazy5quHQ2PofVoU3wB4HXLGa9aEeVzL-ulFs2uL3yxQOrak3hhjt3d1xFXg1fTaWo3gJAk7Z1WDOzmt3t6nd-lAZQ94sOJ2SlHHPgcrSFP8VZzdZn0di7J_W3LzNWtU25MsEgxPMx1h-bMqfGitvfp-kOvTjEjdChtIlCZccFOYoHPFQVl4T6o2BujLeKpnpOASmnzN7SeMXUSQOIrU4cGJu4XJccGMkMLHMWaLC35LcL12KUrt2TBwgdOsWNa7JlUFswcXTUQb0HonkPZtMFasYNAy9ndvo", "accessToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNiYjg3ZGNhM2JjYjY5ZDcyYjZjYmExYjU5YjMzY2M1MjI5N2NhOGQiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiYWFuaWthIHF1aW5uIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0pJSTN3NEZGbVlYLVlERlp0Sm8zaHJRV1dqRU9GQW9FU0o1SHJCMGhzXz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9wcmVhY3R0ZXRyaXMiLCJhdWQiOiJwcmVhY3R0ZXRyaXMiLCJhdXRoX3RpbWUiOjE3MDkwNjQzNTcsInVzZXJfaWQiOiJESHJPSXJOWXpMT1lJS1NHWElpTUlsWlJzUEsyIiwic3ViIjoiREhyT0lyTll6TE9ZSUtTR1hJaU1JbFpSc1BLMiIsImlhdCI6MTcwOTA2NDM1NywiZXhwIjoxNzA5MDY3OTU3LCJlbWFpbCI6ImFhbmlrYS5xdWlubkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjExMzI5MjgwMDU0NzUwOTQ0NzgxOCJdLCJlbWFpbCI6WyJhYW5pa2EucXVpbm5AZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.qWwChHLY6NlNC5BtNHlD75I09YZbNkiRLds35JPzmt37WuvV0vevjEKw9Ax6qMtUrJ8T7P1dVDyMXdBLcWntALPGbmLH86EoKnXpd9bRrQvg-eu3OoK8rJMe1SqbSqHxSPTGZuc7wi9iQAPNWa3XlbWJZpdmY-cScruajXcKEmFd9K2QmlUcqmpBEe9t-OyoKXcqmHd_fU8nmuXb35d74uSlWldAABHZAUmaAOKQsagVkAj_RRK8CqQ0UyNHo8n391gEh0L2R3PQeb1TixuuMz_nEvbf5ebTdpuQ0dH5DY4xdgXsEIkegpIW1XN-1H4c9xZd7gANlLGKt7VyFWYM3g", 
-    "expirationTime": 1709067957841 
-  }, 
-  "createdAt": "1709063972020", 
-  "lastLoginAt": "1709064326052", 
-  "apiKey": "AIzaSyA8JwDY65KIkmQlF-_8r4OfDCXHAOExf_8", 
-  "appName": "[DEFAULT]" 
+  ],
+  "stsTokenManager": {
+    "refreshToken": "AMf-vBwPLMhkSHX9kDu_WjMpKQ2j1O5_ja4Mev_thmsbB1bo6xyTYvZeP2P3F-aU6vH3V5_kiEfJcuIq8wReF_mFzvxFr5KA8_chNBWVyS5loJxnO0uamK8kbZr_ZbK6youz6OE1KYzVo6yHKcUSUiEazy5quHQ2PofVoU3wB4HXLGa9aEeVzL-ulFs2uL3yxQOrak3hhjt3d1xFXg1fTaWo3gJAk7Z1WDOzmt3t6nd-lAZQ94sOJ2SlHHPgcrSFP8VZzdZn0di7J_W3LzNWtU25MsEgxPMx1h-bMqfGitvfp-kOvTjEjdChtIlCZccFOYoHPFQVl4T6o2BujLeKpnpOASmnzN7SeMXUSQOIrU4cGJu4XJccGMkMLHMWaLC35LcL12KUrt2TBwgdOsWNa7JlUFswcXTUQb0HonkPZtMFasYNAy9ndvo", "accessToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNiYjg3ZGNhM2JjYjY5ZDcyYjZjYmExYjU5YjMzY2M1MjI5N2NhOGQiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiYWFuaWthIHF1aW5uIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0pJSTN3NEZGbVlYLVlERlp0Sm8zaHJRV1dqRU9GQW9FU0o1SHJCMGhzXz1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9wcmVhY3R0ZXRyaXMiLCJhdWQiOiJwcmVhY3R0ZXRyaXMiLCJhdXRoX3RpbWUiOjE3MDkwNjQzNTcsInVzZXJfaWQiOiJESHJPSXJOWXpMT1lJS1NHWElpTUlsWlJzUEsyIiwic3ViIjoiREhyT0lyTll6TE9ZSUtTR1hJaU1JbFpSc1BLMiIsImlhdCI6MTcwOTA2NDM1NywiZXhwIjoxNzA5MDY3OTU3LCJlbWFpbCI6ImFhbmlrYS5xdWlubkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjExMzI5MjgwMDU0NzUwOTQ0NzgxOCJdLCJlbWFpbCI6WyJhYW5pa2EucXVpbm5AZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.qWwChHLY6NlNC5BtNHlD75I09YZbNkiRLds35JPzmt37WuvV0vevjEKw9Ax6qMtUrJ8T7P1dVDyMXdBLcWntALPGbmLH86EoKnXpd9bRrQvg-eu3OoK8rJMe1SqbSqHxSPTGZuc7wi9iQAPNWa3XlbWJZpdmY-cScruajXcKEmFd9K2QmlUcqmpBEe9t-OyoKXcqmHd_fU8nmuXb35d74uSlWldAABHZAUmaAOKQsagVkAj_RRK8CqQ0UyNHo8n391gEh0L2R3PQeb1TixuuMz_nEvbf5ebTdpuQ0dH5DY4xdgXsEIkegpIW1XN-1H4c9xZd7gANlLGKt7VyFWYM3g",
+    "expirationTime": 1709067957841
+  },
+  "createdAt": "1709063972020",
+  "lastLoginAt": "1709064326052",
+  "apiKey": "AIzaSyA8JwDY65KIkmQlF-_8r4OfDCXHAOExf_8",
+  "appName": "[DEFAULT]"
 };
