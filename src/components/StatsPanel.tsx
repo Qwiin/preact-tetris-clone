@@ -54,7 +54,6 @@ export const StatsPanel = forwardRef(function StatsPanel(props: BaseComponentPro
 export default StatsPanel;
 
 interface StatsFieldProps extends BaseComponentProps {
-  id?: string;
   valueKey: "lines" | "level" | "score" | "time";
   label: string;
   index?: number;

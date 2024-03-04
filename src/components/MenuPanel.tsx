@@ -8,7 +8,7 @@ import { Ref } from "preact";
 import { DEFAULT_VOLUME_PCT } from '../TetrisConfig';
 import SoundBoard from "./SoundBoard";
 import { mobileAndTableCheck } from "../utils/AppUtil";
-import { TouchControls } from "./TouchControls";
+
 
 export type MenuButtonAction = "restart" | "pause";
 

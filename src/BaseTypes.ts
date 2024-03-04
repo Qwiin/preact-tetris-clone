@@ -6,7 +6,7 @@ export type AppLayout = "mobile" | "desktop";
 export type AppFormFactor = "tablet" | "phone" | "desktop";
 
 export interface BaseComponentProps {
-  id: string;
+  id: string | undefined;
   layout?: AppLayout;
   formFactor?: AppFormFactor;
   className?: string;

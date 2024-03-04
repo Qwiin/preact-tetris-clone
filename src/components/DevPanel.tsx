@@ -1,6 +1,6 @@
-import { useContext, useEffect, useReducer, useRef } from "preact/hooks"
+import { useEffect, useReducer, useRef } from "preact/hooks"
 import { AppLayout } from "../BaseTypes";
-import { AppContext, GameState } from "../AppProvider";
+
 
 
 const NUM_SAMPLES: number = 10;
@@ -9,7 +9,7 @@ export function DevPanel(props: { id: string, layout: AppLayout, enabled: boolea
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
-  const appContext: GameState = useContext(AppContext);
+  // const appContext: GameState = useContext(AppContext);
   // const userContext: UserState = useContext(UserContext);
 
   const fps = useRef(0);

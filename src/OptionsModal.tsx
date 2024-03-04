@@ -1,6 +1,6 @@
 import { animate } from "framer-motion";
-import { Context, PreactContext, Ref } from "preact";
-import { useContext, useEffect, useReducer, useRef, useState } from "preact/hooks";
+import { Ref } from "preact";
+import { useContext, useEffect, useRef, useState } from "preact/hooks";
 import { AppContext, GameState, GameStateAPI, UserContext, UserState } from "./AppProvider";
 import { BaseComponentProps } from "./BaseTypes";
 
@@ -176,7 +176,7 @@ const ToggleSwitch = (props: ToggleSwitchProps) => {
 }
 
 // TODO: move to utilities
-function getValueFromKeyPath<T>(context: any, dotPath: string) {
+export function getValueFromKeyPath<T>(context: any, dotPath: string) {
   const path = dotPath.split('.');
   let ptr = context;
   for (let i = 0; i < path.length; i++) {
@@ -184,7 +184,7 @@ function getValueFromKeyPath<T>(context: any, dotPath: string) {
   }
   return ptr as T;
 }
-function getValueParentFromKeyPath<T>(context: any, dotPath: string) {
+export function getValueParentFromKeyPath<T>(context: any, dotPath: string) {
   const path = dotPath.split('.');
   let ptr = context;
   for (let i = 0; i < path.length - 1; i++) {

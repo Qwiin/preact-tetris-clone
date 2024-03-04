@@ -32,7 +32,7 @@ function App2() {
       <UserProvider>
       <></>
       <AppProvider>
-      <AppHeader layout={mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP}/>
+      <AppHeader id="AppHeader" layout={mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP}/>
       <Router>
         {/*<Home loggedIn={true} path="/" />*/}
         <PrivateRoute onRouteComplete={()=>{

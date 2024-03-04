@@ -1,5 +1,5 @@
 import { Ref } from 'preact';
-import { useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'preact/hooks';
+import { useContext, useEffect, useReducer, useRef, useState } from 'preact/hooks';
 
 import './app.css';
 import ActionToast from './components/ActionToast';
@@ -7,8 +7,8 @@ import Game from './components/Game';
 // import SoundBoard from './components/SoundBoard';
 import { animate } from 'framer-motion';
 import { Filters } from './effects/Filters';
-import { AppLayout, CSSColors, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
-import { mobileAndTableCheck, mobileCheck, swapCssClass } from './utils/AppUtil';
+import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
+import { mobileAndTableCheck, mobileCheck } from './utils/AppUtil';
 // import { TetrisLogo } from './components/TetrisLogo';
 // import { TetrisLogoSvg } from './components/TetrisLogoSvg';
 // import { StatsPanel } from './components/StatsPanel';
@@ -19,7 +19,6 @@ import { StatsPanel, updateStatsByRef } from './components/StatsPanel';
 import OptionsModal from './OptionsModal';
 import { GameAction } from './TetrisConfig';
 import { DevPanel } from './components/DevPanel';
-import { BTN_DELAY_UNTIL_REPEAT, BTN_REPEAT_RATE } from './components/ControlsMap';
 import { TouchControls } from './components/TouchControls';
 
 const fakeMouseEventArgs: [string, any] = ["click", {
