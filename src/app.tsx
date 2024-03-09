@@ -8,7 +8,7 @@ import Game from './components/Game';
 import { animate } from 'framer-motion';
 import { Filters } from './effects/Filters';
 import { AppLayout, LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
-import { mobileAndTableCheck, mobileCheck } from './utils/AppUtil';
+import { getRootStyle, mobileCheck } from './utils/AppUtil';
 // import { TetrisLogo } from './components/TetrisLogo';
 // import { TetrisLogoSvg } from './components/TetrisLogoSvg';
 // import { StatsPanel } from './components/StatsPanel';
@@ -20,6 +20,7 @@ import OptionsModal from './OptionsModal';
 import { GameAction } from './TetrisConfig';
 import { DevPanel } from './components/DevPanel';
 import { TouchControls } from './components/TouchControls';
+import AppHeader from './AppHeader';
 
 const fakeMouseEventArgs: [string, any] = ["click", {
   view: window,
@@ -49,11 +50,12 @@ export function App() {
 
   const appContainerRef: Ref<HTMLDivElement> = useRef(null);
 
-  const [appScale, setAppScale] = useState(1);
+  const [appScale, setAppScale] = useState(getAppScale());
   const [mainPanelScale, setMainPanelScale] = useState(1);
   const [sidePanelScale, setSidePanelScale] = useState(1);
-  const [appLayout, setAppLayout] = useState<AppLayout>("desktop");
+  const [appLayout, setAppLayout] = useState<AppLayout>(getAppLayout());
   const [devPanelOn, setDevPanelOn] = useState(appContext.props.isDevPanelOn);
+  const [newTouchControls, setNewTouchControls] = useState(appContext.props.isNewTouchEnabled);
 
   useEffect(() => {
 
@@ -65,6 +67,13 @@ export function App() {
       appContext.api.pauseGame();
     };
 
+    document.addEventListener("new_touch_changed",
+      (e: any) => {
+        console.log("New Touch Changed:", e.detail);
+        forceUpdate(1);
+      }
+    );
+
 
     return () => {
       document.removeEventListener("update_app", updateAppState);
@@ -74,12 +83,21 @@ export function App() {
     }
   }, []);
 
+
+  useEffect(() => {
+    console.log("New Touch Changed to:", appContext.props.isNewTouchEnabled);
+    forceUpdate(1);
+  }, [appContext.props.isNewTouchEnabled]);
+
   const updateAppState = () => {
 
     if (devPanelOn !== appContext.props.isDevPanelOn) {
       setDevPanelOn(appContext.props.isDevPanelOn);
     }
 
+    if (newTouchControls !== appContext.props.isNewTouchEnabled) {
+      setNewTouchControls(appContext.props.isNewTouchEnabled);
+    }
   };
 
   useEffect(() => {
@@ -96,6 +114,7 @@ export function App() {
       setTheme(1);
     }
   }, [theme]);
+
 
   const handleWindowResize = (event?: Event) => {
 
@@ -116,25 +135,44 @@ export function App() {
 
   }
 
+  function getAppScale() {
+    const hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
+    const vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
+    const newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale)
+      ? Math.min(Math.max(hScale, vScale), window.innerWidth / PORTRAIT_MODE_WIDTH_THRESHOLD * 2.0)  // PORTRAIT MODE
+      : Math.min(hScale, vScale);
+
+    console.log(`App::setAppScale(${newAppScale})`);
+    return newAppScale;
+  }
+
+  function getAppLayout() {
+    let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
+    let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
+    let scaleRatio: number = hScale / vScale;
+    let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
+
+    console.log({ vScale, hScale, scaleRatio });
+    return newAppLayout
+  }
+
   const resizeApp = () => {
 
 
     // let windowAspectRatio = window.innerWidth / window.innerHeight;
-    let hScale: number = window.innerWidth / MIN_DESKTOP_WIDTH;
-    let vScale: number = window.innerHeight / MIN_DESKTOP_HEIGHT;
-    console.log({ hScale, vScale });
+
 
     console.log({ portraitRatio: window.innerHeight / window.innerWidth });
 
-    let scaleRatio: number = hScale / vScale;
-    let newAppScale = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale)
-      ? Math.min(Math.max(hScale, vScale), window.innerWidth / PORTRAIT_MODE_WIDTH_THRESHOLD * 2.0)  // PORTRAIT MODE
-      : Math.min(hScale, vScale);
 
-    let newAppLayout: AppLayout = (window.innerWidth <= PORTRAIT_MODE_WIDTH_THRESHOLD && vScale > hScale) ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
+    const newAppLayout = getAppLayout();
     setAppLayout(newAppLayout);
+
+    const newAppScale = getAppScale();
     setAppScale(newAppScale);
 
+
+    // TODO: is this necessary?
     if (newAppLayout === LAYOUT_MOBILE || mobileCheck()) {
       if ((screen.orientation as any).hasOwnProperty("lock")) {
         (screen.orientation as any).lock("portrait");
@@ -161,12 +199,6 @@ export function App() {
         delay: 0
       }
     );
-
-    console.log({ vScale, hScale, scaleRatio });
-    console.log(`scale(${newAppScale})`);
-
-
-
 
     if (newAppLayout === LAYOUT_DESKTOP || newAppLayout === LAYOUT_MOBILE) {
 
@@ -243,7 +275,7 @@ export function App() {
     <>
 
       <AppProvider>
-
+        <AppHeader id="AppHeader" layout={ mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP } />
 
         {/* <div id="NavHeader" className={`tw-opacity-1`} style={{zIndex: 4000}}> */ }
         {/* <h1 className="tw-m-0 tw-py-2 tw-font-thin game-title">TETRIS</h1> */ }
@@ -268,6 +300,7 @@ export function App() {
           data-theme={ theme }
           data-layout={ appLayout }
           data-app-scale={ appScale }
+          data-has-touch={ appContext.props.isNewTouchEnabled }
         // style={{
         //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
         // }}
@@ -311,9 +344,11 @@ export function App() {
                   // console.log("toastComplete");
                 } }
               />
-              { mobileAndTableCheck() &&
-                <TouchControls parentScale={ 1 / mainPanelScale }></TouchControls>
+
+              { newTouchControls &&
+                <TouchControls parentScale={ 1 / parseFloat(getRootStyle('--game-panel-scale') || mainPanelScale.toString()) }></TouchControls>
               }
+
             </div>
           </div>
           <StatsPanel id="StatsPanel" ref={ statsRef } layout={ appLayout }
@@ -322,7 +357,7 @@ export function App() {
           ></StatsPanel>
         </div>
         <DevPanel id="DevPanel" layout={ appLayout } enabled={ appContext.props.isDevPanelOn }></DevPanel>
-        <OptionsModal parentScale={ mainPanelScale }></OptionsModal>
+        <OptionsModal parentScale={ 1 }></OptionsModal>
         <Filters />
       </AppProvider>
     </>

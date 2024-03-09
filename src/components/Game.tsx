@@ -30,7 +30,7 @@ import { Ref } from 'preact';
 import { MutableRef, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
-import { newUID } from '../utils/AppUtil';
+import { mobileAndTabletCheck, newUID, swapCssClass } from '../utils/AppUtil';
 import { PieceQue } from './PieceQue';
 // import { StatsPanel } from './StatsPanel';
 import { BaseComponentProps } from '../BaseTypes';
@@ -1906,15 +1906,31 @@ interface PieceMove {
                     if (targetEl && targetEl.style) {
                       targetEl.style.opacity = "1";
                     }
+                    swapCssClass(document.querySelector('#PauseOverlay_Restart'), "hide", "show");
                   } }>Over</div>
+
+                  { mobileAndTabletCheck() &&
+                    <button id="PauseOverlay_Restart"
+                      onClick={ () => { appContext.api.resetGame() } }
+                      className={ 'show overlay-button restart hide' }>Restart</button>
+                  }
                 </>
                 }
                 { !gameover &&
                   <div className=" pause-text tetris-font">Paused</div>
                 }
-                <button id="PauseOverlay_Restart"
-                  onClick={ () => { appContext.api.resetGame() } }
-                  className={ paused.current ? 'show' : 'hide' }>Restart</button>
+
+                { appContext.props.gamePaused && !appContext.props.gameOver &&
+                  <>
+                    <button id="PauseOverlay_Resume"
+                      onClick={ () => { appContext.api.resumeGame() } }
+                      className={ (paused.current ? 'show' : 'hide') + ' overlay-button resume' }></button>
+
+                    <button id="PauseOverlay_Restart"
+                      onClick={ () => { appContext.api.resetGame() } }
+                      className={ (paused.current ? 'show' : 'hide') + ' overlay-button restart' }>Restart</button>
+                  </>
+                }
               </div>
             }
 

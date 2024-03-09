@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "preact/hooks";
 import { BaseComponentProps, LAYOUT_DESKTOP } from "../BaseTypes";
 import { Ref } from "preact";
+import { forwardRef } from "preact/compat";
 
 interface ControlsMapProps extends BaseComponentProps {
   clickCallback?: (e: any) => void;
@@ -39,7 +40,7 @@ const KEY_CODE_MAP: any = {
 export const BTN_REPEAT_RATE: number = 40;
 export const BTN_DELAY_UNTIL_REPEAT: number = 200;
 
-export function ControlsMap(props: ControlsMapProps) {
+const ControlsMap = forwardRef(function ControlsMap(props: ControlsMapProps, ref: Ref<HTMLDivElement>) {
 
   const touchInterval: Ref<NodeJS.Timeout> = useRef(null);
   const touchIntervalDelay: Ref<NodeJS.Timeout> = useRef(null);
@@ -107,7 +108,9 @@ export function ControlsMap(props: ControlsMapProps) {
 
   return (
     <>
-      <div data-layout={ props.layout } className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-rounded-lg tw-px-1">
+      <div data-layout={ props.layout } ref={ ref }
+        className="game-control-map tw-flex tw-gap-1 tw-flex-col tw-justify-center tw-items-center tw-rounded-lg tw-px-1"
+      >
 
         <div className="btn-row">
           <div id="BtnRotLeft" className="game-control-button hover-text btn-rot-l"
@@ -191,7 +194,8 @@ export function ControlsMap(props: ControlsMapProps) {
       </div>
     </>
   );
-};
+});
+
 ControlsMap.defaultProps = {
   keyRotateLeft: DEFAULT_KEY_MAP.keyRotateLeft,
   keyRotateRight: DEFAULT_KEY_MAP.keyRotateRight,

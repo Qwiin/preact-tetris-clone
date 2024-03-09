@@ -29,41 +29,42 @@ function App2() {
 
   return (
     <div class="app-wrapper">
+      {/* @ts-ignore nested providers */}
       <UserProvider>
-      <></>
+      {/* @ts-ignore nested providers */}
       <AppProvider>
       <AppHeader id="AppHeader" layout={mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP}/>
       <Router>
-        {/*<Home loggedIn={true} path="/" />*/}
-        <PrivateRoute onRouteComplete={()=>{
-          forceUpdate(1);
-          
-          console.log("..................ROUTE_COMPLETE......................");
-        }} path={PATH_HOME} component={() => <HomePage />} />
+          {/*<Home loggedIn={true} path="/" />*/}
+          <PrivateRoute onRouteComplete={()=>{
+            forceUpdate(1);
+            
+            console.log("..................ROUTE_COMPLETE......................");
+          }} path={PATH_HOME} component={() => <HomePage />} />
 
-        <AsyncRoute
-          path={PATH_SIGNUP}
-          getComponent={() =>
-            // import('./SignUp').then(module => module.default)
-            import('./GoogleSignUp').then(module => module.default)
-          }
-        />
-        <AsyncRoute
-          path={PATH_LOGIN}
-          getComponent={() =>
-            import('./Login').then(module => module.default)
-          }
-        />
-        <AsyncRoute
-          path={PATH_PROFILE}
-          getComponent={() =>
-            import('./Profile').then(module => module.default)
-          }
-        />
-        <NotFound default />
-      </Router>
-      </AppProvider>
-      </UserProvider>
+          <AsyncRoute
+            path={PATH_SIGNUP}
+            getComponent={() =>
+              // import('./SignUp').then(module => module.default)
+              import('./GoogleSignUp').then(module => module.default)
+            }
+          />
+          <AsyncRoute
+            path={PATH_LOGIN}
+            getComponent={() =>
+              import('./Login').then(module => module.default)
+            }
+          />
+          <AsyncRoute
+            path={PATH_PROFILE}
+            getComponent={() =>
+              import('./Profile').then(module => module.default)
+            }
+          />
+          <NotFound default />
+        </Router>
+        </AppProvider>
+        </UserProvider>
     </div>
   );
 }

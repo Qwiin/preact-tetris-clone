@@ -90,6 +90,7 @@ export interface GameState {
     isSoundOn: boolean;
     isMusicOn: boolean;
     isDevPanelOn: boolean;
+    isNewTouchEnabled: boolean;
     gameMode: "marathon" | "time_attack" | "campaign";
   };
 }
@@ -120,6 +121,7 @@ const initialGameState: GameState = {
     isSoundOn: false,
     isMusicOn: false,
     isDevPanelOn: false,
+    isNewTouchEnabled: false,
   }
 }
 export interface GameStateAPI extends GameState {
@@ -131,6 +133,7 @@ export interface GameStateAPI extends GameState {
     enableMusic: (value: boolean) => void;
     enableSound: (value: boolean) => void;
     enableDevPanel: (value: boolean) => void;
+    enableNewTouchControls: (value: boolean) => void;
     // setSoundVolume(value: number) => void;
 
     resetComplete: () => void;
@@ -211,6 +214,17 @@ const appReducer = (state: GameState, action: ReducerAction) => {
       }
       break;
     }
+    case 'ENABLE_NEW_TOUCH': {
+      if (state.props.isNewTouchEnabled !== action.payload) {
+        // document.dispatchEvent(new CustomEvent("new_touch_changed", { detail: action.payload }));
+        console.log("reducer::enable_new_touch dispatched");
+        const newState = { ...state };
+        newState.iter += 1;
+        newState.props.isNewTouchEnabled = action.payload;
+        return newState;
+      }
+      break;
+    }
     case 'SHOW_OPTIONS': {
       if (state.props.showOptions !== true) {
         const newState = { ...state };
@@ -240,6 +254,7 @@ const appReducer = (state: GameState, action: ReducerAction) => {
     }
     case 'GAME_OVER': {
       if (state.props.gameOver === false) {
+        document.dispatchEvent(new CustomEvent("game_over"));
         const newState = { ...state };
         newState.iter += 1;
         newState.props.gameOver = true;
@@ -285,6 +300,7 @@ const appReducer = (state: GameState, action: ReducerAction) => {
     }
     case 'RESET_COMPLETE': {
       if (state.props.gameReset === true) {
+        document.dispatchEvent(new CustomEvent("new_game"));
         const newState = { ...state };
         newState.props.gameReset = false;
         return newState;
@@ -388,6 +404,13 @@ export default function AppProvider(props: ProviderProps) {
     });
   }
 
+  const enableNewTouchControls = (enabled: boolean) => {
+    dispatch({
+      type: 'ENABLE_NEW_TOUCH',
+      payload: enabled
+    })
+  }
+
   const stats = () => {
     return state.props.stats;
   }
@@ -411,6 +434,7 @@ export default function AppProvider(props: ProviderProps) {
           enableSound,
           enableMusic,
           enableDevPanel,
+          enableNewTouchControls,
           stats,
         }
       } as GameStateAPI }

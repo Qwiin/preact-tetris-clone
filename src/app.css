@@ -15,6 +15,18 @@
 body,
 div {
   user-select: none;
+  touch-action: manipulation;
+  transition-property: transform;
+  transition-duration: 0.2s;
+  transition-timing-function: linear;
+}
+
+body {
+  background-blend-mode: var(--bg-blend-mode);
+  background-image: var(--bg-blend-gradient), var(--bg-image);
+  background-repeat: no-repeat;
+  background-size: var(--bg-size);
+  background-position: var(--bg-position);
 }
 
 .dev-panel {
@@ -40,14 +52,12 @@ body[data-layout="desktop"] {
   /* min-width: 1000px; */
   overflow: hidden;
 
-  background:
+  /* background:
     url(/src/assets/bg_cave18_hd.webp),
-    /* url("/src/assets/tetris_bg_intergalactic09.webp"),  */
-    /* url("/src/assets/radial_bg_blend.avif"); */
     radial-gradient(circle at center, #311F, #9999, #44222299, #334c, #313c);
-  /* background-repeat: repeat; */
+  background-repeat: no-repeat;
   background-size: auto 140%;
-  background-position: 35% 10%;
+  background-position: 35% 10%; */
 
 
   /* background-blend-mode: color-dodge; */
@@ -69,10 +79,10 @@ body[data-layout="mobile"] {
   
   background-size: 180vh auto;
   background-position: 64% 22%; */
-  background: url(/src/assets/bg_cave18_hd.webp), radial-gradient(circle at center, #311F, #9999, #4229, #334c, #313c);
+  /* background: url(/src/assets/bg_cave18_hd.webp), radial-gradient(circle at center, #311F, #9999, #4229, #334c, #313c);
 
   background-size: 180vh auto;
-  background-position: 40% 0%;
+  background-position: 40% 0%; */
 
   /* background-blend-mode: color-dodge; */
 
@@ -111,6 +121,7 @@ body[data-layout="mobile"] {
   height: 70%; */
   & #HeaderSVG {
     margin-top: 0.4rem;
+    transition: height 0.3s linear
   }
 }
 
@@ -135,64 +146,20 @@ body[data-layout="mobile"] {
 }
 
 
-@media (orientation: landscape) {
 
+.app-header {
+  height: var(--nav-header-height);
 
-  .app-header {
-    height: var(--nav-header-height);
-
-    & .user-icon {
-      transform: scale(84%);
-    }
-  }
-
-  .app-header[data-layout="mobile"] {
-    height: var(--nav-header-height-landscape-mobile);
-
-
-    /* & .user-icon {
-      transform: scale(64%);
-    } */
-
-    & .pause-resume {
-      transform: scale(80%);
-    }
-  }
-
-  #NavHeader[data-layout="mobile"] {
-    height: var(--nav-header-height-landscape-mobile);
-  }
-}
-
-@media (orientation: portrait) {
-  .app-header {
-    height: var(--nav-header-height);
-
-    & .user-icon {
-      transform: scale(84%);
-    }
-  }
-
-  [data-layout="mobile"] .app-header {
-    height: var(--nav-header-height);
-
-    & .user-icon {
-      transform: scale(84%);
-    }
-
-    & .settings {
-      transform: scale(90%);
-    }
-  }
-
-  [data-layout="mobile"] #NavHeader {
-    height: var(--nav-header-height);
+  & .nav-icon {
+    transform: scale(var(--nav-icon-scale));
+    transition: transform 0.3s ease-in-out;
   }
 }
 
 .app-header {
   --header-scale-desktop: 0.4;
   --header-cell-border-width: 0.0625rem;
+  height: var(--nav-header-height);
   position: absolute;
   top: 0;
   font-size: 1rem;
@@ -213,24 +180,13 @@ body[data-layout="mobile"] {
     z-index: 100;
     padding: 0;
     margin: 0;
-    background-size: 36pt;
-    height: 36pt;
-    width: 36pt;
-    border-radius: 36pt;
+    background-size: 32pt;
+    height: 32pt;
+    width: 32pt;
+    border-radius: 32pt;
   }
 
-  /* & .settings {
-    position: relative;
-    background-image: url('assets/settings.png');
-    background-size: 24pt;
-    height: 24pt;
-    width: 24pt;
-    border-radius: 24pt;
-    filter: contrast(1);
-    transition: all;
-    margin-top: 1pt;
-    margin-left: 4pt;
-  } */
+
   & .pause-resume {
     position: relative;
     /* background-image: url('assets/settings.png'); */
@@ -287,6 +243,81 @@ body[data-layout="mobile"] {
     }
   }
 
+  & .settings {
+    position: relative;
+    /* background-image: url('assets/settings.png'); */
+    /* background-size: 20pt; */
+    /* background-position: 2pt 2pt; */
+    /* background-repeat: no-repeat; */
+    height: 30pt;
+    width: 30pt;
+    border-radius: 30pt;
+    filter: contrast(1);
+    /* transition: all; */
+    margin-top: 1pt;
+    margin-left: 4pt;
+    box-shadow: #0008 0 0 0.0625rem 0.03125rem, #CFF3 0rem -0.0625rem 0.25rem 0.0625rem;
+
+
+    &::after {
+      box-shadow: inset #CFF6 0.09375rem 0.09375rem 0.25rem 0.125rem, inset 0 -0.0625rem 0.625rem 0.09375rem #0006, 0.015rem 0.03125rem 0.0625rem 0.0625rem #0003;
+      /* filter: contrast(0); */
+      content: ' ';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      border-radius: 50%;
+      z-index: 100;
+    }
+
+    &::before {
+      transition: transform 0.5s ease-in-out;
+      filter: contrast(0);
+      content: ' ';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      border-radius: 50%;
+    }
+
+    &.open::before {
+      transform: rotate(-540deg);
+      z-index: -1;
+      background-size: 24pt;
+      background-position: 3pt 3pt;
+      background-repeat: no-repeat;
+      background-image: url('assets/settings.png');
+    }
+
+    &.closed::before {
+      transform: rotate(0deg);
+      z-index: -1;
+      background-size: 24pt;
+      background-position: 3pt 3pt;
+      background-repeat: no-repeat;
+      background-image: url('assets/settings.png');
+    }
+  }
+
+
+  /* 
+  
+  & .settings {
+        position: relative;
+        background-image: url('assets/settings.png');
+        background-size: 24pt;
+        height: 24pt;
+        width: 24pt;
+        border-radius: 24pt;
+        filter: contrast(1);
+        transition: all;
+        margin-top: 1pt;
+        margin-left: 4pt;
+  }
   & .settings.open {
     position: relative;
     z-index: 100;
@@ -316,7 +347,7 @@ body[data-layout="mobile"] {
     background-image: url('assets/settings.png');
     height: 40pt;
     width: 40pt;
-    /* background-image: url('assets/settings.png'); */
+    
     background-size: 24pt;
     background-position: 8pt 8pt;
     background-repeat: no-repeat;
@@ -336,16 +367,33 @@ body[data-layout="mobile"] {
     height: 32pt;
     width: 32pt;
     transform: scale(0.96);
-    /* background-image: url('assets/settings.png'); */
+    
     background-size: 24pt;
     background-position: 4pt 4pt;
     background-repeat: no-repeat;
     border-radius: 24pt;
-  }
+  } */
 
   & .user-icon {
-    box-shadow: inset 0 -0.0625rem 0.625rem 0.09375rem #000D, 0.015rem 0.03125rem 0.0625rem 0.0625rem #0003;
-    background-size: 36pt;
+    box-shadow: #0008 0 0 0.0625rem 0.0625rem,
+      #CFF3 0rem 0.0rem 0.125rem 0.0625rem,
+      inset #366C 0.0rem -0.0rem 0rem 0.0625rem;
+    /* inset 0 -0.0625rem 0.625rem 0.09375rem #000D, 0.015rem 0.03125rem 0.0625rem 0.0625rem #0003, */
+    /* inset #CFF6 0.09375rem 0.09375rem 0.25rem 0.125rem,
+      inset 0 -0.0625rem 0.625rem 0.09375rem #0006,
+      0.015rem 0.03125rem 0.0625rem 0.0625rem #0003; */
+    background-size: 32pt;
+
+    &::after {
+      position: absolute;
+      border-radius: 50%;
+      content: ' ';
+      height: 100%;
+      width: 100%;
+      left: 0;
+      top: 0;
+      background-image: linear-gradient(rgba(16, 22, 28, 0.25), rgba(53, 69, 85, 0.1) 40%, rgba(16, 22, 28, 0.5));
+    }
   }
 }
 
@@ -599,7 +647,7 @@ body[data-layout="mobile"] {
 }
 
 [data-layout="mobile"] {
-  touch-action: none;
+  touch-action: manipulation;
 }
 
 [data-layout="mobile"].stats-panel #StatsPanelScaleWrapper {
@@ -1482,6 +1530,64 @@ Keyboard Controls Map UI
   margin-top: -0.75%;
   /* flex: 2fr; */
   /* flex-basis: 2fr; */
+
+
+}
+
+[data-has-touch='true'] {
+  & #GamePanel {
+    width: 50%;
+    top: 18%;
+    height: 82%;
+    left: 25%;
+    position: absolute;
+    justify-content: flex-start;
+
+    & > div {
+      transform-origin: 50% 18%;
+    }
+  }
+
+  & #StatsPanel {
+    position: absolute;
+    left: 0;
+    top: 1%;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+
+    & > div {
+      height: 10%;
+      flex-direction: row;
+      transform-origin: center;
+      height: auto;
+      overflow: visible;
+    }
+  }
+
+  & #MenuPanel {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 20%;
+    align-items: center;
+    transform-origin: top;
+    justify-content: flex-start;
+    height: auto;
+
+    & > div {
+      transform: scale(1) !important;
+      flex-direction: row-reverse;
+      transform-origin: top;
+      height: 10%;
+      width: 90%;
+      justify-content: space-between;
+
+      & .game-control-map {
+        display: none;
+      }
+    }
+  }
 }
 
 #StatsPanel,
@@ -1735,6 +1841,7 @@ div#GameoverRight {
   perspective: 10rem;
 
   animation: waterfall 1.0s ease-in;
+  text-shadow: 0.1rem 0.2rem 0.3rem #000C;
 }
 
 #PauseOverlay {
@@ -1823,6 +1930,7 @@ div#GameoverRight {
   background-color: rgb(0 0 0 / 0.4);
   top: 0;
   left: 0;
+  user-select: none;
 
   & div {
     color: hsl(240, 5%, 85%);
@@ -2162,29 +2270,33 @@ div[data-layout="mobile"] {
   width: 100%;
 }
 
-
-.options-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-height: 80%;
-  gap: 1rem;
-  overflow: scroll;
-}
-
 .options-group {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 70%;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  /* align-items: center; */
+  width: 95%;
+  margin-top: 2rem;
+
+  & > h3 {
+    margin: 0;
+    padding: 0;
+  }
 
   & > :nth-child(1) {
-    width: 30%;
+    width: 35%;
+    text-align: right;
   }
 
   & > :nth-child(2) {
-    width: 30%;
+    width: 35%;
+    text-align: left;
+
+    & > div {
+      justify-content: space-between;
+    }
   }
 }
 
@@ -2194,76 +2306,74 @@ div[data-layout="mobile"] {
   }
 }
 
-@media (orientation: portrait) {
-  &.touch-controls {
-    margin-top: -2rem;
-    gap: 0.5rem;
+/* @media (orientation: portrait) { */
+
+#ControlStickRegion {
+  position: absolute;
+  left: 10%;
+  right: 22%;
+  top: 30%;
+  bottom: -50%;
+  z-index: 4000;
+  /* background-color: rgb(0 128 0 / 0.5); */
+
+  #StickPerimeter {
+    pointer-events: none;
+    touch-action: manipulation;
   }
 
-  #ControlStickRegion {
-    position: absolute;
-    left: 10%;
-    right: 22%;
-    top: 30%;
-    bottom: -50%;
-    z-index: 4000;
-    /* background-color: rgb(0 128 0 / 0.5); */
+  #StickThumb {
+    pointer-events: none;
+    touch-action: manipulation;
+  }
 
-    #StickPerimeter {
-      pointer-events: none;
-      touch-action: none;
+
+  & > svg {
+    transition: opacity 0.3s ease-in;
+
+    opacity: 0;
+
+    &.on {
+      opacity: 0.2;
     }
 
-    #StickThumb {
-      pointer-events: none;
-      touch-action: none;
-    }
-
-
-    & > svg {
-      transition: opacity 0.3s ease-in;
-
+    &.off {
       opacity: 0;
-
-      &.on {
-        opacity: 0.2;
-      }
-
-      &.off {
-        opacity: 0;
-      }
     }
   }
 }
 
-@media (orientation: landscape) {
-  #ControlStickRegion {
-    position: absolute;
-    left: -100%;
-    right: 20%;
-    top: 30%;
-    bottom: 0%;
-    z-index: 4000;
-    /* background-color: rgb(0 128 0 / 0.5); */
+/* } */
+
+/* @media (orientation: landscape) { */
+#ControlStickRegion {
+  position: absolute;
+  left: -100%;
+  right: 20%;
+  top: 30%;
+  bottom: 0%;
+  z-index: 4000;
+  /* background-color: rgb(0 128 0 / 0.5); */
 
 
-    & > svg {
-      /* background-color: #ff7f5099; */
-      /* border: 1px solid white; */
-      transition: opacity 0.3s ease-in;
+  & > svg {
+    /* background-color: #ff7f5099; */
+    /* border: 1px solid white; */
+    transition: opacity 0.3s ease-in;
 
+    opacity: 0;
+
+    &.on {
+      opacity: 0.2;
+    }
+
+    &.off {
       opacity: 0;
-
-      &.on {
-        opacity: 0.2;
-      }
-
-      &.off {
-        opacity: 0;
-      }
     }
   }
 }
+
+/* } */
 
 @keyframes fade-in-touch-ui {
   0% {
@@ -2275,56 +2385,91 @@ div[data-layout="mobile"] {
   }
 }
 
-
-#PauseOverlay_Restart {
+.overlay-button {
   border-color: rgb(226 232 240 / 1);
   opacity: 0.8;
   position: absolute;
-  top: 60%;
+  top: 20%;
   transform: scale(0.8);
+  width: 6rem;
+  opacity: 0;
+  border-radius: 1.5rem;
+
 
   transition: opacity 0.5s;
 
   &.show {
-    transition-delay: 0.3s;
+    /* transition-delay: 0.3s; */
     opacity: 0.8;
   }
 
   &.hide {
     pointer-events: none;
-    opacity: 1;
+    opacity: 0;
+  }
+
+  &:nth-child(2) {
+
+    filter: contrast(1);
+    width: 3rem;
+    top: 65%;
+    border: none;
+    height: 3rem;
+    border-radius: 1.5rem;
+    box-shadow: #000C 0 0.0625rem 0.0625rem 0.0625rem, inset #0008 0 0.3125rem 0.0625rem 0.0625rem;
+    background-color: transparent;
+    background-size: 3rem 3rem;
+    background-position: 0 0.1rem;
+    background-repeat: no-repeat;
+    background-image: url('assets/play-circle.png');
+
+
+    &::before {
+      content: ' ';
+      filter: contrast(0);
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      border-radius: 1.5rem;
+      /* background-color: green; */
+      background-image: url('assets/play-circle.png');
+      background-size: 3rem 3rem;
+      background-repeat: no-repeat;
+    }
   }
 }
 
-@media (orientation: landscape) {
-  #ButtonContols {
-    z-index: 4001;
-    position: absolute;
-    top: 60%;
-    bottom: 10%;
-    right: -100%;
-    width: 40%;
-    /* background-color: green; */
-    pointer-events: stroke;
-    touch-action: none;
-  }
+/* @media (orientation: landscape) { */
+/* #ButtonControls {
+  z-index: 4001;
+  position: absolute;
+  top: 60%;
+  bottom: 10%;
+  --game-scale: attr(data-scale);
+  right: 0%;
+  width: 0%;
+  pointer-events: stroke;
+  touch-action: manipulation;
+} */
+
+/* } */
+
+
+/* } */
+
+#TouchControls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4002;
 }
 
-@media (orientation: portrait) {
-  #ButtonContols {
-    z-index: 4001;
-    position: absolute;
-    top: 40%;
-    bottom: -20%;
-    right: 0%;
-    width: 20%;
-    /* background-color: green; */
-    pointer-events: stroke;
-    touch-action: none;
-  }
-}
+#ButtonControls {
 
-#ButtonContols {
+  /* transform: scale(0.5) !important; */
+
   /* z-index: 4001;
   position: absolute;
   top: 40%;
@@ -2339,7 +2484,7 @@ div[data-layout="mobile"] {
   opacity: 0.8;
 
   & > .touch-button {
-    color: black;
+    /* color: black;
     z-index: 0;
     position: relative;
     line-height: 3.2rem;
@@ -2349,11 +2494,24 @@ div[data-layout="mobile"] {
     background-color: purple;
 
     box-shadow: inset 0 -0.4625rem 1.025rem 0.09375rem #000D,
-      0.115rem 0.03125rem 0.0625rem 0.0625rem #0003;
+      0.115rem 0.03125rem 0.0625rem 0.0625rem #0003; */
+
+    transition: all 0.1s linear;
+    position: relative;
+    /*   transform: scale(1); */
+    height: 3rem;
+    width: 3rem;
+    background-color: #E83333;
+    border-radius: 100px;
+    overflow: hidden;
+    box-shadow:
+      -0.015625rem -0.03125rem 0.03125rem 0.09375rem #FFF9,
+      0.25rem 0.5rem 0.25rem 0 #0009,
+      inset 0.0625rem 0.125rem 0.125rem 0 #0009;
 
 
     &::before {
-      position: absolute;
+      /* position: absolute;
       top: 0.09375rem;
       color: white;
       z-index: 1;
@@ -2361,12 +2519,29 @@ div[data-layout="mobile"] {
       content: attr(data-char);
       height: 100%;
       width: 100%;
-      border-radius: 1.75rem;
+      border-radius: 1.75rem; */
       /* box-shadow: inset 0 -0.1625rem 0.225rem 0.19375rem #0006 */
+      content: attr(data-char);
+      color: rgb(255 255 255 / 0.8);
+      font-size: 1.6rem;
+      margin-left: -0.25rem;
+      text-align: center;
+      /* font-family: sans-serif; */
+      font-weight: bold;
+      vertical-align: middle;
+      line-height: 2.5rem;
+      height: 100%;
+      width: 96%;
+      position: absolute;
+      top: 10%;
+      left: 14%;
+      border-radius: 50%;
+
+      box-shadow: 0 0.125rem 0.1875rem 0.125rem #FFF4;
     }
 
     &::after {
-      z-index: 0;
+      /* z-index: 0;
       position: absolute;
       top: 0;
       left: 0;
@@ -2374,7 +2549,41 @@ div[data-layout="mobile"] {
       height: 100%;
       width: 100%;
       border-radius: 1.75rem;
-      box-shadow: inset 0 -0.1625rem 0.225rem 0.19375rem #0006
+      box-shadow: inset 0 -0.1625rem 0.225rem 0.19375rem #0006 */
+      position: absolute;
+      background-image: linear-gradient(#FFF0, #FFF0, #FFF6);
+      content: '';
+      opacity: 1;
+      height: 86%;
+      width: 47%;
+      left: 48%;
+      top: 7%;
+      border-radius: 6rem;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      transform: rotate(-10deg);
+    }
+
+    &.active {
+      box-shadow:
+        -0.015625rem -0.03125rem 0.03125rem 0.09375rem #FFF9,
+        0.25rem 0.5rem 0.25rem 0 #0009,
+        inset -0.0625rem -0.125rem 0.125rem 0 #0009;
+
+      /* -0.03125rem -0.0625rem 0.03125rem 0.09375rem #FFF9,
+          0.25rem 0.5rem 0.25rem 0 #0009,
+          inset 0.125rem 0.25rem 0.125rem 0 #0009; */
+
+      &::before {
+        top: 6%;
+        left: 13%;
+        box-shadow: -0.125rem 0.125rem 0.1875rem 0.125rem #FFF4
+      }
+
+      &::after {
+        left: 48%;
+        top: 4%;
+      }
     }
   }
 
@@ -2382,18 +2591,17 @@ div[data-layout="mobile"] {
     background-color: var(--toast-dark-blue);
     position: absolute;
     left: -1.4rem;
-    bottom: 9.2rem;
-    background-color:
-  }
-
-  & #RotateR {
-    background-color: var(--toast-red-mario);
-    position: absolute;
-    left: -5.4rem;
-    bottom: 0;
+    bottom: 8.4rem;
   }
 
   & #RotateL {
+    background-color: var(--toast-red-mario);
+    position: absolute;
+    left: -4.9rem;
+    bottom: 0.5rem;
+  }
+
+  & #RotateR {
     background-color: var(--toast-red-mario);
     position: absolute;
     left: -1.4rem;

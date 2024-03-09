@@ -103,10 +103,20 @@ const OptionsModal = (props: { parentScale: number }) => {
       <div className="options-group">
         <h3 className="tw-text-right">Dev Panel</h3>
         <div className="tw-flex tw-flex-col">
-          <ToggleSwitch id="Options_ToggleDevPanel" label="Dev Panel" contextType="game" keyPath="props.isDevPanelOn"
+          <ToggleSwitch id="Options_ToggleDevPanel" label="" contextType="game" keyPath="props.isDevPanelOn"
             dispatchEventType="update_app"
             toggleCallback={ (value: boolean) => {
               appContext.api.enableDevPanel(value);
+            } } />
+        </div>
+      </div>
+      <div className="options-group">
+        <h3 className="tw-text-right">Touch Controls 2.0 (beta)</h3>
+        <div className="tw-flex tw-flex-col">
+          <ToggleSwitch id="Options_ToggleNewTouch" label="" contextType="game" keyPath="props.isNewTouchEnabled"
+            dispatchEventType="update_app"
+            toggleCallback={ (value: boolean) => {
+              appContext.api.enableNewTouchControls(value);
             } } />
         </div>
       </div>
@@ -156,17 +166,20 @@ const ToggleSwitch = (props: ToggleSwitchProps) => {
   return (
     <>
       <div className="toggle-switch-wrapper tw-flex">
-        <label for={ props.id }>{ props.label }</label>
+        { props.label && props.label.length > 0 &&
+          <label for={ props.id }>{ props.label }</label>
+        }
         <div class="toggle-switch">
           <input class="toggle toggle-skewed" id={ props.id } type="checkbox" onChange={ () => {
             console.log("toggle switch toggled");
+
+            props.toggleCallback(!isOn);
+            setIsOn(!isOn);
             if (props.dispatchEventType) {
               document.dispatchEvent(
                 new CustomEvent<string>(props.dispatchEventType, { bubbles: true, detail: props.keyPath })
               );
             }
-            props.toggleCallback(!isOn);
-            setIsOn(!isOn);
           } } checked={ isOn } />
           <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for={ props.id }></label>
         </div>

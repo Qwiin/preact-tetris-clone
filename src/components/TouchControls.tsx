@@ -1,4 +1,4 @@
-import { useContext, useLayoutEffect, useRef } from "preact/hooks";
+import { useContext, useEffect, useRef } from "preact/hooks";
 import { AppContext } from "../AppProvider";
 import { Ref } from "preact";
 import { BTN_DELAY_UNTIL_REPEAT, BTN_REPEAT_RATE } from "./ControlsMap";
@@ -8,8 +8,13 @@ import { CSSColors } from "../BaseTypes";
 export type Vec2D = [number, number];
 
 export const TouchControls = (props: { parentScale: number }) => {
-  const wrapperRef: Ref<HTMLDivElement> = useRef(null);
-  const ref: Ref<SVGSVGElement> = useRef(null);
+
+  const appContext = useContext(AppContext);
+  // const [newTouchEnabled, setNewTouchEnabled] = useState(appContext.props.isNewTouchEnabled);
+
+  const ref: Ref<HTMLDivElement> = useRef(null);
+  const controlStickRegionRef: Ref<HTMLDivElement> = useRef(null);
+  const svgRef: Ref<SVGSVGElement> = useRef(null);
   const stickRef: Ref<SVGCircleElement> = useRef(null);
   const stickPos: Ref<Vec2D> = useRef(null);
   const radius: Ref<number> = useRef(null);
@@ -24,21 +29,39 @@ export const TouchControls = (props: { parentScale: number }) => {
 
   const repeatSpeed: Ref<number> = useRef(0);
 
-  const appContext = useContext(AppContext);
-  useLayoutEffect(() => {
-    if (appContext.props.gamePaused) {
-      if (wrapperRef.current) {
-        wrapperRef.current.style.visibility = "hidden";
+  useEffect(() => {
+    // setNewTouchEnabled(appContext.props.isNewTouchEnabled);
+    if (ref.current) {
+      if (appContext.props.isNewTouchEnabled) {
+        ref.current.style.display = "block";
+      }
+      else {
+        ref.current.style.display = "none";
+      }
+    }
+  }, [appContext.props.isNewTouchEnabled]);
+
+  useEffect(() => {
+
+    if (appContext.props.gamePaused || appContext.props.gameOver) {
+      // if (ref.current) {
+      //   ref.current.style.display = "none";
+      // }
+      if (controlStickRegionRef.current) {
+        controlStickRegionRef.current.style.visibility = "hidden";
       }
       console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Hiding Analog Stick UI");
     }
     else {
-      if (wrapperRef.current) {
-        wrapperRef.current.style.visibility = "visible";
+      // if (ref.current) {
+      //   ref.current.style.display = "block";
+      // }
+      if (controlStickRegionRef.current) {
+        controlStickRegionRef.current.style.visibility = "visible";
       }
       console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Showing Analog Stick UI");
     }
-  }, [appContext.props.gamePaused]);
+  }, [appContext.props.gamePaused, appContext.props.gameOver, appContext.props.isNewTouchEnabled]);
 
   const startBtnRepeat = (btnValue: string | undefined, speed: number = 0) => {
     if (disableRepeatUntilNextTouch.current === true) {
@@ -50,19 +73,21 @@ export const TouchControls = (props: { parentScale: number }) => {
     if (speed === repeatSpeed.current) {
       return;
     }
-    repeatSpeed.current = speed;
     endBtnRepeat();
+    repeatSpeed.current = speed;
     if (!touchInterval.current) {
       if (!firstInputTriggered.current) {
         firstInputTriggered.current = true;
         document.dispatchEvent(new KeyboardEvent("keydown", { key: btnValue }));
 
       }
+      const repeatInterval = BTN_REPEAT_RATE * 3 / (repeatSpeed.current || 1);
+      console.log(repeatInterval);
       touchIntervalDelay.current = setTimeout(() => {
         touchInterval.current = setInterval(() => {
           document.dispatchEvent(new KeyboardEvent("keydown", { key: btnValue }));
-        }, BTN_REPEAT_RATE / (repeatSpeed.current || 1));
-      }, BTN_DELAY_UNTIL_REPEAT / 3); // delay until repeat;
+        }, repeatInterval);
+      }, BTN_DELAY_UNTIL_REPEAT / 2); // delay until repeat;
     }
   }
 
@@ -79,18 +104,25 @@ export const TouchControls = (props: { parentScale: number }) => {
   }
 
   return (
-    <>
-      <div ref={ wrapperRef } id="ControlStickRegion"
+    <div id="TouchControls" ref={ ref } style={ {
+      display: appContext.props.isNewTouchEnabled ? 'block' : 'none',
+      zIndex: !appContext.props.gameOver && !appContext.props.gamePaused ? 10000 : 0
+    } }>
+      <div ref={ controlStickRegionRef } id="ControlStickRegion"
+
+        onClick={ () => {
+          document.dispatchEvent(new KeyboardEvent("keydown", { key: "Shift" }));
+        } }
         onTouchStart={ (e: TouchEvent) => {
 
-          if (!wrapperRef.current) { return }
+          if (!controlStickRegionRef.current) { return }
 
-          const parentBounds = wrapperRef.current.getBoundingClientRect();
+          const parentBounds = controlStickRegionRef.current.getBoundingClientRect();
 
           // parentBounds.width = 
 
           const stickEl = stickRef.current;
-          const thisEl = ref.current;
+          const thisEl = svgRef.current;
           if (!stickEl || !thisEl) { return; }
 
           touchRef.current = e.touches[0].identifier;
@@ -102,6 +134,11 @@ export const TouchControls = (props: { parentScale: number }) => {
 
           thisEl.style.left = `${(touchOrigin.current[0] - parentBounds.x - bounds.width / 2) * props.parentScale}px`;
           thisEl.style.top = `${(touchOrigin.current[1] - parentBounds.y - bounds.height / 2) * props.parentScale}px`;
+
+          // (7.92578125 - -577 - 450 / 2) * 0.711584597243118
+
+          console.log('(', touchOrigin.current[0], "-", parentBounds.x, "-", bounds.width, "/ 2) *", props.parentScale);
+          // console.log(`left: ${(touchOrigin.current[0] - parentBounds.x - bounds.width / 2) * props.parentScale}px`, `top: ${(touchOrigin.current[1] - parentBounds.y - bounds.height / 2) * props.parentScale}px`);
 
           thisEl.style.visibility = "visible";
 
@@ -120,8 +157,8 @@ export const TouchControls = (props: { parentScale: number }) => {
             }
 
             const vec: Vec2D = [
-              e.touches[0].clientX - touchOrigin.current[0],
-              e.touches[0].clientY - touchOrigin.current[1]
+              (e.touches[0].clientX - touchOrigin.current[0]) / props.parentScale / props.parentScale,
+              (e.touches[0].clientY - touchOrigin.current[1]) / props.parentScale / props.parentScale
             ];
 
             const vecLen: number = Math.sqrt(Math.pow(vec[0], 2) + Math.pow(vec[1], 2));
@@ -131,6 +168,7 @@ export const TouchControls = (props: { parentScale: number }) => {
 
             const unitLen = Math.sqrt(Math.pow(unitVec[0], 2) + Math.pow(unitVec[1], 2));
 
+            console.log(unitLen);
             if (unitLen > 0.25) {
 
               const xMag = Math.abs(unitVec[0]);
@@ -140,7 +178,7 @@ export const TouchControls = (props: { parentScale: number }) => {
 
               if (xMag > yMag * 0.9) {
                 console.log("LR");
-                const repeatSpeed = xMag < 0.6 ? 1 : xMag < 0.8 ? 2 : 3;
+                const repeatSpeed = unitLen < 0.4 ? 0.2 : unitLen < 0.6 ? 0.6 : unitLen < 0.8 ? 1.2 : 3.0;
                 if (unitVec[0] > 0) {
                   startBtnRepeat("ArrowRight", repeatSpeed);
                 }
@@ -156,7 +194,7 @@ export const TouchControls = (props: { parentScale: number }) => {
               else if (unitVec[1] < -0.5 && yMag / xMag > 1) {
                 console.log("UP");
                 endBtnRepeat();
-                firstInputTriggered.current = true;
+                // firstInputTriggered.current = true;
                 if (disableRepeatUntilNextTouch.current !== true) {
                   disableRepeatUntilNextTouch.current = true;
                   document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" }));
@@ -170,7 +208,7 @@ export const TouchControls = (props: { parentScale: number }) => {
             // console.log(`translate(${unitVec[0] * radius.current}px,${unitVec[1] * radius.current}px)`);
 
 
-            stickRef.current.style.transform = `translate(${unitVec[0]}px,${unitVec[1]}px)`
+            stickRef.current.style.transform = `translate(${unitVec[0] * props.parentScale}px,${unitVec[1] * props.parentScale}px)`
 
           }
           window.ontouchend = () => {
@@ -197,35 +235,38 @@ export const TouchControls = (props: { parentScale: number }) => {
           }
 
         } }>
-        <svg ref={ ref } style={ {
+        <svg ref={ svgRef } style={ {
           position: "absolute",
-          bottom: 0,
-          left: `calc(50% - 100px)`,
+          top: 0,
+          left: `calc(50% - 150px)`,
           // opacity: 0.2
-        } } height="250" width="250" xmlns="http://www.w3.org/2000/svg" viewBox={ "-1.5 -1.5 3 3" }>
+        } } height="300" width="300" xmlns="http://www.w3.org/2000/svg" viewBox={ "-1.5 -1.5 3 3" }>
           <g radius={ 0.5 }>
             <circle id="StickPerimeter" cx="0" cy="0" r={ props.parentScale } opacity={ 0.7 } stroke={ CSSColors.WhiteSmoke } strokeWidth={ 0.02 }>
             </circle>
-            <circle ref={ stickRef } id="StickThumb" style={ { pointerEvents: "none" } } className={ "control-stick" } cx="0" cy="0" r={ 0.3 * props.parentScale } fill={ CSSColors.WhiteSmoke } opacity={ 0.7 }>
+            <circle ref={ stickRef } id="StickThumb" style={ { pointerEvents: "none" } } className={ "control-stick" } cx="0" cy="0" r={ 0.33 * props.parentScale } fill={ CSSColors.WhiteSmoke } opacity={ 0.7 }>
               {/* <animate attributeName={ cx } attributeType={ "number" }></animate> */ }
             </circle>
           </g>
         </svg>
       </div>
-      <div id="ButtonContols">
+      <div id="ButtonControls" data-scale={ props.parentScale }>
         <div id="HoldSwap" className="touch-button"
           data-char="Z"
-          onClick={ () => { document.dispatchEvent(new KeyboardEvent("keydown", { key: "/" })); } }
-        >Z</div>
-        <div id="RotateL" className="touch-button"
-          data-char="A"
-          onClick={ () => { document.dispatchEvent(new KeyboardEvent("keydown", { key: "Shift" })); } }
-        >A</div>
+          onTouchStart={ (e: TouchEvent) => { (e.target as HTMLDivElement).classList.add("active"); document.dispatchEvent(new KeyboardEvent("keydown", { key: "/" })); } }
+          onTouchEnd={ (e: TouchEvent) => { (e.target as HTMLDivElement).classList.remove("active"); } }
+        ></div>
         <div id="RotateR" className="touch-button"
+          data-char="A"
+          onTouchStart={ (e: TouchEvent) => { (e.target as HTMLDivElement).classList.add("active"); document.dispatchEvent(new KeyboardEvent("keydown", { key: "Shift" })); } }
+          onTouchEnd={ (e: TouchEvent) => { (e.target as HTMLDivElement).classList.remove("active"); } }
+        ></div>
+        <div id="RotateL" className="touch-button"
           data-char="B"
-          onClick={ () => { document.dispatchEvent(new KeyboardEvent("keydown", { key: "Alt" })); } }
-        >B</div>
+          onTouchStart={ (e: TouchEvent) => { (e.target as HTMLDivElement).classList.add("active"); document.dispatchEvent(new KeyboardEvent("keydown", { key: "Alt" })); } }
+          onTouchEnd={ (e: TouchEvent) => { (e.target as HTMLDivElement).classList.remove("active"); } }
+        ></div>
       </div>
-    </>
+    </div>
   )
 }

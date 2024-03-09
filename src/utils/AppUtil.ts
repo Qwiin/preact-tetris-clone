@@ -55,7 +55,7 @@ export function mobileCheck(): boolean {
   return check;
 };
 
-export function mobileAndTableCheck(): boolean {
+export function mobileAndTabletCheck(): boolean {
   let check = false;
   (
     function (a) {
@@ -65,6 +65,10 @@ export function mobileAndTableCheck(): boolean {
   return check;
 };
 
+export function isTouchDevice() {
+  return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+}
+
 /**
  * 
  * Utility function to swap a css class - (e.g. for animations "fade-in" to "fade-out");
@@ -72,9 +76,18 @@ export function mobileAndTableCheck(): boolean {
  * @param fromClass - string css class name to remove
  * @param toClass - string css class name to add
  */
-export function swapCssClass(el: Element, fromClass: string, toClass: string) {
+export function swapCssClass(el: Element | null, fromClass: string, toClass: string) {
+  if (el === null) {
+    return;
+  }
   if (el.classList.contains(fromClass)) {
     el.classList.remove(fromClass);
   }
   el.classList.add(toClass);
+}
+
+export const getRootStyle = (name: string) => {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name);
+  console.log(name, value);
+  return value;
 }

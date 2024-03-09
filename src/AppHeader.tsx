@@ -1,23 +1,29 @@
 import { Link } from "preact-router";
 // import { CSSColors } from "./BaseTypes";
 import { TetrisLogoSvg } from "./components/TetrisLogoSvg";
-import { useContext, useEffect, useLayoutEffect, useReducer, useRef } from "preact/hooks";
+import { useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "preact/hooks";
 import { getAuth } from "firebase/auth";
 import { PATH_HOME, PATH_PROFILE, PATH_SIGNUP } from "./App2";
 import { AppContext, GameStateAPI, UserContext, UserStateAPI } from "./AppProvider";
-import { BaseComponentProps, LAYOUT_DESKTOP } from "./BaseTypes";
-import { mobileCheck, swapCssClass } from "./utils/AppUtil";
+import { BaseComponentProps } from "./BaseTypes";
+import { getRootStyle, swapCssClass } from "./utils/AppUtil";
 import { Ref } from "preact";
 
-export default function AppHeader(props: BaseComponentProps) {
+export default function AppHeader(props: any) {
 
   const userState = useContext(UserContext) as UserStateAPI;
   const gameState = useContext(AppContext) as GameStateAPI;
   const pauseResumeButton: Ref<HTMLDivElement> = useRef(null);
   const [, forceUpdate] = useReducer(x => x + 1, 0);
+
+  const [headerHeight, setHeaderHeight] = useState(getRootStyle('--header-logo-height'));
+
+
   // const [signedIn, setSignedIn] = useState(false);
 
   const currentUser = getAuth().currentUser;
+
+
 
   useEffect(() => {
     const pauseHandler = () => {
@@ -30,14 +36,40 @@ export default function AppHeader(props: BaseComponentProps) {
         swapCssClass(pauseResumeButton.current, "paused", "unpaused");
       }
     };
+    const newGameHandler = () => {
+      forceUpdate(1);
+    }
+    document.addEventListener("new_game", newGameHandler);
     document.addEventListener("game_pause", pauseHandler);
     document.addEventListener("game_resume", resumeHandler);
 
+    screen.orientation.onchange = () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setHeaderHeight(getRootStyle("--header-logo-height"));
+        });
+      });
+    }
+    const onResize = () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setHeaderHeight(getRootStyle("--header-logo-height"));
+        });
+      });
+    };
+    window.addEventListener("resize", onResize);
+
     return () => {
+      document.removeEventListener("new_game", newGameHandler);
       document.removeEventListener("game_pause", pauseHandler);
       document.removeEventListener("game_resume", resumeHandler);
+      screen.orientation.onchange = null;
+      window.removeEventListener("resize", onResize);
+
     }
-  }, [])
+
+  }, []);
+
 
   useLayoutEffect(() => {
     if (!currentUser && !userState.user) {
@@ -51,36 +83,48 @@ export default function AppHeader(props: BaseComponentProps) {
       //   forceUpdate(1);
       // },1000);
     }
-  }, [currentUser, userState.user, gameState.props.gamePaused]);
+    forceUpdate(1);
+  }, [currentUser, userState.user, gameState.props.gamePaused, gameState.props.gameReset, gameState.props.showOptions]);
 
   return (
 
     <header id={ props.id } data-layout={ props.layout } className={ `app-header tw-h-16` } style={ { zIndex: 5000 } }>
-      {/* <nav className={ `nav-item left tw-h-auto tw-z-50 tw-bg-slate-600` }>
-        <div className={ `nav-icon settings ${gameState.props.showOptions ? 'open' : ''}` } onClick={ () => {
-          if (gameState.props.showOptions === true) {
-            gameState.api.hideOptions();
-          }
-          else {
-            gameState.api.showOptions();
-          }
-        } }>
+      <div className="tw-flex tw-ga">
+        {/* <nav className={ `nav-item left tw-h-auto tw-z-50 tw-bg-slate-600` }>
+          <div className={ `nav-icon settings ${gameState.props.showOptions ? 'open' : ''}` } onClick={ () => {
+            if (gameState.props.showOptions === true) {
+              gameState.api.hideOptions();
+            }
+            else {
+              gameState.api.showOptions();
+            }
+          } }>
 
-        </div>
-      </nav> */}
-      <nav className={ `nav-item left tw-h-auto tw-z-50 tw-bg-slate-600` }>
-        <div ref={ pauseResumeButton } className={ `nav-icon pause-resume ${gameState.props.gamePaused ? 'paused' : 'unpaused'}` } onClick={ () => {
-          if (gameState.props.gamePaused === true) {
-            gameState.api.resumeGame();
-          }
-          else {
-            gameState.api.pauseGame();
-          }
-        } }>
+          </div>
+        </nav> */}
+        { props.leftNav !== "none" &&
+          <nav className={ `nav-item left tw-h-auto tw-z-50 tw-bg-slate-600` }>
+            <div ref={ pauseResumeButton } className={ `nav-icon settings ${gameState.props.showOptions ? 'open' : 'closed'}` }
+              onClick={ () => {
+                if (gameState.props.showOptions === true) {
+                  gameState.api.hideOptions();
+                }
+                else {
+                  gameState.api.showOptions();
+                }
+              } }>
+              {/* if (gameState.props.gamePaused === true) {
+                gameState.api.resumeGame();
+              }
+              else {
+                gameState.api.pauseGame();
+              }
+            } }> */}
 
-        </div>
-      </nav>
-
+            </div>
+          </nav>
+        }
+      </div>
       <Link href={ PATH_HOME } style={ { display: "block" } }>
         <TetrisLogoSvg id="HeaderSVG"
           // strokeColor='#89A6D3' 
@@ -90,12 +134,7 @@ export default function AppHeader(props: BaseComponentProps) {
           fillColor="#00000000"
           fillOpacity={ 1 }
           strokeWidth={ true ? "0.25rem" : "0.2rem" }
-          height={ screen.orientation.type.indexOf('landscape') >= 0 && mobileCheck()
-            ? "3.5rem"
-            : props.layout === LAYOUT_DESKTOP
-              ? "5.5rem"
-              : "4rem"
-          }
+          height={ headerHeight }
 
           letterFilter={
             // undefined

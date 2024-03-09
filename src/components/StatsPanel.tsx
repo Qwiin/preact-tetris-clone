@@ -30,15 +30,16 @@ export const StatsPanel = forwardRef(function StatsPanel(props: BaseComponentPro
   return (
     <>
       <div ref={ ref } id={ props.id } data-layout={ props.layout } className={ "stats-panel" + (props.className || "") }>
-        { props.layout === LAYOUT_DESKTOP &&
+        {/* { props.layout === LAYOUT_DESKTOP &&
           <div id="StatsPanelScaleWrapper" style={ { transform: `scale(${props.scale ?? 1})` } }>
             <StatsField id="Stats_Score" valueKey="score" label="Score" index={ 0 } layout={ props.layout } />
             <StatsField id="Stats_Lines" valueKey="lines" label="Lines" index={ 1 } layout={ props.layout } />
             <StatsField id="Stats_Level" valueKey="level" label="Level" index={ 2 } layout={ props.layout } />
             <StatsField id="Stats_Timer" valueKey="time" label="Time" index={ 3 } layout={ props.layout } />
           </div>
-        }
-        { props.layout === LAYOUT_MOBILE &&
+        } */}
+        {/* { props.layout === LAYOUT_MOBILE && */ }
+        { true &&
           <div id="StatsPanelScaleWrapper" style={ { transform: `scale(${props.scale ?? 1})` } }>
             <StatsField id="Stats_Timer" valueKey="time" label="Time" index={ 3 } layout={ props.layout } />
             <StatsField id="Stats_Level" valueKey="level" label="Level" index={ 2 } layout={ props.layout } />
