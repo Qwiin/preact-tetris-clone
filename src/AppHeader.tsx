@@ -3,11 +3,12 @@ import { Link } from "preact-router";
 import { TetrisLogoSvg } from "./components/TetrisLogoSvg";
 import { useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "preact/hooks";
 import { getAuth } from "firebase/auth";
-import { PATH_HOME, PATH_PROFILE, PATH_SIGNUP } from "./App2";
+import { PATH_HOME } from "./App2";
 import { AppContext, GameStateAPI, UserContext, UserStateAPI } from "./AppProvider";
 import { BaseComponentProps } from "./BaseTypes";
 import { getRootStyle, swapCssClass } from "./utils/AppUtil";
 import { Ref } from "preact";
+import ModalNav from "./components/ModalNav";
 
 export default function AppHeader(props: any) {
 
@@ -151,33 +152,41 @@ export default function AppHeader(props: any) {
 export function ProfileNav(props: BaseComponentProps) {
   const userState = useContext(UserContext);
 
+  const [showProfileModal, setShowProfileModal] = useState(false);
   return (
-    <nav id={ props.id } data-layout={ props.layout } data-orientation={ screen.orientation } className={ `nav-item right tw-h-auto tw-z-50 tw-bg-slate-600` }>
-      {/* <Link className="active tw-text-blue-500 tw-text-2xl tw-bg-slate-500 tw-w-24" href="/" style={{display: "block"}}>
+    <>
+      <nav id={ props.id } data-layout={ props.layout } data-orientation={ screen.orientation } className={ `nav-item right tw-h-auto tw-z-50 tw-bg-slate-600` }>
+        {/* <Link className="active tw-text-blue-500 tw-text-2xl tw-bg-slate-500 tw-w-24" href="/" style={{display: "block"}}>
           Home
         </Link> */}
 
-      { userState.user &&
+        { userState.user &&
 
-        <Link className="active tw-text-blue-500 tw-text-2xl tw-w-24 tw-bg-slate-500" href={ PATH_PROFILE } style={ { display: "block" } }>
-          <div className="nav-icon user-icon" style={ {
-            backgroundImage: `url("${userState.user?.photoURL}")`
-          } }>
-            { !userState.user?.photoURL &&
-              userState.user?.displayName?.substring(0, 1).toUpperCase()
-            }
+          <div className="active tw-text-blue-500 tw-text-2xl tw-w-24 tw-bg-slate-500" onClick={ () => {
+            setShowProfileModal(!showProfileModal);
+          } } style={ { display: "block" } }>
+            <div className="nav-icon user-icon" style={ {
+              backgroundImage: `url("${userState.user?.photoURL}")`
+            } }>
+              { !userState.user?.photoURL &&
+                userState.user?.displayName?.substring(0, 1).toUpperCase()
+              }
+            </div>
           </div>
-        </Link>
-      }
-      { !userState.user &&
-        <Link className="active tw-text-blue-500 tw-text-2xl tw-w-24 tw-bg-slate-500" href={ PATH_SIGNUP } style={ { display: "block" } }>
-          Sign In
-        </Link>
-      }
-      {/* <Link className="active tw-text-blue-500 tw-text-2xl tw-w-24 tw-bg-slate-500" href="/signup" style={{display: "block"}}>
+        }
+        { !userState.user &&
+          <div className="active tw-text-blue-500 tw-text-2xl tw-w-24 tw-bg-slate-500" onClick={ () => {
+            setShowProfileModal(!showProfileModal);
+          } } style={ { display: "block" } }>
+            Sign In
+          </div>
+        }
+        {/* <Link className="active tw-text-blue-500 tw-text-2xl tw-w-24 tw-bg-slate-500" href="/signup" style={{display: "block"}}>
           Sign Up
         </Link> */}
-      {/* <Link href="/notfound">NotFound</Link> */ }
-    </nav>
+        {/* <Link href="/notfound">NotFound</Link> */ }
+      </nav>
+      <ModalNav type={ "profile" } show={ showProfileModal } />
+    </>
   );
 }

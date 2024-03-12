@@ -27,7 +27,7 @@ Performance:
 import { Signal, signal } from '@preact/signals';
 
 import { Ref } from 'preact';
-import { MutableRef, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
+import { MutableRef, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import ActivePiece, { MovementTrigger } from '../ActivePiece';
 import { ActionType, BoardPosition, Direction, GAME_SPEEDS, GameAction, TETRONIMOES, TICK_INTERVAL, TetronimoShape, getLabelForActionType } from '../TetrisConfig';
 import { mobileAndTabletCheck, newUID, swapCssClass } from '../utils/AppUtil';
@@ -1310,7 +1310,7 @@ interface PieceMove {
     return { xStart, yStart };
   }
 
-  const keydownHandler = useCallback((e: any) => {
+  const keydownHandler = (e: any) => {
 
     if (gameoverRef.current === true || !board.current) {
       // currently, no keyboard input should be processed if gameover (or board ref is null)
@@ -1497,7 +1497,7 @@ interface PieceMove {
         updatePosition();
         break;
     }
-  }, []);
+  };
 
   const initRefs = () => {
 

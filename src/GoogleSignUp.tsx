@@ -9,10 +9,12 @@ import {
 
 import SignInWithGoogleLight from './assets/SignInWithGoogleLight';
 import { AppContext, GameState, UserContext, UserStateAPI } from "./AppProvider";
-import { Link, route } from "preact-router";
-import { PATH_HOME, PATH_LOGIN } from "./App2";
 
-export const GoogleSignUp = () => {
+interface Props {
+  callback: (result: any) => void
+}
+
+export const GoogleSignUp = (props: Props) => {
   const [error, setError] = useState(false);
   const [googleErrorMessage, setGoogleErrorMessage] = useState("");
 
@@ -21,14 +23,15 @@ export const GoogleSignUp = () => {
 
   // Instantiate the auth service SDK
   const auth = getAuth();
+  // const callback = props.callback;
 
   // Handle user sign up with google
   const handleGoogleSignUp = async (e: any) => {
     e.preventDefault();
 
-     // Instantiate a GoogleAuthProvider object
+    // Instantiate a GoogleAuthProvider object
     const provider = new GoogleAuthProvider();
-    
+
     try {
       // Sign in with a pop-up window
       const result: any = await signInWithPopup(auth, provider);
@@ -39,11 +42,12 @@ export const GoogleSignUp = () => {
 
       console.log(appState);
 
-      if(userState.setUser){
-        userState.setUser({...getAuth().currentUser});
+      if (userState.setUser) {
+        userState.setUser({ ...getAuth().currentUser });
       }
-      
-      route(PATH_HOME, true);
+
+      // route(PATH_HOME, true);
+      return result;
 
     } catch (err: any) {
       // Handle errors here.
@@ -69,27 +73,36 @@ export const GoogleSignUp = () => {
           setGoogleErrorMessage(errorMessage);
           break;
       }
+      return { errorMessage, errorCode };
     }
   };
 
   return (
     <div id="GoogleSignUp" className="signup-container tw-flex tw-items-center tw-justify-center">
       <div className='signupContainer__box__google'>
-        <button onClick={handleGoogleSignUp}>
+        <button onClick={ async (e: any) => {
+          const result = await handleGoogleSignUp(e);
+          props.callback(result);
+
+          document.dispatchEvent(
+            new CustomEvent("signInComplete", { detail: result })
+          );
+
+        } }>
           <span>
-            <SignInWithGoogleLight/>
+            <SignInWithGoogleLight />
           </span>
-            Sign Up with Google
+          {/* Sign Up with Google */ }
         </button>
-          {error && <p>{googleErrorMessage}</p>}
+        { error && <p>{ googleErrorMessage }</p> }
       </div>
 
       <div className='signupContainer__box__login'>
         <p>
-          Already have an account? 
-          <Link className="active" href={PATH_LOGIN}>
+          {/* Already have an account?
+          <Link className="active" href={ PATH_LOGIN }>
             Sign in
-          </Link>
+          </Link> */}
         </p>
       </div>
     </div>

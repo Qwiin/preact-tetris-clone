@@ -2618,3 +2618,33 @@ div[data-layout="mobile"] {
     bottom: 3.5rem;
   }
 }
+
+.modal-nav {
+
+  transition: all 0.4 ease-in;
+
+  &.show {
+    animation: pause-in 0.4s ease-in;
+    display: block;
+    opacity: 1;
+  }
+
+  &.hide {
+    animation: unpause-out 0.4s ease-in;
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  position: fixed;
+  top: 11%;
+  left: 3%;
+  height: 88%;
+  width: 94%;
+
+  /* display: none; */
+  background-color: #3d3737;
+  box-sizing: border-box;
+  background-color: rgb(26, 26, 26, 0.8);
+  border: 0.0625rem outset hsl(208, 30%, 60%);
+  border-radius: 5vw 5vw;
+}

@@ -20,7 +20,6 @@ import OptionsModal from './OptionsModal';
 import { GameAction } from './TetrisConfig';
 import { DevPanel } from './components/DevPanel';
 import { TouchControls } from './components/TouchControls';
-import AppHeader from './AppHeader';
 
 const fakeMouseEventArgs: [string, any] = ["click", {
   view: window,
@@ -275,7 +274,7 @@ export function App() {
     <>
 
       <AppProvider>
-        <AppHeader id="AppHeader" layout={ mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP } />
+        {/* <AppHeader id="AppHeader" layout={ mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP } /> */ }
 
         {/* <div id="NavHeader" className={`tw-opacity-1`} style={{zIndex: 4000}}> */ }
         {/* <h1 className="tw-m-0 tw-py-2 tw-font-thin game-title">TETRIS</h1> */ }

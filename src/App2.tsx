@@ -2,23 +2,22 @@
 import HomePage from './HomePage';
 // import Signup from './SignUp';
 // import Login from './Login';
-import Router, { route } from 'preact-router';
+import { route } from 'preact-router';
 import { Component } from 'preact';
 import AsyncRoute from 'preact-async-route';
 import AppHeader from './AppHeader';
-import { useReducer } from 'preact/hooks';
 import AppProvider, { UserProvider } from './AppProvider';
 import { mobileCheck } from './utils/AppUtil';
 import { LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
 
-export const PATH_HOME   = '/';
+export const PATH_HOME = '/';
 export const PATH_SIGNUP = '/signup';
-export const PATH_LOGIN  = '/login';
-export const PATH_PROFILE  = '/profile';
+export const PATH_LOGIN = '/login';
+export const PATH_PROFILE = '/profile';
 
 function App2() {
- 
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
+
+  // const [, forceUpdate] = useReducer(x => x + 1, 0);
 
   // return (
   //   <Router onChange={this.handleRoute}>
@@ -29,54 +28,56 @@ function App2() {
 
   return (
     <div class="app-wrapper">
-      {/* @ts-ignore nested providers */}
+      {/* @ts-ignore nested providers */ }
       <UserProvider>
-      {/* @ts-ignore nested providers */}
-      <AppProvider>
-      <AppHeader id="AppHeader" layout={mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP}/>
-      <Router>
-          {/*<Home loggedIn={true} path="/" />*/}
-          <PrivateRoute onRouteComplete={()=>{
-            forceUpdate(1);
+        {/* @ts-ignore nested providers */ }
+        <AppProvider>
+          <AppHeader id="AppHeader" layout={ mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP } />
+          <HomePage />
+          {/* <ModalNav type={ "profile" } className="show"/> */ }
+          {/* <Router>
             
-            console.log("..................ROUTE_COMPLETE......................");
-          }} path={PATH_HOME} component={() => <HomePage />} />
+            <PrivateRoute onRouteComplete={()=>{
+              forceUpdate(1);
+              
+              console.log("..................ROUTE_COMPLETE......................");
+            }} path={PATH_HOME} component={() => <HomePage />} />
 
-          <AsyncRoute
-            path={PATH_SIGNUP}
-            getComponent={() =>
-              // import('./SignUp').then(module => module.default)
-              import('./GoogleSignUp').then(module => module.default)
-            }
-          />
-          <AsyncRoute
-            path={PATH_LOGIN}
-            getComponent={() =>
-              import('./Login').then(module => module.default)
-            }
-          />
-          <AsyncRoute
-            path={PATH_PROFILE}
-            getComponent={() =>
-              import('./Profile').then(module => module.default)
-            }
-          />
-          <NotFound default />
-        </Router>
+            <AsyncRoute
+              path={PATH_SIGNUP}
+              getComponent={() =>
+                // import('./SignUp').then(module => module.default)
+                import('./GoogleSignUp').then(module => module.default)
+              }
+            />
+            <AsyncRoute
+              path={PATH_LOGIN}
+              getComponent={() =>
+                import('./Login').then(module => module.default)
+              }
+            />
+            <AsyncRoute
+              path={PATH_PROFILE}
+              getComponent={() =>
+                import('./Profile').then(module => module.default)
+              }
+            />
+            <NotFound default />
+          </Router> */}
         </AppProvider>
-        </UserProvider>
+      </UserProvider>
     </div>
   );
 }
- 
+
 export default App2;
 
 
 interface PrivateRouteProps {
   component: any;
-  onRouteComplete: ()=>void;
+  onRouteComplete: () => void;
 }
-class PrivateRoute extends Component<PrivateRouteProps> {
+export class PrivateRoute extends Component<PrivateRouteProps> {
 
   // constructor(props: PrivateRouteProps) {
   //   super(props);
@@ -85,8 +86,8 @@ class PrivateRoute extends Component<PrivateRouteProps> {
   render() {
     return (
       <AsyncRoute
-        path={this.props.path ?? ""}
-        getComponent={() => {
+        path={ this.props.path ?? "" }
+        getComponent={ () => {
           return authenticateMock()
             .then(() => {
               this.props.onRouteComplete()
@@ -98,7 +99,7 @@ class PrivateRoute extends Component<PrivateRouteProps> {
               route('/login', true);
               return null;
             });
-        }}
+        } }
       />
     );
   }
@@ -111,15 +112,15 @@ export function authenticateMock() {
 
 export const NotFound = (props: any) => (
   <section>
-    <h2>Not Found - Path: {props.url}</h2>
+    <h2>Not Found - Path: { props.url }</h2>
   </section>
 );
 
 
 // class App2 extends Component {
 //   // some method that returns a promise
-  
-  
+
+
 
 //   handleRoute = async e => {
 //     switch (e.url) {
