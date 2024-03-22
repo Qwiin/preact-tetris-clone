@@ -39,7 +39,12 @@ import { BoardBackground } from './BoardBackground';
 import DropEffect from './DropEffect';
 import LineClearEffect from './LineClearEffect';
 import { memo } from 'preact/compat';
-import { AppContext, GameStateAPI, PieceMove, UserContext } from '../AppProvider';
+import { PieceMove, UserContext } from '../AppProvider';
+import { useStatsStore } from '../store/StatsStore';
+import { GameCommands, useGameStore } from '../store/GameStore';
+import { useFirebase } from '../store/Firebase';
+import { useSettingsStore } from '../store/SettingsStore';
+import { initialGameState } from '../store/InitialStates';
 
 
 const PIECE_QUE_LENGTH: number = 5;
@@ -141,27 +146,36 @@ const Game = (props: GameProps) => {
     return;
   }
 
-  const appContext = useContext(AppContext) as GameStateAPI;
+  // const appContext = useContext(AppContext) as GameStateAPI;
+  const [statsState, setStatsState] = useStatsStore();
+  const [gameState, setGameState] = useGameStore();
+  // const [userState] = useUserStore();
+  const [settingsState, setSettingsState] = useSettingsStore();
   const userContext = useContext(UserContext);
 
   useEffect(() => {
-    if (appContext.props.gameReset) {
+    // if (appContext.props.gameReset) {
+    if (gameState.gameReset) {
       initRefs();
       initGame();
-      appContext.api.resetComplete();
+      // appContext.api.resetComplete();
+
+      requestAnimationFrame(() => {
+        setGameState({ ...gameState, ...GameCommands.RESET_COMPLETE });
+      });
     }
-    else if (appContext.props.gameOver) {
+    else if (gameState.gameOver) {
       gameOver();
     }
     else {
-      if (appContext.props.gamePaused) {
+      if (gameState.gamePaused) {
         pauseGame(false, true);
       }
       else {
         resumeGame(RESUME_DELAY);
       }
     }
-  }, [appContext.props.gamePaused, appContext.props.gameOver, appContext.props.gameReset]);
+  }, [gameState.gamePaused, gameState.gameOver, gameState.gameReset]);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -212,6 +226,7 @@ const Game = (props: GameProps) => {
   const columnHeights: Ref<Int8Array> = useRef(null);
   const ghostPieceCoords: Ref<number[][]> = useRef(null); // [[row1,col1],[row2,col2]...]
 
+  const { saveResults, getUserHistory } = useFirebase();
 
   const gameOver = () => {
     setGameover(true);
@@ -219,7 +234,18 @@ const Game = (props: GameProps) => {
     paused.current = true;
     pauseGame();
     props.actionCallback({ type: ActionType.GAME_OVER });
-    appContext.api.saveResults();
+    // appContext.api.saveResults();
+    saveResults();
+
+    getUserHistory().then((result) => {
+      const games: any[] = [];
+      result.docs.forEach(d => {
+        games.push(d.data());
+      });
+      console.log({ games });
+    });
+    console.log(history);
+
   }
 
   /**
@@ -236,7 +262,11 @@ const Game = (props: GameProps) => {
       if (!paused.current) {
         props.actionCallback({ type: ActionType.PAUSE });
         console.log(userContext.user?.displayName);
-        appContext.api.pauseGame();
+        // appContext.api.pauseGame();
+        // gameState.gamePaused = true;
+        gameState.gamePaused = true;
+        setGameState(gameState);
+
       }
       paused.current = true;
       unpaused.current = false;
@@ -647,7 +677,9 @@ const Game = (props: GameProps) => {
 
       if (p.lastMoveTrigger === MovementTrigger.INPUT_DOWN && stats.current) {
         p.softDropPoints += 1;
-        appContext.api.addToScore(1);
+        // appContext.api.addToScore(1);
+        statsState.score += 1;
+        setStatsState(statsState);
         stats.current.score += 1;
         if (props.statsCallback) {
           props.statsCallback(stats.current.score);
@@ -779,7 +811,13 @@ const Game = (props: GameProps) => {
 
           //check for gameover//
           if (newCellVal > 0 && newCellVal < 0.9) {
-            appContext.api.gameOver();
+            // appContext.api.gameOver();
+            const newState = { ...gameState };
+            newState.gameOver = true;
+            newState.timeGameTotal = Date.now() - gameState.timeGameStart - gameState.timePausedTotal;
+            newState.timeGameEnd = Date.now();
+
+            setGameState(newState);
             // gameOver();
             return;
           }
@@ -839,7 +877,13 @@ const Game = (props: GameProps) => {
         for (let i = rows.length - 20; i >= 0; i--) {
           numBlocksOffscreen = rows[i].reduce((prev, curr) => prev + (curr > 0 ? 1 : 0), numBlocksOffscreen);
           if (numBlocksOffscreen >= 4) {
-            appContext.api.gameOver();
+            // appContext.api.gameOver();
+            const newState = { ...gameState };
+            newState.gameOver = true;
+            newState.timeGameTotal = Date.now() - gameState.timeGameStart - gameState.timePausedTotal;
+            newState.timeGameEnd = Date.now();
+
+            setGameState(newState);
             // gameOver();
             return;
             // break;
@@ -852,28 +896,32 @@ const Game = (props: GameProps) => {
 
 
         if (!isTSpin.current && !isTSpin.current) {
-          appContext.api.updateStats(
-            {
-              ...stats.current,
-              pieceMove: {
-                comboCount: comboCount.current,
-                linesCleared: 0,
-                timeStart: 0,
-                timeEnd: Date.now(),
-                pieceType: lastPieceType.current ?? TetronimoShape.NULL,
-                points: {
-                  backToBack: 0,
-                  base: 0,
-                  combo: 0,
-                  total: piece.softDropPoints + piece.hardDropPoints,
-                  tSpin: 0,
-                  softDrop: piece.softDropPoints ?? 0,
-                  hardDrop: piece.hardDropPoints ?? 0,
-                  levelMultiplier: stats.current?.level
-                  // note: points are calculated from level prior to current line clears
-                }
-              } as PieceMove
-            });
+          const pieceMove: PieceMove = {
+            comboCount: comboCount.current as number,
+            linesCleared: 0,
+            timeStart: 0,
+            timeEnd: Date.now(),
+            pieceType: lastPieceType.current ?? TetronimoShape.NULL,
+            points: {
+              backToBack: 0,
+              base: 0,
+              combo: 0,
+              total: piece.softDropPoints + piece.hardDropPoints,
+              tSpin: 0,
+              softDrop: piece.softDropPoints ?? 0,
+              hardDrop: piece.hardDropPoints ?? 0,
+              levelMultiplier: stats.current?.level ?? 1,
+              // note: points are calculated from level prior to current line clears
+            }
+          };
+          // appContext.api.updateStats(
+          //   {
+          //     ...stats.current,
+          //     pieceMove
+          //   });
+          statsState.pieceMoves.push(pieceMove);
+          setStatsState(statsState);
+          console.log("Game::statsState.pieceMoves.length", statsState.pieceMoves.length + 1);
         }
 
         dropPoints.current = { soft: piece.softDropPoints, hard: piece.hardDropPoints };
@@ -1176,37 +1224,47 @@ interface PieceMove {
          */
 
 
-        if (appContext.api.updateStats !== undefined) {
+        // if (appContext.api.updateStats !== undefined) {
+        if (statsState) {
           /**
             UPDATE STATS
           */
-          appContext.api.updateStats(
-            {
-              ...stats.current,
-              pieceMove: {
-                comboCount: comboCount.current,
-                linesCleared: numCleared,
-                timeStart: 0,
-                timeEnd: Date.now(),
-                pieceType: lastPieceType.current ?? TetronimoShape.NULL,
-                points: {
-                  backToBack: backToBack ? totalPoints / 3 : 1.0, // totalPoints / 3 = backToBack bonus points
-                  base: basePoints,
-                  combo: comboPoints,
-                  total: totalPoints,
-                  tSpin: isTSpin.current
-                    ? ActionType.T_SPIN
-                    : isTSpinMini.current
-                      ? ActionType.T_SPIN_MINI
-                      : 0,
-                  softDrop: dropPoints.current?.soft ?? 0,
-                  hardDrop: dropPoints.current?.hard ?? 0,
-                  levelMultiplier: currentLevel
-                  // note: points are calculated from level prior to current line clears
-                }
-              } as PieceMove
+          const pieceMove: PieceMove = {
+            comboCount: comboCount.current,
+            linesCleared: numCleared,
+            timeStart: 0,
+            timeEnd: Date.now(),
+            pieceType: lastPieceType.current ?? TetronimoShape.NULL,
+            points: {
+              backToBack: backToBack ? totalPoints / 3 : 1.0, // totalPoints / 3 = backToBack bonus points
+              base: basePoints,
+              combo: comboPoints,
+              total: totalPoints,
+              tSpin: isTSpin.current
+                ? ActionType.T_SPIN
+                : isTSpinMini.current
+                  ? ActionType.T_SPIN_MINI
+                  : 0,
+              softDrop: dropPoints.current?.soft ?? 0,
+              hardDrop: dropPoints.current?.hard ?? 0,
+              levelMultiplier: currentLevel
+              // note: points are calculated from level prior to current line clears
             }
-          );
+          };
+
+          // appContext.api.updateStats(
+          //   {
+          //     ...stats.current,
+          //     pieceMove
+          //   });
+          statsState.pieceMoves.push(pieceMove);
+
+          setStatsState({
+            ...stats.current,
+            pieceMoves: [...statsState.pieceMoves, pieceMove]
+          });
+          console.log("Game::pieceMoves.length", statsState.pieceMoves.length + 1);
+
         }
 
         if (clearEffectData.current && clearEffectData.current.length > 0) {
@@ -1319,17 +1377,22 @@ interface PieceMove {
 
     // if not gameover, pause should be allowed
     if (e.key === "Escape" && gameoverRef.current === false) {
-      if (!paused.current) {
+      if (!gameState.gamePaused) {
         // pauseGame(false, true);
-        appContext.api.pauseGame();
+        // appContext.api.pauseGame();
+        gameState.gamePaused = true;
+        setGameState(gameState);
       }
       else {
-        if (appContext.props.showOptions) {
-          appContext.api.hideOptions();
+        if (settingsState.showOptions) {
+          // appContext.api.hideOptions();
+          // settingsState.showOptions = false;
+          setSettingsState({ ...settingsState, showOptions: false });
         }
         else {
           props.actionCallback({ type: ActionType.RESUME });
-          appContext.api.resumeGame();
+          // gameState.gamePaused = false
+          setGameState({ ...gameState, gamePaused: false });
         }
       }
     }
@@ -1473,7 +1536,9 @@ interface PieceMove {
           if (stats.current) {
             p.hardDropPoints = (dropDistance * 2);
             // appContext.api.addToScore(p.hardDropPoints);
-            appContext.api.addToScore(p.hardDropPoints);
+            // appContext.api.addToScore(p.hardDropPoints);
+            statsState.score += p.hardDropPoints;
+            setStatsState(statsState);
             if (props.statsCallback) {
               props.statsCallback(stats.current.score);
             }
@@ -1497,7 +1562,7 @@ interface PieceMove {
         updatePosition();
         break;
     }
-  };
+  }
 
   const initRefs = () => {
 
@@ -1639,6 +1704,10 @@ interface PieceMove {
     setGameover(false);
     gameoverRef.current = false;
     resumeGame(RESUME_DELAY);
+
+    gameState.gameStarted = true;
+    gameState.timeGameStart = Date.now();
+    setGameState(gameState);
 
     setTimeout(() => {
       activePiece.current = getPieceFromQue();
@@ -1911,7 +1980,11 @@ interface PieceMove {
 
                   { mobileAndTabletCheck() &&
                     <button id="PauseOverlay_Restart"
-                      onClick={ () => { appContext.api.resetGame() } }
+                      onClick={ () => {
+                        // appContext.api.resetGame();
+                        // setGameState(GameCommands.RESET);
+                        setGameState({ ...initialGameState, gameReset: true });
+                      } }
                       className={ 'show overlay-button restart hide' }>Restart</button>
                   }
                 </>
@@ -1920,15 +1993,25 @@ interface PieceMove {
                   <div className=" pause-text tetris-font">Paused</div>
                 }
 
-                { appContext.props.gamePaused && !appContext.props.gameOver &&
+                {/* { appContext.props.gamePaused && !appContext.props.gameOver && */ }
+                { gameState.gamePaused && !gameState.gameOver && !gameoverRef.current &&
                   <>
                     <button id="PauseOverlay_Resume"
-                      onClick={ () => { appContext.api.resumeGame() } }
-                      className={ (paused.current ? 'show' : 'hide') + ' overlay-button resume' }></button>
+                      onClick={ () => {
+                        // appContext.api.resumeGame();
+                        // gameState.gamePaused = false;
+                        setGameState({ ...gameState, gamePaused: false });
+                      } }
+                      className={ (gameState.gamePaused ? 'show' : 'hide') + ' overlay-button resume' }></button>
 
                     <button id="PauseOverlay_Restart"
-                      onClick={ () => { appContext.api.resetGame() } }
-                      className={ (paused.current ? 'show' : 'hide') + ' overlay-button restart' }>Restart</button>
+                      onClick={ () => {
+                        // appContext.api.resetGame()
+                        // setGameState(GameCommands.RESET);
+
+                        setGameState({ ...gameState, gameReset: true });
+                      } }
+                      className={ (gameState.gamePaused ? 'show' : 'hide') + ' overlay-button restart' }>Restart</button>
                   </>
                 }
               </div>

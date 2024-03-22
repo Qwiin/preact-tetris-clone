@@ -1,20 +1,6 @@
 import { useCallback } from "preact/hooks";
 import { AppState, useStore } from "./AppStore";
-
-export const initialGameState: GameSlice = {
-  gameMode: "marathon",
-  gameStarted: false,
-  gamePaused: false,
-  gameOver: false,
-  gameWon: false,
-  gameReset: false,
-  startingLevel: 1,
-  timeGameStart: 0,
-  timePauseStart: 0,
-  timePausedTotal: 0,
-  timeGameTotal: 0,
-  timeGameEnd: 0,
-}
+import { initialGameState } from "./InitialStates";
 
 /**
  * 
@@ -73,8 +59,25 @@ export function useGameStore(): [Slice, (value: Sliver) => void] {
   const [GameSlice, storeSet] = useStore(gameSelector);
   const setGameSlice = useCallback(
     (value: Sliver) => {
-      storeSet({ stats: value } as Partial<AppState>)
-    }, []);
+      if (value.gameReset === true) {
+        value = { ...initialGameState, timeGameStart: Date.now(), gameReset: true }
+      }
+      // else if (value.gameOver === true || value.gameWon === true) {
+      //   if (GameSlice.timeGameEnd === 0) {
+      //     value.timeGameEnd = Date.now();
+      //     value.timeGameTotal = Date.now() - GameSlice.timeGameStart;
+      //   }
+      // }
+      else if (value.gamePaused === true && GameSlice.timePauseStart === 0) {
+        value.timePauseStart = Date.now();
+      }
+      else if (value.gamePaused === false && GameSlice.timePauseStart > 0) {
+        value.timePausedTotal = Date.now() - GameSlice.timePauseStart;
+        value.timePauseStart = 0;
+      }
+      storeSet({ game: value } as Partial<AppState>)
+    }, [GameSlice.timeGameStart, GameSlice.timePauseStart, GameSlice.timeGameEnd, GameSlice.timePausedTotal]);
+
 
   return [GameSlice, setGameSlice];
 }
@@ -83,7 +86,7 @@ export abstract class GameCommands {
   public static START_GAME: Sliver = { gameStarted: true };
   public static PAUSE: Sliver = { gamePaused: true };
   public static UNPAUSE: Sliver = { gamePaused: false };
-  public static RESET: Sliver = { gameReset: true };
+  public static RESET: Sliver = { gameReset: true, gameStarted: false };
   public static RESET_COMPLETE: Sliver = { gameReset: false, gameOver: false, gameStarted: false };
   public static GAME_OVER: Sliver = { gameOver: true };
   public static GAME_WON: Sliver = { gameOver: true, gameWon: true };

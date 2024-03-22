@@ -9,11 +9,15 @@ import AppHeader from './AppHeader';
 import AppProvider, { UserProvider } from './AppProvider';
 import { mobileCheck } from './utils/AppUtil';
 import { LAYOUT_DESKTOP, LAYOUT_MOBILE } from './BaseTypes';
+import { Provider } from './store/AppStore';
+// import { Provider } from './store/AppStore';
 
 export const PATH_HOME = '/';
 export const PATH_SIGNUP = '/signup';
 export const PATH_LOGIN = '/login';
 export const PATH_PROFILE = '/profile';
+
+
 
 function App2() {
 
@@ -27,15 +31,16 @@ function App2() {
   // );
 
   return (
-    <div class="app-wrapper">
-      {/* @ts-ignore nested providers */ }
-      <UserProvider>
+    <Provider>
+      <div class="app-wrapper">
         {/* @ts-ignore nested providers */ }
-        <AppProvider>
-          <AppHeader id="AppHeader" layout={ mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP } />
-          <HomePage />
-          {/* <ModalNav type={ "profile" } className="show"/> */ }
-          {/* <Router>
+        <UserProvider>
+          {/* @ts-ignore nested providers */ }
+          <AppProvider>
+            <AppHeader id="AppHeader" layout={ mobileCheck() ? LAYOUT_MOBILE : LAYOUT_DESKTOP } />
+            <HomePage />
+            {/* <ModalNav type={ "profile" } className="show"/> */ }
+            {/* <Router>
             
             <PrivateRoute onRouteComplete={()=>{
               forceUpdate(1);
@@ -64,9 +69,10 @@ function App2() {
             />
             <NotFound default />
           </Router> */}
-        </AppProvider>
-      </UserProvider>
-    </div>
+          </AppProvider>
+        </UserProvider>
+      </div>
+    </Provider>
   );
 }
 

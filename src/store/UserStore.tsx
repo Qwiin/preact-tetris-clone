@@ -3,11 +3,6 @@ import { AppState, useStore } from "./AppStore";
 import { UserInfo } from "firebase/auth";
 
 
-export const initialUserState = {
-  userInfo: null,
-  preferences: {},
-}
-
 /**
  * 
  * Interfaces
@@ -15,7 +10,7 @@ export const initialUserState = {
  */
 
 export interface UserSlice {
-  userInfo: UserInfo | null;
+  userInfo: UserInfo | any;
   preferences: any,
 }
 
@@ -55,7 +50,7 @@ export function useUserStore(): [Slice, (value: Sliver) => void] {
   const [UserSlice, storeSet] = useStore(userSelector);
   const setUserSlice = useCallback(
     (value: Sliver) => {
-      storeSet({ stats: value } as Partial<AppState>)
+      storeSet({ user: value } as Partial<AppState>)
     }, []);
 
   return [UserSlice, setUserSlice];

@@ -1,15 +1,18 @@
 import { animate } from "framer-motion";
 import { Ref } from "preact";
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
-import { AppContext, GameState, GameStateAPI, UserContext, UserState } from "./AppProvider";
-import { BaseComponentProps } from "./BaseTypes";
+import { useEffect, useRef, useState } from "preact/hooks";
+import { useSettingsStore } from "./store/SettingsStore";
+import { useGameStore } from "./store/GameStore";
+
 
 const OptionsModal = (props: { parentScale: number }) => {
 
+  const [settingsState, setSettings] = useSettingsStore();
+  const [gameState, setGameStore] = useGameStore();
   const [isOpen, setIsOpen] = useState(false);
   const self: Ref<HTMLDivElement> = useRef(null);
   const button: Ref<HTMLDivElement> = useRef(null);
-  const appContext = useContext(AppContext) as GameStateAPI;
+  // const appContext = useContext(AppContext) as GameStateAPI;
 
   const isMobile = screen.orientation.type.indexOf("portrait") >= 0;
 
@@ -51,7 +54,9 @@ const OptionsModal = (props: { parentScale: number }) => {
       self.current?.classList.add('open');
       button.current?.classList.remove('close');
       button.current?.classList.add('open');
-      appContext.api.pauseGame();
+      // appContext.api.pauseGame();
+      gameState.gamePaused = true
+      setGameStore(gameState);
       slideIn();
     }
     else if (!isOpen) {
@@ -65,22 +70,13 @@ const OptionsModal = (props: { parentScale: number }) => {
   }, [isOpen]);
 
   useEffect(() => {
-    if (appContext.props.showOptions) {
-      setIsOpen(true);
-    }
-    else {
-      setIsOpen(false);
-    }
-  }, [appContext.props.showOptions]);
+    setIsOpen(settingsState.showOptions);
+  }, [settingsState]);
 
   const toggleOpen = () => {
 
-    if (!isOpen) {
-      appContext.api.showOptions();
-    }
-    else {
-      appContext.api.hideOptions();
-    }
+    // settingsState.showOptions = !settingsState.showOptions;
+    setSettings({ ...settingsState, showOptions: !settingsState.showOptions });
     // self.current?.classList.remove(isOpen ? 'open' : 'close');
     // self.current?.classList.add(isOpen ? 'close' : 'open');
     // button.current?.classList.remove(isOpen ? 'open' : 'close');
@@ -96,27 +92,40 @@ const OptionsModal = (props: { parentScale: number }) => {
       <div className="options-group">
         <h3 className="tw-text-right">Audio</h3>
         <div className="tw-flex tw-flex-col">
-          <ToggleSwitch id="Options_ToggleSound" label="Sound FX" contextType="game" keyPath="props.isSoundOn" toggleCallback={ appContext.api.enableSound } />
-          <ToggleSwitch id="Options_ToggleMusic" label="Music" contextType="game" keyPath="props.isMusicOn" toggleCallback={ appContext.api.enableMusic } />
+          <ToggleSwitch id="Options_ToggleSound" label="Sound FX" isOn={ settingsState.soundEnabled }
+            toggleCallback={ (value: boolean) => {
+              // appContext.api.enableSound(value);
+              // setSettings(value ? Commands.SOUND_ON : Commands.MUSIC_OFF);
+              setSettings({ ...settingsState, soundEnabled: value });
+            } } />
+          <ToggleSwitch id="Options_ToggleMusic" label="Music" isOn={ settingsState.musicEnabled }
+            toggleCallback={ (value: boolean) => {
+              // appContext.api.enableMusic(value);
+              // setSettings(value ? Commands.MUSIC_ON : Commands.MUSIC_OFF);
+              setSettings({ ...settingsState, musicEnabled: value });
+            } } />
         </div>
       </div>
       <div className="options-group">
         <h3 className="tw-text-right">Dev Panel</h3>
         <div className="tw-flex tw-flex-col">
-          <ToggleSwitch id="Options_ToggleDevPanel" label="" contextType="game" keyPath="props.isDevPanelOn"
-            dispatchEventType="update_app"
+          <ToggleSwitch id="Options_ToggleDevPanel" label="" isOn={ settingsState.isDevPanelOn }
             toggleCallback={ (value: boolean) => {
-              appContext.api.enableDevPanel(value);
+              // appContext.api.enableDevPanel(value);
+              // setSettings(value ? Commands.DEV_PANEL_ON : Commands.DEV_PANEL_OFF);
+              setSettings({ ...settingsState, isDevPanelOn: value });
+              // console.log(JSON.stringify(settingsState));
             } } />
         </div>
       </div>
       <div className="options-group">
         <h3 className="tw-text-right">Touch Controls 2.0 (beta)</h3>
         <div className="tw-flex tw-flex-col">
-          <ToggleSwitch id="Options_ToggleNewTouch" label="" contextType="game" keyPath="props.isNewTouchEnabled"
-            dispatchEventType="update_app"
+          <ToggleSwitch id="Options_ToggleNewTouch" label="" isOn={ settingsState.isNewTouchEnabled }
             toggleCallback={ (value: boolean) => {
-              appContext.api.enableNewTouchControls(value);
+              // appContext.api.enableNewTouchControls(value);
+              setSettings({ ...settingsState, isNewTouchEnabled: value });
+              // console.log(JSON.stringify(settingsState));
             } } />
         </div>
       </div>
@@ -127,41 +136,21 @@ const OptionsModal = (props: { parentScale: number }) => {
 }
 export default OptionsModal
 
-export type ContextType = "app" | "game" | "theme" | "user";
 
 /**
  * key - "path.to.value.key"
  */
-interface ToggleSwitchProps extends BaseComponentProps {
+interface ToggleSwitchProps {
+  id: string;
   icon?: string;
   label: string;
-  contextType: ContextType;
-  keyPath: string;
-  dispatchEventType?: string;
+  isOn: boolean;
   toggleCallback: (value: boolean) => void;
 }
 
 const ToggleSwitch = (props: ToggleSwitchProps) => {
 
-  const context: GameState | UserState | undefined = getContextFromType(props.contextType);
-  const [isOn, setIsOn] = useState(getValueFromKeyPath<boolean>(context, props.keyPath));
-  // const ctxValueKey: string = props.keyPath.split('.').pop() as string;
-
-  // const ctxValueParent = getValueParentFromKeyPath<any>(context, props.keyPath);
-
-  function getContextFromType(contextType: string) {
-    switch (contextType) {
-      case "app":
-      case "game":
-        return useContext(AppContext);
-      case "user":
-        return useContext(UserContext);
-    }
-  }
-
-  // useEffect(() => {
-  //   setIsOn(ctxValueParent[ctxValueKey]);
-  // }, [ctxValueParent[ctxValueKey]]);
+  const [isOn, setIsOn] = useState(props.isOn);
 
   return (
     <>
@@ -175,11 +164,11 @@ const ToggleSwitch = (props: ToggleSwitchProps) => {
 
             props.toggleCallback(!isOn);
             setIsOn(!isOn);
-            if (props.dispatchEventType) {
-              document.dispatchEvent(
-                new CustomEvent<string>(props.dispatchEventType, { bubbles: true, detail: props.keyPath })
-              );
-            }
+            // if (props.dispatchEventType) {
+            //   document.dispatchEvent(
+            //     new CustomEvent<string>(props.dispatchEventType, { bubbles: true, detail: props.keyPath })
+            //   );
+            // }
           } } checked={ isOn } />
           <label class="toggle-btn" data-label-off="OFF" data-label-on="ON" for={ props.id }></label>
         </div>

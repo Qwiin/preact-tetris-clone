@@ -1,20 +1,6 @@
 import { useCallback } from "preact/hooks";
 import { AppState, useStore } from "./AppStore";
-
-
-/**
- * 
- * Initial State
- * 
- */
-
-export const initialStatsState = {
-  level: 1,
-  lines: 0,
-  score: 0,
-  pieceMoves: []
-}
-
+import { initialStatsState } from "./InitialStates";
 
 /**
  * 
@@ -47,6 +33,7 @@ export interface StatsSlice {
   lines: number;
   score: number;
   pieceMoves: PieceMove[];
+  reset: boolean;
 }
 
 
@@ -86,7 +73,12 @@ export function useStatsStore(): [Slice, (value: Sliver) => void] {
   const [statsSlice, storeSet] = useStore(statsSelector);
   const setStatsSlice = useCallback(
     (value: Sliver) => {
-      storeSet({ stats: value } as Partial<AppState>)
+      if (value.reset === true) {
+        storeSet({ stats: initialStatsState });
+      }
+      else {
+        storeSet({ stats: value } as Partial<AppState>);
+      }
     }, []);
 
   return [statsSlice, setStatsSlice];

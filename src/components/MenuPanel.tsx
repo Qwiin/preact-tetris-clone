@@ -1,12 +1,14 @@
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import { BaseComponentProps } from "../BaseTypes";
 import ControlsMap from "./ControlsMap";
-import { AppContext, GameStateAPI } from "../AppProvider";
 import { forwardRef } from "preact/compat";
 import { Ref } from "preact";
 
 import { DEFAULT_VOLUME_PCT } from '../TetrisConfig';
 import SoundBoard from "./SoundBoard";
+import { useGameStore } from "../store/GameStore";
+import { useSettingsStore } from "../store/SettingsStore";
+import { initialGameState } from "../store/InitialStates";
 // import { mobileAndTabletCheck } from "../utils/AppUtil";
 
 
@@ -20,27 +22,31 @@ const fakeKeyboardEventArgs: [string, any] = ["keydown", {
 }];
 
 export const MenuPanel = forwardRef(function MenuPanel(props: BaseComponentProps, soundBoardDomRef: Ref<HTMLDivElement>) {
-  const gameState = useContext(AppContext) as GameStateAPI;
+  // const gameState = useContext(AppContext) as GameStateAPI;
+  const [gameState, setGameState] = useGameStore();
+  const [settingsState] = useSettingsStore();
+
+  const { gameOver, gamePaused } = gameState;
 
   const controlsMapRef: Ref<HTMLDivElement> = useRef(null);
-  const [gamePaused, setGamePaused] = useState(gameState.props.gamePaused);
-  const [gameOver, setGameOver] = useState(gameState.props.gameOver);
+  // const [gamePaused, setGamePaused] = useState(gameState.gamePaused);
+  // const [gameOver, setGameOver] = useState(gameState.gameOver);
   // const [newTouchEnabled, setNewTouchEnabled] = useState(gameState.props.isNewTouchEnabled);
 
   useEffect(() => {
-    setGamePaused(gameState.props.gamePaused);
-    setGameOver(gameState.props.gameOver);
+    // setGamePaused(gameState.gamePaused);
+    // setGameOver(gameState.gameOver);
     // setNewTouchEnabled(gameState.props.isNewTouchEnabled);
 
     if (controlsMapRef.current) {
-      controlsMapRef.current.style.display = gameState.props.isNewTouchEnabled ? "none" : 'block';
+      controlsMapRef.current.style.display = settingsState.isNewTouchEnabled ? "none" : 'block';
     }
-  }, [gameState.props.gamePaused, gameState.props.gameOver, gameState.props.isNewTouchEnabled]);
+  }, [gamePaused, gameOver, settingsState.isNewTouchEnabled]);
 
   const isDesktop = props.layout === 'desktop';
 
   return (
-    <div id={ props.id } data-layout={ props.layout } className="menu-panel" style={ !gameState.props.isNewTouchEnabled && !gameState.props.gamePaused && !gameState.props.gameOver ? { zIndex: "5001" } : undefined }>
+    <div id={ props.id } data-layout={ props.layout } className="menu-panel" style={ !settingsState.isNewTouchEnabled && !gamePaused && !gameOver ? { zIndex: "5001" } : undefined }>
 
       <div id="MenuPanelScaleWrapper" style={ { transform: `scale(${props.scale ?? 1})` } }>
         <button className={
@@ -49,7 +55,8 @@ export const MenuPanel = forwardRef(function MenuPanel(props: BaseComponentProps
         }
           onClick={ () => {
             // props.menuButtonCallback("restart");
-            gameState.api.resetGame();
+            const newState = { ...initialGameState, gameReset: true };
+            setGameState(newState);
           } }
 
           disabled={
@@ -60,12 +67,9 @@ export const MenuPanel = forwardRef(function MenuPanel(props: BaseComponentProps
             className={ `tetris-font btn-pause menu-button pause button ${gameOver ? 'disabled' : ''}` }
 
             onClick={ () => {
-              if (!gamePaused) {
-                gameState.api.pauseGame();
-              }
-              else {
-                gameState.api.resumeGame();
-              }
+
+              setGameState({ ...gameState, gamePaused: !gamePaused });
+
 
             } }
 

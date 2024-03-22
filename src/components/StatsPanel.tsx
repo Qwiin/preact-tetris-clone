@@ -1,9 +1,10 @@
-import { MutableRef, useContext, useEffect, useRef } from "preact/hooks";
+import { MutableRef, useEffect, useRef } from "preact/hooks";
 import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from "../BaseTypes";
-import { AppContext } from "../AppProvider";
 import { Ref } from "preact";
 import { forwardRef } from "preact/compat";
 import { Scoring } from "./Game";
+import { useStatsStore } from "../store/StatsStore";
+import { useGameStore } from "../store/GameStore";
 
 export const updateStatsByRef = (stats: Scoring, ref: HTMLDivElement) => {
   const scoreEl: HTMLHeadingElement | null = ref.querySelector("#Stats_Score .stats-field-value");
@@ -62,18 +63,21 @@ interface StatsFieldProps extends BaseComponentProps {
 
 const StatsField = (props: StatsFieldProps) => {
 
-  const _props = useContext(AppContext).props;
-  const stats = _props.stats as any;
+  const [stats] = useStatsStore();
+  const [gameState] = useGameStore();
+
+  // const _props = useContext(AppContext).props;
+  // const stats = _props.stats as any;
   const valueRef: MutableRef<HTMLHeadingElement | null> = useRef(null);
   const interval: Ref<NodeJS.Timeout> = useRef(null)
   // const [statValue, setStatValue] = useState(stats[props.valueKey])
 
   useEffect(() => {
     // setStatValue(stats[props.valueKey]);
-    if (valueRef.current) {
+    if (valueRef.current && props.valueKey !== "time") {
       valueRef.current.innerText = `${stats[props.valueKey]}`;
     }
-  }, [stats[props.valueKey]]);
+  }, [(stats as any)[props.valueKey], gameState.timeGameStart]);
 
   useEffect(() => {
     if (props.valueKey === "time") {
@@ -81,8 +85,8 @@ const StatsField = (props: StatsFieldProps) => {
         clearInterval(interval.current);
       }
       interval.current = setInterval(() => {
-        if (valueRef.current && !_props.gamePaused && !_props.gameOver) {
-          const elapsedTime = Date.now() - _props.timeStart - _props.timePausedTotal;
+        if (valueRef.current && !gameState.gamePaused && !gameState.gameOver) {
+          const elapsedTime = Date.now() - gameState.timeGameStart - gameState.timePausedTotal;
           const _hr = Math.floor(elapsedTime / 1000 / 3600);
           const _min = Math.floor((elapsedTime / 1000 - (_hr * 60)) / 60);
           const _sec = (100 + Math.round(elapsedTime / 1000 - (_min * 60))).toString().substring(1, 3);
@@ -102,9 +106,9 @@ const StatsField = (props: StatsFieldProps) => {
         }
       }
     }
-  }, [_props.gameReset, _props.gameOver, _props.gamePaused])
+  }, [gameState.gameReset, gameState.gameOver, gameState.gameWon, gameState.gamePaused])
 
-  const value: string = props.valueKey === "time" ? "0:00.0" : stats[props.valueKey];
+  const value: string = props.valueKey === "time" ? "0:00.0" : `${stats[props.valueKey]}`;
 
   return (
     <div id={ props.id } className={ `${props.className} stats-field` }>

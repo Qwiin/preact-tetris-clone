@@ -4,45 +4,46 @@ import { TetrisLogoSvg } from "./components/TetrisLogoSvg";
 import { useContext, useEffect, useLayoutEffect, useReducer, useRef, useState } from "preact/hooks";
 import { getAuth } from "firebase/auth";
 import { PATH_HOME } from "./App2";
-import { AppContext, GameStateAPI, UserContext, UserStateAPI } from "./AppProvider";
+import { UserContext, UserStateAPI } from "./AppProvider";
 import { BaseComponentProps } from "./BaseTypes";
-import { getRootStyle, swapCssClass } from "./utils/AppUtil";
+import { getRootStyle } from "./utils/AppUtil";
 import { Ref } from "preact";
 import ModalNav from "./components/ModalNav";
+// import { useGameStore } from "./store/GameStore";
+import { Commands, useSettingsStore } from "./store/SettingsStore";
 
 export default function AppHeader(props: any) {
 
   const userState = useContext(UserContext) as UserStateAPI;
-  const gameState = useContext(AppContext) as GameStateAPI;
+  // const gameState = useContext(AppContext) as GameStateAPI;
+  // const [gameState, setGameStore] = useGameStore();
+  const [settingsState, setSettingsStore] = useSettingsStore();
   const pauseResumeButton: Ref<HTMLDivElement> = useRef(null);
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
   const [headerHeight, setHeaderHeight] = useState(getRootStyle('--header-logo-height'));
 
-
   // const [signedIn, setSignedIn] = useState(false);
 
   const currentUser = getAuth().currentUser;
 
-
-
   useEffect(() => {
-    const pauseHandler = () => {
-      if (pauseResumeButton.current) {
-        swapCssClass(pauseResumeButton.current, "unpaused", "paused");
-      }
-    };
-    const resumeHandler = () => {
-      if (pauseResumeButton.current) {
-        swapCssClass(pauseResumeButton.current, "paused", "unpaused");
-      }
-    };
-    const newGameHandler = () => {
-      forceUpdate(1);
-    }
-    document.addEventListener("new_game", newGameHandler);
-    document.addEventListener("game_pause", pauseHandler);
-    document.addEventListener("game_resume", resumeHandler);
+    // const pauseHandler = () => {
+    //   if (pauseResumeButton.current) {
+    //     swapCssClass(pauseResumeButton.current, "unpaused", "paused");
+    //   }
+    // };
+    // const resumeHandler = () => {
+    //   if (pauseResumeButton.current) {
+    //     swapCssClass(pauseResumeButton.current, "paused", "unpaused");
+    //   }
+    // };
+    // const newGameHandler = () => {
+    //   forceUpdate(1);
+    // }
+    // document.addEventListener("new_game", newGameHandler);
+    // document.addEventListener("game_pause", pauseHandler);
+    // document.addEventListener("game_resume", resumeHandler);
 
     screen.orientation.onchange = () => {
       requestAnimationFrame(() => {
@@ -61,9 +62,9 @@ export default function AppHeader(props: any) {
     window.addEventListener("resize", onResize);
 
     return () => {
-      document.removeEventListener("new_game", newGameHandler);
-      document.removeEventListener("game_pause", pauseHandler);
-      document.removeEventListener("game_resume", resumeHandler);
+      // document.removeEventListener("new_game", newGameHandler);
+      // document.removeEventListener("game_pause", pauseHandler);
+      // document.removeEventListener("game_resume", resumeHandler);
       screen.orientation.onchange = null;
       window.removeEventListener("resize", onResize);
 
@@ -85,7 +86,9 @@ export default function AppHeader(props: any) {
       // },1000);
     }
     forceUpdate(1);
-  }, [currentUser, userState.user, gameState.props.gamePaused, gameState.props.gameReset, gameState.props.showOptions]);
+  }, [currentUser, userState.user,
+    // gameState.props.gamePaused, gameState.props.gameReset, gameState.props.showOptions
+  ]);
 
   return (
 
@@ -105,13 +108,16 @@ export default function AppHeader(props: any) {
         </nav> */}
         { props.leftNav !== "none" &&
           <nav className={ `nav-item left tw-h-auto tw-z-50 tw-bg-slate-600` }>
-            <div ref={ pauseResumeButton } className={ `nav-icon settings ${gameState.props.showOptions ? 'open' : 'closed'}` }
+            <div ref={ pauseResumeButton } className={ `nav-icon settings ${settingsState.showOptions ? 'open' : 'closed'}` }
               onClick={ () => {
-                if (gameState.props.showOptions === true) {
-                  gameState.api.hideOptions();
+                if (settingsState.showOptions === true) {
+                  // gameState.api.hideOptions();
+                  setSettingsStore(Commands.OPTIONS_HIDE);
                 }
                 else {
-                  gameState.api.showOptions();
+                  // gameState.api.showOptions();
+                  setSettingsStore(Commands.OPTIONS_SHOW);
+
                 }
               } }>
               {/* if (gameState.props.gamePaused === true) {
@@ -162,7 +168,7 @@ export function ProfileNav(props: BaseComponentProps) {
 
         { userState.user &&
 
-          <div className="active tw-text-blue-500 tw-text-2xl tw-w-24 tw-bg-slate-500" onClick={ () => {
+          <div className="active tw-text-blue-500 tw-text-2xl tw-bg-slate-500" onClick={ () => {
             setShowProfileModal(!showProfileModal);
           } } style={ { display: "block" } }>
             <div className="nav-icon user-icon" style={ {

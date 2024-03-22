@@ -1,5 +1,8 @@
-import { useEffect, useReducer, useRef } from "preact/hooks"
+import { useEffect, useReducer, useRef } from "preact/hooks";
 import { AppLayout } from "../BaseTypes";
+import { useSettingsStore } from "../store/SettingsStore";
+import { useGameStore } from "../store/GameStore";
+
 
 
 
@@ -8,6 +11,8 @@ const NUM_SAMPLES: number = 10;
 export function DevPanel(props: { id: string, layout: AppLayout, enabled: boolean }) {
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const [settingsSlice] = useSettingsStore();
+  const [gameSlice] = useGameStore();
 
   // const appContext: GameState = useContext(AppContext);
   // const userContext: UserState = useContext(UserContext);
@@ -30,7 +35,7 @@ export function DevPanel(props: { id: string, layout: AppLayout, enabled: boolea
         clearInterval(samplingInterval);
       }
     }
-  }, []);
+  }, [settingsSlice.isDevPanelOn]);
 
   function frameAvg(n: number = 10, frameTimes: number[]) {
 
@@ -65,6 +70,12 @@ export function DevPanel(props: { id: string, layout: AppLayout, enabled: boolea
             }
 
           </div> */}
+          <ul>
+            <li>gamePaused: { `${gameSlice.gamePaused}` }</li>
+            <li>showOptions: { `${settingsSlice.showOptions}` }</li>
+            <li>musicEnabled: { `${settingsSlice.musicEnabled}` }</li>
+            <li>soundEnabled: { `${settingsSlice.soundEnabled}` }</li>
+          </ul>
         </div>
 
       }

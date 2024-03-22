@@ -1,12 +1,12 @@
 import { forwardRef } from 'preact/compat';
-import { useEffect, useRef, useState, useReducer, useContext } from 'preact/hooks'
+import { useEffect, useRef, useState, useReducer } from 'preact/hooks';
 import { Ref } from 'preact';
 import { ActionType } from '../TetrisConfig';
 
 // @ts-expect-error
 import { useSound } from 'use-sound';
 
-import audio_t99_music from '@sounds/t99-music.mp3'
+import audio_t99_music from '@sounds/t99-music.mp3';
 import audio_t99 from '@sounds/t99-lvl-set-drop-mv-mvd-thud-rot-1-2-3-4-ts-hold-nm-ac-lcdrp.mp3';
 // import audio_gameOver from '@sounds/dramatic-synth-echo-43970.mp3';
 import audio_gameOver from '@sounds/gameover.mp3';
@@ -17,7 +17,7 @@ import audio_pause from '@sounds/notification-for-game-scenes-132473.mp3';
 
 import { BaseComponentProps, LAYOUT_DESKTOP, LAYOUT_MOBILE } from '../BaseTypes';
 import Slider from './Slider';
-import { AppContext } from '../AppProvider';
+import { useSettingsStore } from '../store/SettingsStore';
 
 interface SoundBoardProps extends BaseComponentProps {
   // eventTargetRef: Ref<HTMLDivElement>;
@@ -40,19 +40,19 @@ const SoundBoard = forwardRef(
       playbackRate: 1
     });
 
-    const gameState = useContext(AppContext);
-
+    // const gameState = useContext(AppContext);
+    const [settingsState] = useSettingsStore();
 
     useEffect(() => {
 
-      if (musicEnabled !== gameState.props.isMusicOn) {
-        setMusicEnabled(gameState.props.isMusicOn);
+      if (musicEnabled !== settingsState.musicEnabled) {
+        setMusicEnabled(settingsState.musicEnabled);
       }
-      if (soundEnabled !== gameState.props.isSoundOn) {
-        if (gameState.props.isSoundOn === true) {
+      if (soundEnabled !== settingsState.soundEnabled) {
+        if (settingsState.soundEnabled === true) {
           sfx_tetris({ id: "holdPiece" });
         }
-        setSoundEnabled(gameState.props.isSoundOn);
+        setSoundEnabled(settingsState.soundEnabled);
       }
 
       if (musicEnabled) {
@@ -68,7 +68,7 @@ const SoundBoard = forwardRef(
       return () => {
         pause();
       }
-    }, [musicEnabled, gameState.props.isSoundOn, gameState.props.isMusicOn]);
+    }, [musicEnabled, settingsState.soundEnabled, settingsState.musicEnabled]);
 
 
     const [sfx_pause] = useSound(audio_pause, {

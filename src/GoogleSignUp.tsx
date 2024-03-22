@@ -1,14 +1,16 @@
-import { useContext, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 
 import {
   signInWithPopup,
   GoogleAuthProvider,
   getAuth,
+  UserCredential,
   // User
 } from "firebase/auth";
 
 import SignInWithGoogleLight from './assets/SignInWithGoogleLight';
-import { AppContext, GameState, UserContext, UserStateAPI } from "./AppProvider";
+// import { AppContext, GameState, UserContext, UserStateAPI } from "./AppProvider";
+import { useUserStore } from "./store/UserStore";
 
 interface Props {
   callback: (result: any) => void
@@ -18,8 +20,9 @@ export const GoogleSignUp = (props: Props) => {
   const [error, setError] = useState(false);
   const [googleErrorMessage, setGoogleErrorMessage] = useState("");
 
-  const userState = useContext(UserContext) as UserStateAPI;
-  const appState: GameState = useContext(AppContext);
+  // const userState = useContext(UserContext) as UserStateAPI;
+  const [userState, setUserState] = useUserStore();
+  // const appState: GameState = useContext(AppContext);
 
   // Instantiate the auth service SDK
   const auth = getAuth();
@@ -34,16 +37,20 @@ export const GoogleSignUp = (props: Props) => {
 
     try {
       // Sign in with a pop-up window
-      const result: any = await signInWithPopup(auth, provider);
+      const result: UserCredential = await signInWithPopup(auth, provider);
       // Pull signed-in user credential.
       // const user: User = result.user;
 
       console.log(result);
 
-      console.log(appState);
+      // console.log(appState);
 
-      if (userState.setUser) {
-        userState.setUser({ ...getAuth().currentUser });
+      if (!userState.userInfo?.uid) {
+        // userState.setUser({ ... });
+
+        if (result.user.uid) {
+          setUserState({ ...userState, userInfo: result.user.toJSON() });
+        }
       }
 
       // route(PATH_HOME, true);

@@ -16,20 +16,6 @@ export interface SettingsSlice {
   isNewTouchEnabled: boolean;
 }
 
-/**
- * 
- * InitialState
- *  
- */
-
-export const initialSettingsState = {
-  showOptions: false,
-  soundEnabled: false,
-  musicEnabled: false,
-  isDevPanelOn: false,
-  isNewTouchEnabled: false,
-}
-
 
 /**
  * 

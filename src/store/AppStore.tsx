@@ -1,10 +1,11 @@
 import { useCallback, useContext, useRef } from "preact/hooks";
 import { newUID } from "../utils/AppUtil";
 import { ReactNode, createContext, useSyncExternalStore } from "preact/compat";
-import { StatsSlice, initialStatsState } from "./StatsStore";
-import { SettingsSlice, initialSettingsState } from "./SettingsStore";
-import { GameSlice, initialGameState } from "./GameStore";
-import { UserSlice, initialUserState } from "./UserStore";
+import { StatsSlice } from "./StatsStore";
+import { SettingsSlice } from "./SettingsStore";
+import { GameSlice } from "./GameStore";
+import { UserSlice } from "./UserStore";
+import { initialGameState, initialSettingsState, initialStatsState, initialUserState } from "./InitialStates";
 
 
 type SubscribeType = (callback: () => void) => (() => void);
@@ -50,8 +51,8 @@ export function createQuickContext<T>(initialState: T) {
 
     const set = useCallback(
       (value: Partial<T>) => {
-        console.log("**** useStoreData.set() called with:");
-        console.log(JSON.stringify(value));
+        // console.log("**** useStoreData.set() called with:");
+        // console.log(JSON.stringify(value));
         store.current = { ...store.current, ...value };
         subscribers.current.forEach((callback) => callback());
       }, []);

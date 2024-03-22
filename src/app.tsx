@@ -1,5 +1,5 @@
 import { Ref } from 'preact';
-import { useContext, useEffect, useReducer, useRef, useState } from 'preact/hooks';
+import { useEffect, useReducer, useRef, useState } from 'preact/hooks';
 
 import './app.css';
 import ActionToast from './components/ActionToast';
@@ -13,13 +13,16 @@ import { getRootStyle, mobileCheck } from './utils/AppUtil';
 // import { TetrisLogoSvg } from './components/TetrisLogoSvg';
 // import { StatsPanel } from './components/StatsPanel';
 // import { MenuPanel } from './components/MenuPanel';
-import AppProvider, { AppContext, GameStateAPI } from './AppProvider';
+import AppProvider from './AppProvider';
 import { MenuPanel } from './components/MenuPanel';
 import { StatsPanel, updateStatsByRef } from './components/StatsPanel';
 import OptionsModal from './OptionsModal';
 import { GameAction } from './TetrisConfig';
 import { DevPanel } from './components/DevPanel';
 import { TouchControls } from './components/TouchControls';
+import { useSettingsStore } from './store/SettingsStore';
+import { useStatsStore } from './store/StatsStore';
+import { useGameStore } from './store/GameStore';
 
 const fakeMouseEventArgs: [string, any] = ["click", {
   view: window,
@@ -43,7 +46,10 @@ export function App() {
   const actionQue: Ref<GameAction[]> = useRef([]);
   const [theme, setTheme] = useState(1);
   const resizeTimeout: Ref<NodeJS.Timeout> = useRef(null);
-  const appContext = useContext(AppContext) as GameStateAPI;
+  // const appContext = useContext(AppContext) as GameStateAPI;
+  const [settingsState] = useSettingsStore();
+  const [statsState] = useStatsStore();
+  const [gameState, setGameState] = useGameStore();
 
   const gamePanelRef: Ref<HTMLDivElement> = useRef(null);
 
@@ -53,17 +59,19 @@ export function App() {
   const [mainPanelScale, setMainPanelScale] = useState(1);
   const [sidePanelScale, setSidePanelScale] = useState(1);
   const [appLayout, setAppLayout] = useState<AppLayout>(getAppLayout());
-  const [devPanelOn, setDevPanelOn] = useState(appContext.props.isDevPanelOn);
-  const [newTouchControls, setNewTouchControls] = useState(appContext.props.isNewTouchEnabled);
+  const [devPanelOn, setDevPanelOn] = useState(settingsState.isDevPanelOn);
+  const [newTouchControls, setNewTouchControls] = useState(settingsState.isNewTouchEnabled);
 
   useEffect(() => {
 
-    document.addEventListener("update_app", updateAppState);
+    // document.addEventListener("update_app", updateAppState);
 
     window.onresize = handleWindowResize;
     window.ondeviceorientation = handleWindowResize;
     window.onblur = () => {
-      appContext.api.pauseGame();
+      // appContext.api.pauseGame();
+      gameState.gamePaused = true;
+      setGameState(gameState);
     };
 
     document.addEventListener("new_touch_changed",
@@ -75,7 +83,7 @@ export function App() {
 
 
     return () => {
-      document.removeEventListener("update_app", updateAppState);
+      // document.removeEventListener("update_app", updateAppState);
       window.onresize = null;
       window.ondeviceorientation = null
       window.onblur = null;
@@ -84,18 +92,18 @@ export function App() {
 
 
   useEffect(() => {
-    console.log("New Touch Changed to:", appContext.props.isNewTouchEnabled);
+    console.log("New Touch Changed to:", settingsState.isNewTouchEnabled);
     forceUpdate(1);
-  }, [appContext.props.isNewTouchEnabled]);
+  }, [settingsState.isNewTouchEnabled]);
 
   const updateAppState = () => {
 
-    if (devPanelOn !== appContext.props.isDevPanelOn) {
-      setDevPanelOn(appContext.props.isDevPanelOn);
+    if (devPanelOn !== settingsState.isDevPanelOn) {
+      setDevPanelOn(settingsState.isDevPanelOn);
     }
 
-    if (newTouchControls !== appContext.props.isNewTouchEnabled) {
-      setNewTouchControls(appContext.props.isNewTouchEnabled);
+    if (newTouchControls !== settingsState.isNewTouchEnabled) {
+      setNewTouchControls(settingsState.isNewTouchEnabled);
     }
   };
 
@@ -299,7 +307,7 @@ export function App() {
           data-theme={ theme }
           data-layout={ appLayout }
           data-app-scale={ appScale }
-          data-has-touch={ appContext.props.isNewTouchEnabled }
+          data-has-touch={ settingsState.isNewTouchEnabled }
         // style={{
         //   transform: `scale(${appScale}) ${appScale < 1 ? `translateX(${100 * (appScale - 1)/2/appScale}%)` : ''}`
         // }}
@@ -320,7 +328,7 @@ export function App() {
               <Game init={ true } actionCallback={ actionCallback } layout={ appLayout } startingLevel={ 1 }
                 statsCallback={ () => {
                   if (statsRef.current) {
-                    updateStatsByRef(appContext.props.stats, statsRef.current);
+                    updateStatsByRef(statsState, statsRef.current);
                   }
                   else {
                     console.error("statsRef is not mounted");
@@ -355,7 +363,7 @@ export function App() {
             scale={ appLayout === LAYOUT_DESKTOP ? sidePanelScale : Math.max(Math.sqrt(mainPanelScale), 1) }
           ></StatsPanel>
         </div>
-        <DevPanel id="DevPanel" layout={ appLayout } enabled={ appContext.props.isDevPanelOn }></DevPanel>
+        <DevPanel id="DevPanel" layout={ appLayout } enabled={ settingsState.isDevPanelOn }></DevPanel>
         <OptionsModal parentScale={ 1 }></OptionsModal>
         <Filters />
       </AppProvider>

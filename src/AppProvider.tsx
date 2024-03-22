@@ -8,33 +8,6 @@ import { FirebaseApp, initializeApp } from "firebase/app";
 import { RESUME_DELAY } from "./components/Game";
 
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA8JwDY65KIkmQlF-_8r4OfDCXHAOExf_8",
-  authDomain: "preacttetris.firebaseapp.com",
-  projectId: "preacttetris",
-  storageBucket: "preacttetris.appspot.com",
-  messagingSenderId: "565558573654",
-  appId: "1:565558573654:web:b177a05d715b774621d9f7",
-  measurementId: "G-B0NBKWX8WT"
-};
-
-// Initialize Firebase
-const app: FirebaseApp = initializeApp(firebaseConfig);
-// const analytics: Analytics = getAnalytics(app);
-// Initialize Cloud Firestore and get a reference to the service
-
-interface ReducerAction {
-  type: string,
-  payload?: any,
-}
-
-const db: Firestore = getFirestore(app);
-
 
 // connect();
 
@@ -120,7 +93,7 @@ const initialGameState: GameState = {
     timeEnd: 0,
     isSoundOn: false,
     isMusicOn: false,
-    isDevPanelOn: false,
+    isDevPanelOn: true,
     isNewTouchEnabled: false,
   }
 }
@@ -300,7 +273,7 @@ const appReducer = (state: GameState, action: ReducerAction) => {
     }
     case 'RESET_COMPLETE': {
       if (state.props.gameReset === true) {
-        document.dispatchEvent(new CustomEvent("new_game"));
+        // document.dispatchEvent(new CustomEvent("new_game"));
         const newState = { ...state };
         newState.props.gameReset = false;
         return newState;
@@ -314,14 +287,14 @@ const appReducer = (state: GameState, action: ReducerAction) => {
   return state;
 };
 
-export const AppContext = createContext<GameState>(initialGameState);
+export const AppContext = createContext<GameState>({ ...initialGameState });
 
 interface ProviderProps {
   children: any[];
 }
 export default function AppProvider(props: ProviderProps) {
   const { children } = props;
-  const [state, dispatch] = useReducer(appReducer, initialGameState);
+  const [state, dispatch] = useReducer(appReducer, { ...initialGameState });
 
   const pauseGame = () => {
     dispatch({
@@ -514,6 +487,34 @@ export function UserProvider(props: ProviderProps) {
     </UserContext.Provider>
   );
 }
+
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyA8JwDY65KIkmQlF-_8r4OfDCXHAOExf_8",
+  authDomain: "preacttetris.firebaseapp.com",
+  projectId: "preacttetris",
+  storageBucket: "preacttetris.appspot.com",
+  messagingSenderId: "565558573654",
+  appId: "1:565558573654:web:b177a05d715b774621d9f7",
+  measurementId: "G-B0NBKWX8WT"
+};
+
+// Initialize Firebase
+const app: FirebaseApp = initializeApp(firebaseConfig);
+// const analytics: Analytics = getAnalytics(app);
+// Initialize Cloud Firestore and get a reference to the service
+
+interface ReducerAction {
+  type: string,
+  payload?: any,
+}
+
+const db: Firestore = getFirestore(app);
 
 async function saveResults(gameState: GameState) {
   const currentUser = getAuth().currentUser;
