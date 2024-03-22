@@ -8,8 +8,8 @@ const Profile = () => {
 
   const auth = getAuth();
   const currentUser = auth.currentUser;
-  // const userState = useContext(UserContext) as UserStateAPI;
-  const [userState, setUserState] = useUserStore();
+
+  const [, setUserState] = useUserStore();
 
   const renderProfile = () => {
 
