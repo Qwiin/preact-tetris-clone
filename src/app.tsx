@@ -66,6 +66,7 @@ export function App() {
 
     // document.addEventListener("update_app", updateAppState);
 
+    updateAppState();
     window.onresize = handleWindowResize;
     window.ondeviceorientation = handleWindowResize;
     window.onblur = () => {
